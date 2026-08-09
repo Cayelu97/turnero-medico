@@ -109,10 +109,17 @@ export const AppProvider = ({ children }) => {
       setCurrentView('doctor');
     } else if (user.rol === 'SECRETARIA') {
       setCurrentView('agenda');
-    } else if (user.rol === 'SUPERADMIN') {
-      setCurrentView('admin');
+    } else if (user.rol === 'SUPERADMIN' || user.rol === 'ADMIN_CLINICA') {
+      setCurrentView('agenda');
     }
     showToast(`Sesión activa: ${user.nombre} (${user.rol})`);
+  };
+
+  const logoutUser = () => {
+    StorageService.setCurrentUser(null);
+    setCurrentUserState(null);
+    setCurrentView('login');
+    showToast('Sesión cerrada correctamente', 'info');
   };
 
   // Guardar Clínica
@@ -474,6 +481,7 @@ export const AppProvider = ({ children }) => {
         saveClinica,
         currentUser,
         switchUser,
+        logoutUser,
         especialidades,
         saveEspecialidad,
         deleteEspecialidad,

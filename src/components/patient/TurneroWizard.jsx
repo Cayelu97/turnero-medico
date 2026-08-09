@@ -163,6 +163,33 @@ export const TurneroWizard = () => {
     }
   }, [selectedServicioId, selectedServicio, nomenclador]);
 
+  const selectedProf = profesionales.find(p => p.id === selectedProfesionalId);
+
+  // Servicios que realmente corresponden a este profesional
+  const serviciosDelProf = React.useMemo(() => {
+    if (!selectedProf) return [];
+    if (selectedProf.servicios_ids && selectedProf.servicios_ids.length > 0) {
+      return servicios.filter(s => selectedProf.servicios_ids.includes(s.id));
+    }
+    const match = servicios.filter(s => 
+      s.especialidad_id === selectedProf.especialidad_id ||
+      (selectedProf.especialidad && s.nombre.toLowerCase().includes(selectedProf.especialidad.toLowerCase()))
+    );
+    if (match.length > 0) return match;
+    return servicios;
+  }, [selectedProf, servicios]);
+
+  // Autoseleccionar el servicio correspondiente al elegir el profesional
+  useEffect(() => {
+    if (serviciosDelProf.length > 0) {
+      if (!selectedServicioId || !serviciosDelProf.some(s => s.id === selectedServicioId)) {
+        setSelectedServicioId(serviciosDelProf[0].id);
+      }
+    } else {
+      setSelectedServicioId('');
+    }
+  }, [selectedProf, serviciosDelProf]);
+
   // Cálculo del coseguro estimado
   const coseguroCalculado = StorageService.calcularCoseguro(
     selectedObraSocialId,
@@ -170,7 +197,6 @@ export const TurneroWizard = () => {
     selectedPracticaId
   );
 
-  const selectedProf = profesionales.find(p => p.id === selectedProfesionalId);
   const selectedOS = obrasSociales.find(o => o.id === selectedObraSocialId);
   const selectedPlan = planes.find(p => p.id === selectedPlanId);
   const selectedPractica = nomenclador.find(p => p.id === selectedPracticaId);
@@ -573,48 +599,47 @@ export const TurneroWizard = () => {
             </div>
 
             {/* Selector de Servicio / Motivo del Turno si hay un médico seleccionado */}
-            {selectedProf && (
+            {selectedProf && serviciosDelProf.length > 0 && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5 animate-fadeIn">
-                <label className="block text-xs font-bold text-slate-800">
-                  Seleccione el Servicio / Motivo de Consulta con Dr(a). {selectedProf.apellido}:
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedServicioId('')}
-                    className={`p-3 rounded-xl border text-left transition ${
-                      selectedServicioId === ''
-                        ? 'bg-medical-50 border-medical-600 text-medical-950 font-bold shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span className="text-xs font-bold block">🩺 Consulta Médica General</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Turno estándar de consulta en consultorio</span>
-                  </button>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-800">
+                    Servicio / Motivo de Consulta con Dr(a). {selectedProf.apellido}:
+                  </label>
+                  {serviciosDelProf.length === 1 && (
+                    <span className="text-[10px] font-bold text-medical-700 bg-medical-50 px-2 py-0.5 rounded-md border border-medical-200">
+                      ✓ Servicio asignado al profesional
+                    </span>
+                  )}
+                </div>
 
-                  {servicios
-                    .filter(s => 
-                      (selectedProf?.servicios_ids && selectedProf.servicios_ids.includes(s.id)) ||
-                      s.especialidad_id === selectedProf?.especialidad_id ||
-                      s.nombre.toLowerCase().includes(selectedProf?.especialidad?.toLowerCase() || '')
-                    )
-                    .map(s => (
+                <div className={`grid gap-2 ${serviciosDelProf.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                  {serviciosDelProf.map(s => {
+                    const isSelected = selectedServicioId === s.id;
+                    return (
                       <button
                         key={s.id}
                         type="button"
                         onClick={() => setSelectedServicioId(s.id)}
-                        className={`p-3 rounded-xl border text-left transition ${
-                          selectedServicioId === s.id
+                        className={`p-3.5 rounded-xl border-2 text-left transition flex items-center justify-between ${
+                          isSelected
                             ? 'bg-medical-50 border-medical-600 text-medical-950 font-bold shadow-xs'
-                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
                         }`}
                       >
-                        <span className="text-xs font-bold block">{s.nombre}</span>
-                        <span className="text-[10px] text-slate-500 font-medium">
-                          {s.tipo === 'ESTUDIO_PRACTICA' ? '🔬 Estudio / Práctica diagnóstica' : '🩺 Consulta / Procedimiento'} • {s.duracion_default_min} min
-                        </span>
+                        <div>
+                          <span className="text-xs font-extrabold block">{s.nombre}</span>
+                          <span className="text-[10px] text-slate-500 font-medium mt-0.5 block">
+                            {s.tipo === 'ESTUDIO_PRACTICA' ? '🔬 Estudio / Práctica diagnóstica' : '🩺 Consulta / Procedimiento'} • ⏱️ {s.duracion_default_min || selectedProf.duracion_turno_minutos || 20} min
+                          </span>
+                        </div>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'border-medical-600 bg-medical-600 text-white' : 'border-slate-300'
+                        }`}>
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </div>
                       </button>
-                    ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -13,7 +13,13 @@ import {
   User, 
   ChevronDown,
   Sparkles,
-  ShieldAlert
+  ShieldAlert,
+  Share2,
+  ExternalLink,
+  LogOut,
+  KeyRound,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LoginModal } from './LoginModal';
@@ -26,31 +32,54 @@ export const Navbar = () => {
     activeClinica, 
     allClinicas, 
     switchClinica, 
-    currentUser 
+    currentUser,
+    logoutUser,
+    showToast 
   } = useApp();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const turnosHoy = turnos.filter(t => t.fecha === todayStr && t.estado !== 'CANCELADO');
   const enEsperaCount = turnosHoy.filter(t => t.estado === 'EN_ESPERA').length;
 
-  const navItems = [
-    { id: 'paciente', label: 'Turnero Online (Afiliados)', icon: Calendar, badge: null },
-    { id: 'agenda', label: 'Agenda Secretaría', icon: Calendar, badge: turnosHoy.length > 0 ? turnosHoy.length : null },
-    { id: 'recepcion', label: 'Recepción & Espera', icon: UserCheck, badge: enEsperaCount > 0 ? `${enEsperaCount} en espera` : null, badgeColor: 'bg-amber-500' },
-    { id: 'doctor', label: 'Portal Médico (Consultorio)', icon: Stethoscope, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-purple-600' },
-    { id: 'tv', label: 'Llamador TV', icon: Tv, badge: 'En Vivo', badgeColor: 'bg-rose-500' },
-    { id: 'admin', label: 'Configuración & ABM', icon: Settings, badge: null },
-    { id: 'hce', label: 'Historia Clínica', icon: FileText, badge: null },
-    { id: 'facturacion', label: 'Facturación', icon: DollarSign, badge: null }
+  // Catálogo maestro de vistas
+  const allNavItems = [
+    { id: 'paciente', label: 'Turnero Online (Afiliados)', icon: Calendar, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
+    { id: 'agenda', label: 'Agenda Secretaría', icon: Calendar, badge: turnosHoy.length > 0 ? turnosHoy.length : null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
+    { id: 'recepcion', label: 'Recepción & Espera', icon: UserCheck, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-amber-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
+    { id: 'doctor', label: 'Portal Médico (Consultorio)', icon: Stethoscope, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
+    { id: 'tv', label: 'Llamador TV', icon: Tv, badge: 'En Vivo', badgeColor: 'bg-rose-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
+    { id: 'admin', label: 'Configuración & ABM', icon: Settings, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
+    { id: 'hce', label: 'Historia Clínica', icon: FileText, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
+    { id: 'facturacion', label: 'Facturación', icon: DollarSign, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] }
   ];
+
+  // Filtrar según el rol del usuario logueado
+  const userRole = currentUser?.rol || 'ADMIN_CLINICA';
+  const navItems = allNavItems.filter(item => item.roles.includes(userRole));
+
+  // Copiar link exclusivo para que saquen turnos los pacientes
+  const handleCopyPatientLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?view=paciente`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    showToast('¡Enlace exclusivo para pacientes copiado! Pégalo en WhatsApp o redes.');
+    setTimeout(() => setCopiedLink(false), 3000);
+  };
+
+  // Abrir pantalla TV en otra pestaña para el monitor de sala de espera
+  const handleOpenTvTab = () => {
+    const url = `${window.location.origin}${window.location.pathname}?view=tv`;
+    window.open(url, '_blank');
+  };
 
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-4">
+          <div className="flex items-center justify-between h-16 gap-3">
             
             {/* LOGO & MULTI-TENANT CLINIC SELECTOR */}
             <div className="flex items-center gap-3">
@@ -71,7 +100,7 @@ export const Navbar = () => {
                   </span>
                 </div>
 
-                {/* Dropdown selector de clínica activa */}
+                {/* Selector de Centro */}
                 <div className="relative inline-block mt-0.5">
                   <select
                     value={activeClinica?.id}
@@ -88,8 +117,8 @@ export const Navbar = () => {
               </div>
             </div>
 
-            {/* BARRA DE NAVEGACIÓN PRINCIPAL */}
-            <nav className="hidden xl:flex items-center gap-1">
+            {/* BARRA DE NAVEGACIÓN PRINCIPAL (SEGMENTADA POR ROL) */}
+            <nav className="hidden lg:flex items-center gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentView === item.id;
@@ -116,13 +145,34 @@ export const Navbar = () => {
               })}
             </nav>
 
-            {/* SELECTOR DE PERFIL / LOGIN MODAL TRIGGER */}
+            {/* BOTONES DE ACCESO RÁPIDO & PERFIL */}
             <div className="flex items-center gap-2">
+              {/* Botón Copiar Link Pacientes */}
+              <button
+                onClick={handleCopyPatientLink}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition shadow-2xs"
+                title="Copiar enlace limpio exclusivo para que los pacientes saquen turnos"
+              >
+                {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-emerald-600" />}
+                <span>{copiedLink ? '¡Copiado!' : 'Link Pacientes'}</span>
+              </button>
+
+              {/* Botón Abrir TV en Monitor de Sala */}
+              <button
+                onClick={handleOpenTvTab}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-2xs"
+                title="Abrir el llamador en una ventana nueva para el monitor de la sala de espera"
+              >
+                <Tv className="w-3.5 h-3.5 text-rose-400" />
+                <span>Abrir TV</span>
+              </button>
+
+              {/* Selector de Perfil / Login */}
               <button
                 onClick={() => setShowLoginModal(true)}
                 className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-2xl text-xs transition text-left"
               >
-                <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-black ${
+                <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-white text-[11px] font-black ${
                   currentUser?.rol === 'SUPERADMIN' ? 'bg-amber-500' :
                   currentUser?.rol === 'PROFESIONAL' ? 'bg-medical-600' :
                   'bg-slate-800'
@@ -130,49 +180,31 @@ export const Navbar = () => {
                   {currentUser?.rol === 'PROFESIONAL' ? 'Dr' : currentUser?.rol === 'SUPERADMIN' ? 'SA' : 'Sec'}
                 </div>
                 <div className="hidden sm:block">
-                  <strong className="block text-[11px] text-slate-800 leading-tight truncate max-w-[110px]">
+                  <strong className="block text-[11px] text-slate-800 leading-tight truncate max-w-[100px]">
                     {currentUser?.nombre}
                   </strong>
-                  <span className="text-[9px] font-bold text-slate-500 block uppercase tracking-wider">
-                    {currentUser?.rol}
+                  <span className="text-[9px] font-extrabold text-slate-500 block uppercase tracking-wider">
+                    {currentUser?.rol === 'PROFESIONAL' ? 'Médico' : currentUser?.rol === 'SECRETARIA' ? 'Secretaría' : 'Admin'}
                   </span>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
+
+              {/* Botón Salir / Cerrar Sesión */}
+              <button
+                onClick={logoutUser}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition shadow-2xs"
+                title="Cerrar sesión e ir a la pantalla de bienvenida / login"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline">Cerrar Sesión</span>
+              </button>
             </div>
           </div>
         </div>
-
-        {/* NAVEGACIÓN EN PANTALLAS MEDIANAS Y MÓVILES */}
-        <div className="xl:hidden flex items-center gap-1 px-4 py-2 overflow-x-auto border-t border-slate-100 bg-slate-50">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentView === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => setCurrentView(item.id)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
-                  isActive
-                    ? 'bg-medical-600 text-white shadow-xs'
-                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{item.label}</span>
-                {item.badge && (
-                  <span className="text-[9px] font-black bg-white/20 text-white px-1 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
       </header>
 
-      {/* MODAL DE LOGIN / CAMBIO DE ROL */}
+      {/* Modal de Login / Cambio de Rol */}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}

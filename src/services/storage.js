@@ -427,10 +427,14 @@ export const StorageService = {
   // GESTIÓN DE SESIÓN Y USUARIOS / ROLES
   getCurrentUser: () => {
     const data = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    return data ? JSON.parse(data) : INITIAL_USERS[1];
+    return data ? JSON.parse(data) : null;
   },
   setCurrentUser: (user) => {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+    if (user) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    }
   },
   getUsersList: () => INITIAL_USERS,
 

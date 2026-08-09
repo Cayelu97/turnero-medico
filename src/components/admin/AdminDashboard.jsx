@@ -10,7 +10,8 @@ import {
   CalendarRange,
   Building2,
   AlertCircle,
-  Users
+  Users,
+  KeyRound
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { AbmEspecialidades } from './AbmEspecialidades';
@@ -22,6 +23,7 @@ import { AbmNomenclador } from './AbmNomenclador';
 import { AbmBloqueos } from './AbmBloqueos';
 import { AbmMotivos } from './AbmMotivos';
 import { AbmPacientes } from './AbmPacientes';
+import { AbmUsuarios } from './AbmUsuarios';
 import { AbmClinicas } from './AbmClinicas';
 import { ConfigClinica } from './ConfigClinica';
 import { ConfigurarAgendaModal } from '../secretary/ConfigurarAgendaModal';
@@ -40,12 +42,20 @@ export const AdminDashboard = () => {
     bloqueos = [],
     motivos = [],
     pacientes = [],
+    users = [],
     allClinicas = []
   } = useApp();
 
   const [showAgendaModal, setShowAgendaModal] = useState(false);
 
   const tabs = [
+    {
+      id: 'usuarios',
+      label: 'Usuarios & Accesos',
+      icon: KeyRound,
+      count: users?.length || 0,
+      subCount: 'Credenciales'
+    },
     {
       id: 'pacientes',
       label: 'Padrón Pacientes',
@@ -191,6 +201,7 @@ export const AdminDashboard = () => {
 
       {/* Contenido según la pestaña activa */}
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        {adminTab === 'usuarios' && <AbmUsuarios />}
         {adminTab === 'pacientes' && <AbmPacientes />}
         {adminTab === 'especialidades' && <AbmEspecialidades />}
         {adminTab === 'servicios' && <AbmServicios />}

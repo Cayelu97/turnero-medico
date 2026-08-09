@@ -3,54 +3,73 @@ import {
   Stethoscope, 
   Calendar, 
   Shield, 
-  UserCheck, 
   Lock, 
   KeyRound, 
-  Building2, 
-  ChevronRight, 
-  Users, 
+  Eye, 
+  EyeOff, 
+  ArrowRight, 
+  AlertCircle, 
+  CheckCircle2, 
+  ShieldCheck, 
+  Tv, 
   Sparkles,
-  ArrowRight,
-  Tv
+  Info,
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const LoginView = ({ onSelectPatientView }) => {
-  const { switchUser, activeClinica, allClinicas, profesionales, setCurrentView } = useApp();
+  const { switchUser, activeClinica, authenticateUser, setCurrentView } = useApp();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showDemoHelp, setShowDemoHelp] = useState(false);
 
-  const handleRoleLogin = (userObj, targetView) => {
-    switchUser(userObj);
-    setCurrentView(targetView);
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const result = authenticateUser(email, password);
+
+      if (result.success) {
+        const user = result.user;
+        switchUser(user);
+
+        // Redirección inteligente según el rol asignado en la BD
+        if (user.rol === 'PROFESIONAL') {
+          setCurrentView('doctor');
+        } else if (user.rol === 'SECRETARIA') {
+          setCurrentView('agenda');
+        } else if (user.rol === 'ADMIN_CLINICA' || user.rol === 'SUPERADMIN') {
+          setCurrentView('admin');
+        } else {
+          setCurrentView('agenda');
+        }
+      } else {
+        setErrorMessage(result.message || 'Credenciales de acceso incorrectas. Por favor verifique sus datos.');
+      }
+      setIsLoading(false);
+    }, 400);
   };
 
-  const handleFormLogin = (e) => {
-    e.preventDefault();
-    const userRole = email.includes('doc') || email.includes('med') ? 'PROFESIONAL' :
-                     email.includes('sec') || email.includes('recep') ? 'SECRETARIA' : 'ADMIN_CLINICA';
-
-    const targetView = userRole === 'PROFESIONAL' ? 'doctor' :
-                       userRole === 'SECRETARIA' ? 'agenda' : 'admin';
-
-    switchUser({
-      id: `usr-${Date.now()}`,
-      nombre: email.split('@')[0],
-      email,
-      rol: userRole,
-      clinica_id: activeClinica?.id || allClinicas[0]?.id
-    });
-    setCurrentView(targetView);
+  const handleQuickFill = (demoEmail, demoPass) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setShowDemoHelp(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-medical-950 to-slate-900 text-white flex flex-col justify-between p-4 sm:p-8">
-      {/* HEADER DE BIENVENIDA */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-medical-950 text-white flex flex-col justify-between p-4 sm:p-8">
+      {/* HEADER SUPERIOR */}
       <header className="max-w-6xl w-full mx-auto flex items-center justify-between py-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-medical-500 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-medical-500/30">
+          <div className="w-11 h-11 rounded-2xl bg-medical-500 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-medical-500/20 border border-medical-400/30">
             <Stethoscope className="w-6 h-6" />
           </div>
           <div>
@@ -70,55 +89,55 @@ export const LoginView = ({ onSelectPatientView }) => {
 
         <button
           onClick={() => setCurrentView('tv')}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition border border-slate-700"
-          title="Abrir monitor de sala de espera"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition border border-slate-700 shadow-xs"
+          title="Abrir monitor de sala de espera en vivo"
         >
           <Tv className="w-4 h-4 text-rose-400" />
-          <span>Monitor TV Sala</span>
+          <span className="hidden sm:inline">Monitor TV Sala</span>
         </button>
       </header>
 
-      {/* CONTENIDO PRINCIPAL: 2 PORTALES DE INGRESO */}
+      {/* CONTENIDO PRINCIPAL: 2 PORTALES INDEPENDIENTES */}
       <main className="max-w-6xl w-full mx-auto py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
-        {/* COLUMNA 1: PORTAL DEL PACIENTE (SIN LOGIN REQUERIDO) */}
-        <div className="lg:col-span-5 bg-gradient-to-b from-medical-800/60 to-medical-900/80 p-6 sm:p-8 rounded-3xl border border-medical-500/40 backdrop-blur-xl shadow-2xl space-y-6 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-40 h-40 bg-medical-500/20 rounded-full blur-3xl pointer-events-none" />
+        {/* COLUMNA 1: PORTAL DE PACIENTES (PÚBLICO Y DIRECTO) */}
+        <div className="lg:col-span-6 bg-gradient-to-b from-medical-900/50 to-slate-900/80 p-6 sm:p-10 rounded-3xl border border-medical-500/30 backdrop-blur-xl shadow-2xl space-y-6 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-medical-500/15 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs font-black border border-emerald-500/30">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Acceso Libre para Afiliados y Pacientes</span>
+              <span>Portal de Turnos Online para Pacientes</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-              ¿Deseas reservar una cita médica?
+              ¿Deseas solicitar una cita o consultar tus turnos?
             </h2>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Obtén tu turno médico online en 4 sencillos pasos. Selecciona la especialidad o profesional, elige día y horario, y recibe tu confirmación al instante.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+              Obtén tu turno médico online en sencillos pasos. Selecciona la especialidad o profesional, elige el día y horario disponible, y recibe la confirmación al instante por WhatsApp y correo.
             </p>
 
-            <ul className="space-y-2 text-xs text-slate-300 pt-2 font-medium">
-              <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">✓</span>
-                Sin registro previo ni contraseñas
+            <ul className="space-y-2.5 text-xs text-slate-300 pt-2 font-medium">
+              <li className="flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0">✓</span>
+                <span>Acceso 100% libre sin usuario ni contraseñas</span>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">✓</span>
-                Validación de Obra Social y cálculo de coseguro
+              <li className="flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0">✓</span>
+                <span>Validación de Obra Social, Planes y Coseguros</span>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">✓</span>
-                Recordatorio automático por WhatsApp y Google Calendar
+              <li className="flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0">✓</span>
+                <span>Voucher digital con recordatorio para Google Calendar</span>
               </li>
             </ul>
           </div>
 
-          <div className="pt-6">
+          <div className="pt-6 relative z-10">
             <button
               onClick={onSelectPatientView}
-              className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-emerald-500/25 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-emerald-500/20 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Calendar className="w-5 h-5 text-slate-950" />
               <span>Ingresar al Turnero de Pacientes</span>
@@ -127,165 +146,173 @@ export const LoginView = ({ onSelectPatientView }) => {
           </div>
         </div>
 
-        {/* COLUMNA 2: ACCESO PERSONAL DE LA CLÍNICA (CON ROLES) */}
-        <div className="lg:col-span-7 bg-slate-800/80 p-6 sm:p-8 rounded-3xl border border-slate-700/80 backdrop-blur-xl shadow-2xl space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-4">
-            <div>
-              <h3 className="text-xl font-black text-white flex items-center gap-2">
-                <Lock className="w-5 h-5 text-sky-400" />
-                <span>Acceso Personal Médico & Staff</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Seleccione su perfil de trabajo para ingresar a su panel correspondiente
-              </p>
+        {/* COLUMNA 2: LOGIN PROFESIONAL CON CREDENCIALES REALES */}
+        <div className="lg:col-span-6 bg-slate-900/90 p-6 sm:p-10 rounded-3xl border border-slate-700/80 backdrop-blur-xl shadow-2xl space-y-6">
+          <div className="border-b border-slate-800 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-white">
+                  Acceso Personal Médico & Staff
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Ingrese con sus credenciales institucionales autorizadas
+                </p>
+              </div>
             </div>
-
-            <button
-              onClick={() => setShowPasswordForm(!showPasswordForm)}
-              className="text-xs font-bold text-sky-400 hover:text-sky-300 underline"
-            >
-              {showPasswordForm ? 'Ver Perfiles' : 'Ingresar con Clave'}
-            </button>
           </div>
 
-          {!showPasswordForm ? (
-            /* ACCESO RÁPIDO SEGMENTADO POR ROLES */
-            <div className="space-y-3">
-              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
-                Seleccione su puesto de trabajo:
-              </span>
-
-              {/* 1. SECRETARÍA */}
-              <button
-                onClick={() => handleRoleLogin({
-                  id: 'sec-1',
-                  nombre: 'Secretaría de Recepción',
-                  email: 'secretaria@clinica.com',
-                  rol: 'SECRETARIA',
-                  clinica_id: activeClinica?.id
-                }, 'agenda')}
-                className="w-full p-4 bg-slate-900/90 hover:bg-slate-900 border border-slate-700 hover:border-sky-500/50 rounded-2xl text-left transition flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <strong className="text-sm font-extrabold text-white block group-hover:text-sky-300 transition">
-                      👩‍💼 Secretaría / Recepción
-                    </strong>
-                    <span className="text-xs text-slate-400">
-                      Agenda del día, recepción de pacientes en espera y otorgar turnos
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-sky-400 transition" />
-              </button>
-
-              {/* 2. MÉDICOS DE LA BASE */}
-              {profesionales.map(prof => (
-                <button
-                  key={prof.id}
-                  onClick={() => handleRoleLogin({
-                    id: prof.id,
-                    nombre: `Dr(a). ${prof.nombre} ${prof.apellido}`,
-                    email: prof.email || 'doctor@clinica.com',
-                    rol: 'PROFESIONAL',
-                    especialidad: prof.especialidad,
-                    profesional_id: prof.id,
-                    clinica_id: prof.clinica_id || activeClinica?.id
-                  }, 'doctor')}
-                  className="w-full p-4 bg-slate-900/90 hover:bg-slate-900 border border-slate-700 hover:border-purple-500/50 rounded-2xl text-left transition flex items-center justify-between gap-3 group"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div 
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold shadow-xs"
-                      style={{ backgroundColor: prof.color_agenda || '#0284c7' }}
-                    >
-                      <Stethoscope className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <strong className="text-sm font-extrabold text-white block group-hover:text-purple-300 transition">
-                        👨‍⚕️ Dr(a). {prof.nombre} {prof.apellido}
-                      </strong>
-                      <span className="text-xs text-slate-400">
-                        {prof.especialidad} • Consultorio, Llamador TV e Historia Clínica
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-purple-400 transition" />
-                </button>
-              ))}
-
-              {/* 3. ADMINISTRADOR */}
-              <button
-                onClick={() => handleRoleLogin({
-                  id: 'admin-1',
-                  nombre: 'Administrador General',
-                  email: 'admin@clinica.com',
-                  rol: 'ADMIN_CLINICA',
-                  clinica_id: activeClinica?.id
-                }, 'admin')}
-                className="w-full p-4 bg-slate-900/90 hover:bg-slate-900 border border-slate-700 hover:border-amber-500/50 rounded-2xl text-left transition flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
-                    <Shield className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <strong className="text-sm font-extrabold text-white block group-hover:text-amber-300 transition">
-                      👑 Administrador del Centro
-                    </strong>
-                    <span className="text-xs text-slate-400">
-                      ABMs, Obras Sociales, Médicos, Consultorios, Sedes y Facturación
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-amber-400 transition" />
-              </button>
+          {/* BANNER DE ERROR */}
+          {errorMessage && (
+            <div className="p-3.5 bg-rose-500/20 border border-rose-500/40 rounded-2xl flex items-center gap-3 text-rose-300 text-xs font-bold animate-shake">
+              <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
+              <span>{errorMessage}</span>
             </div>
-          ) : (
-            /* FORMULARIO TRADICIONAL CON EMAIL Y CONTRASEÑA */
-            <form onSubmit={handleFormLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">Correo Electrónico Institucional</label>
+          )}
+
+          {/* FORMULARIO DE LOGIN */}
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                Correo Electrónico / Usuario
+              </label>
+              <div className="relative">
                 <input
                   type="email"
                   required
-                  placeholder="ej: doctor@clinica.com"
+                  placeholder="ej: doctor@clinica.com o secretaria@clinica.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-white focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white focus:outline-hidden focus:ring-2 focus:ring-sky-500 transition font-mono placeholder:font-sans placeholder:text-slate-600"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">Contraseña</label>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-300">
+                  Contraseña de Acceso
+                </label>
+              </div>
+              <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-white focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white focus:outline-hidden focus:ring-2 focus:ring-sky-500 transition pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3.5 text-slate-500 hover:text-slate-300"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-md transition"
-              >
-                Iniciar Sesión
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3.5 bg-gradient-to-r from-sky-600 to-medical-600 hover:from-sky-500 hover:to-medical-500 text-white font-black text-xs rounded-xl shadow-lg shadow-sky-600/30 transition transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isLoading ? (
+                <span>Validando credenciales seguras...</span>
+              ) : (
+                <>
+                  <KeyRound className="w-4 h-4" />
+                  <span>Iniciar Sesión en el Sistema</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* INSIGNIA DE SEGURIDAD & BOTÓN DISCRETO DE AYUDA DEMO */}
+          <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+            <div className="flex items-center gap-1.5 text-slate-400 font-medium">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Conexión Encriptada SSL 256-bit</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowDemoHelp(true)}
+              className="text-sky-400 hover:text-sky-300 font-bold underline flex items-center gap-1 cursor-pointer"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>Cuentas demo de prueba</span>
+            </button>
+          </div>
         </div>
       </main>
 
       {/* FOOTER */}
       <footer className="max-w-6xl w-full mx-auto py-4 text-center text-xs text-slate-500">
-        MediTurnos Pro • Sistema de Gestión de Consultorios Médicos & Turnero Online
+        MediTurnos Pro • Sistema Integral de Consultorios Médicos & Turnero Online
       </footer>
+
+      {/* MODAL DISCRETO DE CUENTAS DEMO (Solo para testing rápido del usuario) */}
+      {showDemoHelp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl text-white space-y-4 animate-scaleIn">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-sky-400" />
+                <h4 className="text-sm font-black">Cuentas de Demostración</h4>
+              </div>
+              <button onClick={() => setShowDemoHelp(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Haz clic en cualquiera de las cuentas de prueba para autocompletar el formulario y probar los diferentes roles:
+            </p>
+
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleQuickFill('admin@clinica.com', 'admin')}
+                className="w-full p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left transition flex items-center justify-between"
+              >
+                <div>
+                  <strong className="text-xs text-amber-300 block">👑 Administrador General</strong>
+                  <span className="text-[11px] font-mono text-slate-400">admin@clinica.com / admin</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded">Usar</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickFill('secretaria@clinica.com', '123')}
+                className="w-full p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left transition flex items-center justify-between"
+              >
+                <div>
+                  <strong className="text-xs text-sky-300 block">👩‍💼 Secretaría / Recepción</strong>
+                  <span className="text-[11px] font-mono text-slate-400">secretaria@clinica.com / 123</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-sky-500/20 text-sky-300 rounded">Usar</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickFill('doctor@clinica.com', '123')}
+                className="w-full p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left transition flex items-center justify-between"
+              >
+                <div>
+                  <strong className="text-xs text-purple-300 block">👨‍⚕️ Profesional Médico (Consultorio)</strong>
+                  <span className="text-[11px] font-mono text-slate-400">doctor@clinica.com / 123</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded">Usar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

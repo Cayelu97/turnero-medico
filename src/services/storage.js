@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
   TURNOS: 'mediturnos_turnos',
   ATENCIONES_HCE: 'mediturnos_atenciones_hce',
   MOTIVOS: 'mediturnos_motivos',
+  USERS: 'mediturnos_users',
   SUPABASE_CONFIG: 'mediturnos_supabase_config',
   TV_CALLS: 'mediturnos_tv_calls'
 };
@@ -203,12 +204,11 @@ export const INITIAL_CLINICAS = [
   }
 ];
 
-// Usuarios y Roles de demostración
+// Usuarios y Roles de demostración y producción
 export const INITIAL_USERS = [
-  { id: 'usr-1', nombre: 'Administrador General', email: 'admin@mediturnos.com', rol: 'SUPERADMIN', clinica_id: null },
-  { id: 'usr-2', nombre: 'Secretaría San Lucas', email: 'recepcion@centrosanlucas.com.ar', rol: 'SECRETARIA', clinica_id: 'clinica-1' },
-  { id: 'usr-3', nombre: 'Dr. Martín Pérez Rossi', email: 'mperez@centrosanlucas.com.ar', rol: 'PROFESIONAL', clinica_id: 'clinica-1', profesional_id: 'prof-1' },
-  { id: 'usr-4', nombre: 'Secretaría Belgrano', email: 'recepcion@consultoriosbelgrano.com.ar', rol: 'SECRETARIA', clinica_id: 'clinica-2' }
+  { id: 'usr-1', nombre: 'Administrador General', email: 'admin@clinica.com', password: 'admin', rol: 'ADMIN_CLINICA', clinica_id: 'clinica-1', activo: true },
+  { id: 'usr-2', nombre: 'Secretaría de Recepción', email: 'secretaria@clinica.com', password: '123', rol: 'SECRETARIA', clinica_id: 'clinica-1', activo: true },
+  { id: 'usr-3', nombre: 'Dr. Martín Pérez Rossi', email: 'doctor@clinica.com', password: '123', rol: 'PROFESIONAL', clinica_id: 'clinica-1', profesional_id: 'prof-1', activo: true }
 ];
 
 export const INITIAL_DATA = {
@@ -328,8 +328,8 @@ export const initLocalStorage = () => {
   if (!localStorage.getItem(STORAGE_KEYS.CLINICA)) {
     localStorage.setItem(STORAGE_KEYS.CLINICA, JSON.stringify(INITIAL_CLINICAS[0]));
   }
-  if (!localStorage.getItem(STORAGE_KEYS.CURRENT_USER)) {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(INITIAL_USERS[1]));
+  if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
   }
   if (!localStorage.getItem(STORAGE_KEYS.ESPECIALIDADES)) {
     localStorage.setItem(STORAGE_KEYS.ESPECIALIDADES, JSON.stringify(INITIAL_ESPECIALIDADES));
@@ -436,7 +436,46 @@ export const StorageService = {
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     }
   },
-  getUsersList: () => INITIAL_USERS,
+  getUsers: (clinicaId = null) => {
+    const all = StorageService.getCollection(STORAGE_KEYS.USERS);
+    if (!all || all.length === 0) {
+      StorageService.saveCollection(STORAGE_KEYS.USERS, INITIAL_USERS);
+      return INITIAL_USERS;
+    }
+    if (!clinicaId || clinicaId === 'TODAS') return all;
+    return all.filter(u => !u.clinica_id || u.clinica_id === clinicaId);
+  },
+  saveUser: (user) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.USERS);
+    if (user.id) {
+      const idx = items.findIndex(u => u.id === user.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...user };
+      else items.push(user);
+    } else {
+      user.id = `usr-${Date.now()}`;
+      user.activo = user.activo !== false;
+      items.push(user);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.USERS, items);
+    return user;
+  },
+  deleteUser: (id) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.USERS).filter(u => u.id !== id);
+    StorageService.saveCollection(STORAGE_KEYS.USERS, items);
+  },
+  authenticateUser: (email, password) => {
+    const all = StorageService.getUsers();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const user = all.find(u => u.email && u.email.toLowerCase() === cleanEmail && u.activo !== false);
+    if (!user) {
+      return { success: false, message: 'Usuario no encontrado o cuenta desactivada.' };
+    }
+    if (user.password && user.password !== password) {
+      return { success: false, message: 'Contraseña incorrecta.' };
+    }
+    return { success: true, user };
+  },
+  getUsersList: () => StorageService.getUsers(),
 
   // MULTI-TENANT: CLÍNICAS / CONSULTORIOS
   getClinicaActiva: () => {

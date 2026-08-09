@@ -43,9 +43,17 @@ export const DoctorPortal = () => {
     clinica 
   } = useApp();
 
-  // Seleccionar médico activo (por defecto el logueado si es profesional, o el primero)
-  const defaultDocId = currentUser?.profesional_id || profesionales[0]?.id || '';
+  // Seleccionar médico activo (estricto al profesional logueado)
+  const defaultDocId = (currentUser?.rol === 'PROFESIONAL' && currentUser?.profesional_id)
+    ? currentUser.profesional_id
+    : (profesionales[0]?.id || '');
   const [selectedDoctorId, setSelectedDoctorId] = useState(defaultDocId);
+
+  React.useEffect(() => {
+    if (currentUser?.rol === 'PROFESIONAL' && currentUser?.profesional_id) {
+      setSelectedDoctorId(currentUser.profesional_id);
+    }
+  }, [currentUser]);
 
   // Turno que está siendo atendido actualmente
   const [activeTurnoId, setActiveTurnoId] = useState(null);
@@ -192,19 +200,28 @@ export const DoctorPortal = () => {
             <span>+ Agendar Próximo Turno</span>
           </button>
 
-          <span className="text-xs font-bold text-slate-500">Cambiar Médico:</span>
-          <select
-            value={selectedDoctorId}
-            onChange={(e) => {
-              setSelectedDoctorId(e.target.value);
-              setActiveTurnoId(null);
-            }}
-            className="px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
-          >
-            {profesionales.map(p => (
-              <option key={p.id} value={p.id}>Dr(a). {p.nombre} {p.apellido}</option>
-            ))}
-          </select>
+          {currentUser?.rol !== 'PROFESIONAL' ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-slate-500">Supervisar Médico:</span>
+              <select
+                value={selectedDoctorId}
+                onChange={(e) => {
+                  setSelectedDoctorId(e.target.value);
+                  setActiveTurnoId(null);
+                }}
+                className="px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
+              >
+                {profesionales.map(p => (
+                  <option key={p.id} value={p.id}>Dr(a). {p.nombre} {p.apellido}</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-xl text-xs font-extrabold text-purple-900 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Consultorio Personal Exclusivo</span>
+            </div>
+          )}
         </div>
       </div>
 

@@ -33,6 +33,7 @@ export const AppProvider = ({ children }) => {
   const [motivos, setMotivos] = useState(() => StorageService.getMotivos());
   const [atencionesHce, setAtencionesHce] = useState(() => StorageService.getAtencionesHce());
   const [tvCalls, setTvCalls] = useState(() => StorageService.getTvCalls());
+  const [users, setUsers] = useState(() => StorageService.getUsers());
 
   // Toasts
   const [toast, setToast] = useState(null);
@@ -48,6 +49,7 @@ export const AppProvider = ({ children }) => {
     setActiveClinicaState(clin);
     setAllClinicas(StorageService.getClinicasList());
     setCurrentUserState(StorageService.getCurrentUser());
+    setUsers(StorageService.getUsers());
     setEspecialidades(StorageService.getEspecialidades());
     setServicios(StorageService.getServicios(clin.id));
     setConsultorios(StorageService.getConsultorios(clin.id));
@@ -120,6 +122,24 @@ export const AppProvider = ({ children }) => {
     setCurrentUserState(null);
     setCurrentView('login');
     showToast('Sesión cerrada correctamente', 'info');
+  };
+
+  // ABM Usuarios & Accesos
+  const saveUser = (userData) => {
+    const saved = StorageService.saveUser(userData);
+    setUsers(StorageService.getUsers());
+    showToast(`Usuario "${saved.nombre}" guardado correctamente`);
+    return saved;
+  };
+
+  const deleteUser = (id) => {
+    StorageService.deleteUser(id);
+    setUsers(StorageService.getUsers());
+    showToast('Usuario eliminado', 'info');
+  };
+
+  const authenticateUser = (email, password) => {
+    return StorageService.authenticateUser(email, password);
   };
 
   // Guardar Clínica
@@ -530,7 +550,12 @@ export const AppProvider = ({ children }) => {
         registrarCobroCoseguro,
         reprogramarTurno,
         cancelarTurno,
-        saveAtencionHce
+        saveAtencionHce,
+        // Usuarios & Roles
+        users,
+        saveUser,
+        deleteUser,
+        authenticateUser
       }}
     >
       {children}

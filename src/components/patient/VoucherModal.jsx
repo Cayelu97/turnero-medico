@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { WhatsAppService } from '../../services/whatsapp';
 import { useApp } from '../../context/AppContext';
+import { formatDateAR } from '../../utils/formatters';
 
 export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSocial, plan, practica, onClose }) => {
   const { clinica } = useApp();
@@ -92,7 +93,7 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
                 <span className="text-[10px] font-bold uppercase text-slate-600 flex items-center gap-1">
                   <Calendar className="w-3 h-3 text-medical-600" /> Fecha del Turno
                 </span>
-                <p className="text-sm font-extrabold text-slate-900 mt-0.5">{turno.fecha}</p>
+                <p className="text-sm font-extrabold text-slate-900 mt-0.5">{formatDateAR(turno.fecha)}</p>
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase text-slate-600 flex items-center gap-1">

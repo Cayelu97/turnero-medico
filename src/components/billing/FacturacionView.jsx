@@ -21,6 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { formatDateAR } from '../../utils/formatters';
 
 export const FacturacionView = () => {
   const { 
@@ -467,7 +468,7 @@ export const FacturacionView = () => {
             <div className="text-left sm:text-right bg-slate-50 p-3 rounded-2xl border border-slate-100">
               <span className="text-[10px] font-black uppercase text-slate-500 block">Periodo de Facturación</span>
               <span className="text-sm font-black text-slate-900">
-                {fechaDesde} al {fechaHasta}
+                {formatDateAR(fechaDesde)} al {formatDateAR(fechaHasta)}
               </span>
               <span className="text-[11px] text-medical-700 font-bold block mt-0.5">
                 {selectedOsId ? obrasSociales.find(o => o.id === selectedOsId)?.nombre : 'Consolidado Todas las Coberturas'}
@@ -600,7 +601,7 @@ export const FacturacionView = () => {
                       <tr key={r.id} className="hover:bg-slate-50/80 transition">
                         <td className="px-3 py-2.5 font-mono text-slate-400">{r.index}</td>
                         <td className="px-3 py-2.5 whitespace-nowrap font-bold text-slate-900">
-                          {r.fecha} <span className="text-[11px] text-slate-500 font-normal">{r.hora} hs</span>
+                          {formatDateAR(r.fecha)} <span className="text-[11px] text-slate-500 font-normal">{r.hora} hs</span>
                         </td>
                         <td className="px-3 py-2.5 font-mono font-bold text-medical-800">
                           {r.numero_bono}

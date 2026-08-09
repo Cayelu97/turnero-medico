@@ -18,11 +18,13 @@ import {
   Layers,
   MapPin,
   Sparkles,
-  X
+  X,
+  Lock
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
 import { VoucherModal } from './VoucherModal';
+import { formatDateAR } from '../../utils/formatters';
 
 export const TurneroWizard = () => {
   const { 
@@ -149,6 +151,17 @@ export const TurneroWizard = () => {
   }, [selectedProfesionalId, selectedFecha, selectedServicioId]);
 
 
+
+  const selectedServicio = servicios.find(s => s.id === selectedServicioId);
+
+  // Auto-fijar la práctica predeterminada si el servicio la define
+  useEffect(() => {
+    if (selectedServicio?.practica_default_id) {
+      setSelectedPracticaId(selectedServicio.practica_default_id);
+    } else if (!selectedPracticaId && nomenclador.length > 0) {
+      setSelectedPracticaId(nomenclador[0].id);
+    }
+  }, [selectedServicioId, selectedServicio, nomenclador]);
 
   // Cálculo del coseguro estimado
   const coseguroCalculado = StorageService.calcularCoseguro(
@@ -696,44 +709,80 @@ export const TurneroWizard = () => {
 
             {/* Práctica del Nomenclador */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                Práctica o Tipo de Consulta Solicitada *
-              </label>
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {nomenclador.map((nom) => {
-                  const isSelected = selectedPracticaId === nom.id;
-                  return (
-                    <div
-                      key={nom.id}
-                      onClick={() => setSelectedPracticaId(nom.id)}
-                      className={`p-3 rounded-xl border-2 cursor-pointer transition flex items-center justify-between ${
-                        isSelected
-                          ? 'border-medical-600 bg-medical-50/50 shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      }`}
-                    >
+              {selectedServicio?.practica_default_id && selectedPractica ? (
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Práctica Médica Predeterminada (Fijada por Servicio) *
+                  </label>
+                  <div className="p-4 bg-sky-50/90 border-2 border-sky-400 rounded-2xl flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
+                        <Lock className="w-5 h-5" />
+                      </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[11px] font-black text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                            {nom.codigo_pmo}
+                          <span className="font-mono text-xs font-black text-sky-950 bg-white px-2 py-0.5 rounded border border-sky-200 shadow-2xs">
+                            {selectedPractica.codigo_pmo}
                           </span>
-                          <h4 className="text-xs font-bold text-slate-900">{nom.descripcion}</h4>
+                          <h4 className="text-xs font-extrabold text-slate-900">{selectedPractica.descripcion}</h4>
                         </div>
-                        {nom.instrucciones_preparacion && (
-                          <p className="text-[11px] text-amber-700 mt-1">
-                            ℹ️ Prep: {nom.instrucciones_preparacion}
+                        <span className="text-[11px] text-sky-900 font-medium block mt-1">
+                          🔒 Esta práctica corresponde exclusivamente al servicio <strong>"{selectedServicio.nombre}"</strong> y está fijada por protocolo.
+                        </span>
+                        {selectedPractica.instrucciones_preparacion && (
+                          <p className="text-[11px] text-amber-800 font-semibold mt-1">
+                            ℹ️ Prep: {selectedPractica.instrucciones_preparacion}
                           </p>
                         )}
                       </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        isSelected ? 'border-medical-600 bg-medical-600 text-white' : 'border-slate-300'
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3" />}
-                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <span className="px-2.5 py-1 bg-sky-200 text-sky-900 text-[10px] font-black uppercase rounded-lg flex-shrink-0">
+                      Fijada por Servicio
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                    Práctica o Tipo de Consulta Solicitada *
+                  </label>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {nomenclador.map((nom) => {
+                      const isSelected = selectedPracticaId === nom.id;
+                      return (
+                        <div
+                          key={nom.id}
+                          onClick={() => setSelectedPracticaId(nom.id)}
+                          className={`p-3 rounded-xl border-2 cursor-pointer transition flex items-center justify-between ${
+                            isSelected
+                              ? 'border-medical-600 bg-medical-50/50 shadow-xs'
+                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[11px] font-black text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                                {nom.codigo_pmo}
+                              </span>
+                              <h4 className="text-xs font-bold text-slate-900">{nom.descripcion}</h4>
+                            </div>
+                            {nom.instrucciones_preparacion && (
+                              <p className="text-[11px] text-amber-700 mt-1">
+                                ℹ️ Prep: {nom.instrucciones_preparacion}
+                              </p>
+                            )}
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            isSelected ? 'border-medical-600 bg-medical-600 text-white' : 'border-slate-300'
+                          }`}>
+                            {isSelected && <Check className="w-3 h-3" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Indicador de Coseguro Estimado */}
@@ -998,7 +1047,7 @@ export const TurneroWizard = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Fecha y Hora:</span>
-                <strong className="text-slate-900">{selectedFecha} a las {selectedSlot?.hora_inicio} hs</strong>
+                <strong className="text-slate-900">{formatDateAR(selectedFecha)} a las {selectedSlot?.hora_inicio} hs</strong>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Cobertura:</span>

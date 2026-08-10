@@ -87,14 +87,10 @@ export const LoginView = ({ onSelectPatientView }) => {
           </div>
         </div>
 
-        <button
-          onClick={() => setCurrentView('tv')}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition border border-slate-700 shadow-xs"
-          title="Abrir monitor de sala de espera en vivo"
-        >
-          <Tv className="w-4 h-4 text-rose-400" />
-          <span className="hidden sm:inline">Monitor TV Sala</span>
-        </button>
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs font-semibold">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>Acceso Protegido</span>
+        </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL: 2 PORTALES INDEPENDIENTES */}

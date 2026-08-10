@@ -22,7 +22,8 @@ const SYNC_KEYS = [
   'mediturnos_pacientes',
   'mediturnos_turnos',
   'mediturnos_atenciones_hce',
-  'mediturnos_motivos'
+  'mediturnos_motivos',
+  'mediturnos_movimientos_caja'
 ];
 
 export const CloudSyncService = {

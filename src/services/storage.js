@@ -23,7 +23,8 @@ const STORAGE_KEYS = {
   MOTIVOS: 'mediturnos_motivos',
   USERS: 'mediturnos_users',
   SUPABASE_CONFIG: 'mediturnos_supabase_config',
-  TV_CALLS: 'mediturnos_tv_calls'
+  TV_CALLS: 'mediturnos_tv_calls',
+  MOVIMIENTOS_CAJA: 'mediturnos_movimientos_caja'
 };
 
 // Motivos Oficiales de Cancelación y Reprogramación de Turnos
@@ -375,6 +376,43 @@ export const initLocalStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.TV_CALLS)) {
     localStorage.setItem(STORAGE_KEYS.TV_CALLS, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.MOVIMIENTOS_CAJA)) {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(STORAGE_KEYS.MOVIMIENTOS_CAJA, JSON.stringify([
+      {
+        id: 'caj-1',
+        tipo: 'INGRESO',
+        concepto: 'Coseguro Consulta Médica (TRN-94041)',
+        paciente_nombre: 'Aye Lopez',
+        paciente_dni: '29749777',
+        profesional_nombre: 'Dr(a). Nahuel Lopez',
+        obra_social_nombre: 'OSDE',
+        forma_pago: 'EFECTIVO',
+        monto: 3500,
+        usuario_nombre: 'Secretaría Recepción',
+        fecha: today,
+        hora: '09:15',
+        comprobante: 'REC-00102',
+        observaciones: 'Pago en efectivo en mostrador'
+      },
+      {
+        id: 'caj-2',
+        tipo: 'INGRESO',
+        concepto: 'Consulta Particular Psicología',
+        paciente_nombre: 'Carlos Benítez',
+        paciente_dni: '32100450',
+        profesional_nombre: 'Dr(a). Nahuel Lopez',
+        obra_social_nombre: 'Particular',
+        forma_pago: 'MERCADOPAGO',
+        monto: 12000,
+        usuario_nombre: 'Secretaría Recepción',
+        fecha: today,
+        hora: '10:30',
+        comprobante: 'MP-892182',
+        observaciones: 'QR Mercado Pago'
+      }
+    ]));
   }
 };
 
@@ -1103,6 +1141,40 @@ export const StorageService = {
     }
     StorageService.saveCollection(STORAGE_KEYS.ATENCIONES_HCE, items);
     return atencion;
+  },
+
+  // CAJA RECAUDADORA Y ARQUEO DIARIO
+  getMovimientosCaja: (clinicaId = null) => {
+    const all = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA);
+    if (!clinicaId || clinicaId === 'TODAS' || clinicaId === 'ALL') {
+      return all;
+    }
+    const targetClinicaId = clinicaId || StorageService.getClinicaActiva().id;
+    return all.filter(m => !m.clinica_id || m.clinica_id === targetClinicaId);
+  },
+  saveMovimientoCaja: (mov) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA);
+    const clinicaId = StorageService.getClinicaActiva().id;
+    mov.clinica_id = mov.clinica_id || clinicaId;
+    if (mov.id) {
+      const idx = items.findIndex(m => m.id === mov.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...mov };
+      else items.unshift(mov);
+    } else {
+      mov.id = `caj-${Date.now()}`;
+      mov.fecha = mov.fecha || new Date().toISOString().split('T')[0];
+      mov.hora = mov.hora || new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+      mov.created_at = new Date().toISOString();
+      items.unshift(mov);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA, items);
+    return mov;
+  },
+  deleteMovimientoCaja: (id) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA);
+    const filtered = items.filter(m => m.id !== id);
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA, filtered);
+    return true;
   },
 
   // EXPORT / IMPORT

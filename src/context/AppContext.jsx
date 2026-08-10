@@ -40,6 +40,7 @@ export const AppProvider = ({ children }) => {
   const [atencionesHce, setAtencionesHce] = useState(() => StorageService.getAtencionesHce());
   const [tvCalls, setTvCalls] = useState(() => StorageService.getTvCalls());
   const [users, setUsers] = useState(() => StorageService.getUsers());
+  const [movimientosCaja, setMovimientosCaja] = useState(() => StorageService.getMovimientosCaja());
 
   // Toasts
   const [toast, setToast] = useState(null);
@@ -71,6 +72,7 @@ export const AppProvider = ({ children }) => {
     setMotivos(StorageService.getMotivos());
     setAtencionesHce(StorageService.getAtencionesHce());
     setTvCalls(StorageService.getTvCalls());
+    setMovimientosCaja(StorageService.getMovimientosCaja(clin.id));
   };
 
   // ABM Motivos de Cancelación / Reprogramación
@@ -420,8 +422,47 @@ export const AppProvider = ({ children }) => {
       comprobante_pago_nro: numeroComprobante || `REC-${Date.now().toString().slice(-6)}`
     });
     setTurnos(StorageService.getTurnos());
-    showToast('Cobro de coseguro registrado');
+
+    // Registrar automáticamente el movimiento en la Caja Diaria
+    const pacienteObj = pacientes.find(p => p.id === turno.paciente_id);
+    const profObj = profesionales.find(p => p.id === turno.profesional_id);
+    const osObj = obrasSociales.find(o => o.id === turno.obra_social_id);
+
+    StorageService.saveMovimientoCaja({
+      tipo: 'INGRESO',
+      concepto: `Cobro Coseguro / Consulta (${turno.codigo_reserva})`,
+      turno_id: turno.id,
+      paciente_nombre: pacienteObj ? `${pacienteObj.nombre} ${pacienteObj.apellido}` : 'Paciente',
+      paciente_dni: pacienteObj?.dni || '',
+      profesional_nombre: profObj ? `Dr(a). ${profObj.nombre} ${profObj.apellido}` : 'Profesional',
+      obra_social_nombre: osObj?.nombre || 'Particular',
+      forma_pago: medioPago || 'EFECTIVO',
+      monto: Number(turno.monto_coseguro || 0),
+      usuario_nombre: currentUser?.nombre || 'Secretaría',
+      comprobante: numeroComprobante || `REC-${Date.now().toString().slice(-6)}`,
+      observaciones: 'Cobro de coseguro en recepción'
+    });
+    setMovimientosCaja(StorageService.getMovimientosCaja());
+
+    showToast('Cobro de coseguro registrado e ingresado a Caja');
     return updated;
+  };
+
+  // Movimientos de Caja Manuales (Ingreso / Egreso)
+  const saveMovimientoCaja = (movData) => {
+    const saved = StorageService.saveMovimientoCaja({
+      ...movData,
+      usuario_nombre: currentUser?.nombre || 'Administrador'
+    });
+    setMovimientosCaja(StorageService.getMovimientosCaja());
+    showToast(`Movimiento de caja "$${saved.monto}" registrado`);
+    return saved;
+  };
+
+  const deleteMovimientoCaja = (id) => {
+    StorageService.deleteMovimientoCaja(id);
+    setMovimientosCaja(StorageService.getMovimientosCaja());
+    showToast('Movimiento de caja eliminado', 'info');
   };
 
   const reprogramarTurno = ({
@@ -584,6 +625,10 @@ export const AppProvider = ({ children }) => {
         saveUser,
         deleteUser,
         authenticateUser,
+        // Caja Recaudadora
+        movimientosCaja,
+        saveMovimientoCaja,
+        deleteMovimientoCaja,
         // Nube & Supabase Sync
         syncWithCloud,
         pullFromCloudNow

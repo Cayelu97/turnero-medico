@@ -69,7 +69,12 @@ export const CloudSyncService = {
 
       if (error) {
         console.warn('Supabase app_sync upsert warning:', error.message);
-        // Si no existe la tabla app_sync, intentar crearla o guardar en almacenamiento de respaldo
+        if (error.message.includes('app_sync') || error.message.includes('schema cache') || error.message.includes('relation')) {
+          return { 
+            success: false, 
+            message: "Falta crear la tabla 'app_sync' en Supabase. Ve a Configuración > Supabase y ejecuta el script SQL de 1 minuto." 
+          };
+        }
         return { success: false, message: error.message };
       }
 

@@ -30,6 +30,7 @@ import { TurnoRecurrenteModal } from './TurnoRecurrenteModal';
 import { AgendarTurnoSecretariaModal } from './AgendarTurnoSecretariaModal';
 import { ReprogramarTurnoModal } from './ReprogramarTurnoModal';
 import { CancelarTurnoModal } from './CancelarTurnoModal';
+import { DetalleTurnoModal } from './DetalleTurnoModal';
 import { VoucherModal } from '../patient/VoucherModal';
 import { WhatsAppService } from '../../services/whatsapp';
 
@@ -37,7 +38,7 @@ export const AgendaView = () => {
   const { 
     turnos, 
     profesionales, 
-    servicios,
+    servicios, 
     consultorios, 
     pacientes, 
     obrasSociales, 
@@ -61,6 +62,9 @@ export const AgendaView = () => {
   const [selectedConsFilter, setSelectedConsFilter] = useState('');
   const [searchPatientQuery, setSearchPatientQuery] = useState('');
 
+  // Orden cronológico semanal ('asc': primero a último 08:00->20:00, 'desc': último a primero)
+  const [sortOrderSemanal, setSortOrderSemanal] = useState('asc');
+
   // Filtro de rango de turnos futuros: '7d' | '15d' | '30d' | 'mes' | 'todos'
   const [futurosRango, setFuturosRango] = useState('30d');
 
@@ -74,6 +78,7 @@ export const AgendaView = () => {
   const [showCancelarModal, setShowCancelarModal] = useState(false);
   const [turnoToCancel, setTurnoToCancel] = useState(null);
   const [selectedTurnoForVoucher, setSelectedTurnoForVoucher] = useState(null);
+  const [selectedDetalleTurno, setSelectedDetalleTurno] = useState(null);
 
   // Form states para nuevo turno / sobreturno
   const [quickForm, setQuickForm] = useState({
@@ -764,27 +769,49 @@ export const AgendaView = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 2. VISTA SEMANAL (GRILLA LUNES A SÁBADO) */}
+      {/* 2. VISTA SEMANAL (GRILLA LUNES A SÁBADO CON ORDEN CRONOLÓGICO Y GESTIÓN) */}
       {/* ========================================================================= */}
       {viewMode === 'semanal' && (
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-black text-sm text-slate-900">
-              Cronograma Semanal ({new Date(semanaDays[0] + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} al {new Date(semanaDays[5] + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })})
-            </h3>
-            <span className="text-xs text-slate-500">Haga clic en un día para abrir su agenda detallada</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
+                <span>Cronograma Semanal ({new Date(semanaDays[0] + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} al {new Date(semanaDays[5] + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })})</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Haga clic en un turno para modificar datos, reprogramar o cancelar. Haga clic en la tarjeta para ver el día completo.
+              </p>
+            </div>
+
+            {/* BOTÓN DEFINIR ORDEN PRIMERO AL ÚLTIMO / ÚLTIMO AL PRIMERO */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSortOrderSemanal(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                title="Cambiar orden de los turnos en las columnas"
+              >
+                <Clock className="w-3.5 h-3.5 text-medical-600" />
+                <span>Orden: {sortOrderSemanal === 'asc' ? '08:00 ➔ 20:00 (Primero al Último)' : '20:00 ➔ 08:00 (Último al Primero)'}</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {semanaDays.map((diaStr) => {
               const diaTurnos = turnos.filter(t => {
                 if (t.fecha !== diaStr) return false;
                 if (selectedProfFilter && t.profesional_id !== selectedProfFilter) return false;
                 if (t.estado === 'CANCELADO') return false;
                 return true;
+              }).sort((a, b) => {
+                return sortOrderSemanal === 'asc'
+                  ? a.hora_inicio.localeCompare(b.hora_inicio)
+                  : b.hora_inicio.localeCompare(a.hora_inicio);
               });
 
               const isCurrentSelected = diaStr === currentDate;
+              const dateObj = new Date(diaStr + 'T00:00:00');
 
               return (
                 <div 
@@ -795,42 +822,78 @@ export const AgendaView = () => {
                   }}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3 ${
                     isCurrentSelected 
-                      ? 'border-medical-600 bg-medical-50/50 shadow-sm' 
-                      : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
+                      ? 'border-medical-600 bg-medical-50/40 shadow-sm' 
+                      : 'border-slate-200 hover:border-medical-300 bg-slate-50/50 hover:bg-white'
                   }`}
                 >
                   <div>
+                    {/* Header Día */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-extrabold text-xs text-slate-800 uppercase">
-                        {new Date(diaStr + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'short' })}
+                      <span className="font-black text-xs text-slate-800 uppercase tracking-wider">
+                        {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}
                       </span>
-                      <span className="text-[11px] font-black text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                      <span className={`text-[11px] font-black px-2 py-0.5 rounded-md border ${
+                        isCurrentSelected ? 'bg-medical-600 text-white border-medical-600' : 'bg-white text-slate-900 border-slate-200'
+                      }`}>
                         {diaStr.split('-')[2]}
                       </span>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <span className="text-xs font-bold text-medical-800 block">
-                        {diaTurnos.length} turnos
-                      </span>
-                      {diaTurnos.slice(0, 4).map(t => {
-                        const pac = pacientes.find(p => p.id === t.paciente_id);
-                        return (
-                          <div key={t.id} className="p-1.5 bg-white border border-slate-200 rounded-lg text-[10px] truncate">
-                            <strong>{t.hora_inicio}</strong> • {pac ? `${pac.apellido}` : 'Paciente'}
-                          </div>
-                        );
-                      })}
-                      {diaTurnos.length > 4 && (
-                        <span className="text-[10px] text-slate-500 font-bold block text-center pt-1">
-                          +{diaTurnos.length - 4} más...
-                        </span>
+                    <span className="text-xs font-black text-medical-800 block mb-2">
+                      {diaTurnos.length} {diaTurnos.length === 1 ? 'turno' : 'turnos'}
+                    </span>
+
+                    {/* LISTADO DE TURNOS ORDENADOS Y CLICKEABLES */}
+                    <div className="space-y-1.5 min-h-[140px]">
+                      {diaTurnos.length === 0 ? (
+                        <div className="py-8 text-center text-slate-400 text-[11px] italic">
+                          Sin turnos
+                        </div>
+                      ) : (
+                        diaTurnos.map(t => {
+                          const pac = pacientes.find(p => p.id === t.paciente_id);
+                          const os = obrasSociales.find(o => o.id === t.obra_social_id);
+                          const isEnEspera = t.estado === 'EN_ESPERA';
+                          const isEnAtencion = t.estado === 'EN_ATENCION';
+                          const isAtendido = t.estado === 'ATENDIDO';
+                          
+                          return (
+                            <div 
+                              key={t.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedDetalleTurno(t);
+                              }}
+                              className="p-2 bg-white border border-slate-200 hover:border-medical-500 hover:shadow-md rounded-xl text-xs transition cursor-pointer group"
+                              title="Haga clic para ver detalles, editar o reprogramar este turno"
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                    isEnAtencion ? 'bg-purple-600 animate-ping' :
+                                    isEnEspera ? 'bg-amber-500' :
+                                    isAtendido ? 'bg-slate-400' : 'bg-emerald-500'
+                                  }`} />
+                                  <strong className="font-mono font-black text-slate-900 text-[11px]">
+                                    {t.hora_inicio}
+                                  </strong>
+                                </div>
+                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 truncate max-w-[65px]">
+                                  {os ? os.nombre : 'Particular'}
+                                </span>
+                              </div>
+                              <div className="font-bold text-slate-800 text-[11px] truncate mt-0.5 group-hover:text-medical-700">
+                                {pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}
+                              </div>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   </div>
 
-                  <div className="text-[10px] font-bold text-medical-600 text-center pt-2 border-t border-slate-200/80">
-                    Ver día completo ➔
+                  <div className="text-[10px] font-bold text-medical-600 text-center pt-2 border-t border-slate-200/80 hover:underline">
+                    Ver agenda del día ➔
                   </div>
                 </div>
               );
@@ -996,6 +1059,38 @@ export const AgendaView = () => {
         turno={turnoToCancel}
         canceladoPor="SECRETARIA"
         onClose={() => setShowCancelarModal(false)}
+      />
+
+      {/* MODAL DE GESTIÓN Y EDICIÓN RÁPIDA DE TURNO (Al hacer clic en un paciente/renglón) */}
+      <DetalleTurnoModal
+        isOpen={!!selectedDetalleTurno}
+        turno={selectedDetalleTurno}
+        onClose={() => setSelectedDetalleTurno(null)}
+        onReprogramar={(t) => {
+          setTurnoToReprogram(t);
+          setShowReprogramarModal(true);
+        }}
+        onCancelar={(t) => {
+          setTurnoToCancel(t);
+          setShowCancelarModal(true);
+        }}
+        onVerVoucher={(t) => {
+          const pac = pacientes.find(p => p.id === t.paciente_id);
+          const prof = profesionales.find(p => p.id === t.profesional_id);
+          const cons = consultorios.find(c => c.id === t.consultorio_id);
+          const os = obrasSociales.find(o => o.id === t.obra_social_id);
+          const plan = planes.find(p => p.id === t.plan_id);
+          const practica = nomenclador.find(n => n.id === t.practica_id);
+          setSelectedTurnoForVoucher({
+            turno: t,
+            paciente: pac,
+            profesional: prof,
+            consultorio: cons,
+            obraSocial: os,
+            plan: plan,
+            practica: practica
+          });
+        }}
       />
 
       {/* Voucher Modal */}

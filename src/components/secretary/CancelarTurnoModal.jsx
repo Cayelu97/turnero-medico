@@ -90,21 +90,21 @@ export const CancelarTurnoModal = ({ isOpen, turno, canceladoPor = 'SECRETARIA',
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden">
+      <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
         {!isCancelledSuccess ? (
-          <div>
+          <div className="p-5 overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div className="flex items-center gap-2.5 text-rose-600">
-                <div className="p-2 bg-rose-100 rounded-2xl">
+                <div className="p-2 bg-rose-100 rounded-2xl shadow-2xs">
                   <XCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-base text-slate-900">Cancelar Turno Médico</h3>
+                  <h3 className="font-black text-base text-slate-900 leading-tight">Cancelar Turno Médico</h3>
                   <span className="text-xs text-slate-500">Esta acción liberará el horario</span>
                 </div>
               </div>
-              <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+              <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>

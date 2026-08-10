@@ -281,17 +281,17 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-scaleIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
         
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+        <div className="px-5 sm:px-6 py-3.5 bg-white border-b border-slate-100 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-medical-50 text-medical-700 rounded-2xl border border-medical-200">
+            <div className="p-2 bg-medical-50 text-medical-700 rounded-2xl border border-medical-200 shadow-2xs">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-black text-lg text-slate-900">
+              <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">
                 {step === 1 
                   ? (isDoctorSelfSchedule ? `Agendar Turno en mi Consultorio` : `Agendar Turno Rápido`) 
                   : `¡Turno Confirmado con Éxito!`}
@@ -303,13 +303,15 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
               </p>
             </div>
           </div>
-          <button onClick={handleModalClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+          <button onClick={handleModalClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {step === 1 ? (
-          <form onSubmit={handleConfirmarTurno} className="space-y-5">
+        {/* SCROLLABLE BODY */}
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
+          {step === 1 ? (
+            <form id="form-agendar-secretaria" onSubmit={handleConfirmarTurno} className="space-y-4">
             {/* SECCIÓN 1: DATOS DEL PACIENTE */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
@@ -657,23 +659,6 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
                 </div>
               )}
             </div>
-
-            {/* BOTONES DE ACCIÓN */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={handleModalClose}
-                className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-medical-600 hover:bg-medical-500 text-white rounded-xl text-xs font-black shadow-md transition"
-              >
-                Confirmar y Agendar Turno
-              </button>
-            </div>
           </form>
         ) : (
           /* PASO 2: VOUCHER DE CONFIRMACIÓN CON WHATSAPP */
@@ -701,7 +686,7 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
               <button
                 type="button"
                 onClick={handleSendWhatsApp}
-                className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md transition flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Enviar Comprobante por WhatsApp</span>
@@ -710,11 +695,32 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
               <button
                 type="button"
                 onClick={handleModalClose}
-                className="w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition"
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer"
               >
                 Listo / Cerrar
               </button>
             </div>
+          </div>
+        )}
+        </div>
+
+        {/* MODAL FOOTER FIJO */}
+        {step === 1 && (
+          <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
+            <button
+              type="button"
+              onClick={handleModalClose}
+              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              form="form-agendar-secretaria"
+              className="px-6 py-2 bg-medical-600 hover:bg-medical-500 text-white rounded-xl text-xs font-black shadow-md shadow-medical-600/20 transition cursor-pointer"
+            >
+              Confirmar y Agendar Turno
+            </button>
           </div>
         )}
       </div>

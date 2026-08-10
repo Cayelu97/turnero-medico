@@ -175,42 +175,44 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
         {step === 1 ? (
-          <div>
+          <>
             {/* Header del Modal */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <div className="px-5 sm:px-6 py-3.5 bg-white border-b border-slate-100 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="p-2.5 bg-sky-100 text-sky-800 rounded-2xl">
+                <div className="p-2 bg-sky-100 text-sky-800 rounded-2xl shadow-2xs">
                   <ArrowRightLeft className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-slate-900">Reprogramar Turno Médico</h3>
+                  <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">Reprogramar Turno Médico</h3>
                   <p className="text-xs text-slate-500">
                     Paciente: <strong>{currentPaciente?.nombre} {currentPaciente?.apellido}</strong> (DNI {currentPaciente?.dni})
                   </p>
                 </div>
               </div>
-              <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+              <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Turno Actual (Anterior) */}
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs mb-4">
-              <div>
-                <span className="font-extrabold text-amber-900 block">🗓️ Turno Actual a Modificar:</span>
-                <span className="text-amber-800 font-medium">
-                  {turno.fecha} a las {turno.hora_inicio} hs con Dr(a). {currentProf?.nombre} {currentProf?.apellido} ({currentProf?.especialidad})
+            {/* Body Scrollable */}
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
+              {/* Turno Actual (Anterior) */}
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs">
+                <div>
+                  <span className="font-extrabold text-amber-900 block">🗓️ Turno Actual a Modificar:</span>
+                  <span className="text-amber-800 font-medium">
+                    {formatDateAR(turno.fecha)} a las {turno.hora_inicio} hs con Dr(a). {currentProf?.nombre} {currentProf?.apellido}
+                  </span>
+                </div>
+                <span className="font-mono text-xs font-black bg-white text-amber-950 px-2 py-1 rounded-lg border border-amber-300">
+                  {turno.codigo_reserva}
                 </span>
               </div>
-              <span className="font-mono text-xs font-black bg-white text-amber-950 px-2 py-1 rounded-lg border border-amber-300">
-                {turno.codigo_reserva}
-              </span>
-            </div>
 
-            <form onSubmit={handleConfirmReprogram} className="space-y-4">
+              <form id="form-reprogramar-turno" onSubmit={handleConfirmReprogram} className="space-y-4">
               {/* Selección del Profesional (Mismo u Otro) */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                 <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
@@ -371,34 +373,36 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
                   />
                 </div>
               </div>
-
-              {/* Botones de Confirmación */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={!selectedSlot || !motivoId}
-                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition ${
-                    selectedSlot && motivoId
-                      ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-600/20'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  }`}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Confirmar Reprogramación</span>
-                </button>
-              </div>
             </form>
-          </div>
+            </div>
+
+            {/* Footer Fijo */}
+            <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                form="form-reprogramar-turno"
+                disabled={!selectedSlot || !motivoId}
+                className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold text-xs shadow-md transition cursor-pointer ${
+                  selectedSlot && motivoId
+                    ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/20'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Confirmar Reprogramación</span>
+              </button>
+            </div>
+          </>
         ) : (
           /* PASO 2: ÉXITO CON BOTÓN WHATSAPP */
-          <div className="space-y-5 text-center py-4">
+          <div className="p-6 space-y-5 text-center overflow-y-auto">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-sky-100 text-sky-700 rounded-3xl mb-1 shadow-inner">
               <CheckCircle2 className="w-10 h-10" />
             </div>
@@ -421,7 +425,7 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Nueva Fecha y Hora:</span>
-                <strong className="text-sky-800 font-bold">{reprogrammedData?.turno.fecha} a las {reprogrammedData?.turno.hora_inicio} hs</strong>
+                <strong className="text-sky-800 font-bold">{formatDateAR(reprogrammedData?.turno.fecha)} a las {reprogrammedData?.turno.hora_inicio} hs</strong>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Ubicación:</span>
@@ -433,7 +437,7 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
               <button
                 type="button"
                 onClick={handleSendWhatsApp}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg shadow-emerald-600/20 transition"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-600/20 transition cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Enviar Notificación por WhatsApp</span>
@@ -442,7 +446,7 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs transition"
+                className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition cursor-pointer"
               >
                 Listo / Cerrar
               </button>

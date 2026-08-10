@@ -11,7 +11,15 @@ import {
   Building2,
   AlertCircle,
   Users,
-  KeyRound
+  KeyRound,
+  ChevronDown,
+  ChevronRight,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Sparkles,
+  Layers,
+  Settings2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { AbmEspecialidades } from './AbmEspecialidades';
@@ -30,7 +38,7 @@ import { ConfigurarAgendaModal } from '../secretary/ConfigurarAgendaModal';
 
 export const AdminDashboard = () => {
   const { 
-    adminTab = 'pacientes', 
+    adminTab = 'usuarios', 
     setAdminTab,
     especialidades = [],
     servicios = [],
@@ -47,172 +55,189 @@ export const AdminDashboard = () => {
   } = useApp();
 
   const [showAgendaModal, setShowAgendaModal] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const tabs = [
+  // Módulos organizados por categorías funcionales
+  const categories = [
     {
-      id: 'usuarios',
-      label: 'Usuarios & Accesos',
-      icon: KeyRound,
-      count: users?.length || 0,
-      subCount: 'Credenciales'
+      category: 'Seguridad & Pacientes',
+      items: [
+        { id: 'usuarios', label: 'Usuarios & Accesos', icon: KeyRound, count: users?.length || 0, color: 'text-amber-600', bg: 'bg-amber-50' },
+        { id: 'pacientes', label: 'Padrón de Pacientes', icon: Users, count: pacientes?.length || 0, color: 'text-sky-600', bg: 'bg-sky-50' }
+      ]
     },
     {
-      id: 'pacientes',
-      label: 'Padrón Pacientes',
-      icon: Users,
-      count: pacientes?.length || 0,
-      subCount: 'Padrón Central'
+      category: 'Estructura Médica',
+      items: [
+        { id: 'profesionales', label: 'Profesionales & Médicos', icon: UserCheck, count: profesionales?.length || 0, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { id: 'especialidades', label: 'Especialidades Médicas', icon: Stethoscope, count: especialidades?.length || 0, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { id: 'servicios', label: 'Servicios & Agendas', icon: Layers, count: servicios?.length || 0, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+        { id: 'consultorios', label: 'Consultorios Físicos', icon: DoorClosed, count: consultorios?.length || 0, color: 'text-teal-600', bg: 'bg-teal-50' }
+      ]
     },
     {
-      id: 'especialidades',
-      label: 'Especialidades',
-      icon: Stethoscope,
-      count: especialidades?.length || 0,
-      subCount: 'Especialidades'
+      category: 'Coberturas & Nomenclador',
+      items: [
+        { id: 'obras_sociales', label: 'Obras Sociales & Planes', icon: ShieldCheck, count: obrasSociales?.length || 0, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { id: 'nomenclador', label: 'Nomenclador PMO', icon: BookOpen, count: nomenclador?.length || 0, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+        { id: 'bloqueos', label: 'Vacaciones & Feriados', icon: CalendarOff, count: bloqueos?.length || 0, color: 'text-rose-600', bg: 'bg-rose-50' },
+        { id: 'motivos', label: 'Motivos Cancel / Reprog', icon: AlertCircle, count: motivos?.length || 0, color: 'text-orange-600', bg: 'bg-orange-50' }
+      ]
     },
     {
-      id: 'servicios',
-      label: 'Servicios & Agendas',
-      icon: Stethoscope,
-      count: servicios?.length || 0,
-      subCount: 'Líneas de atención'
-    },
-    {
-      id: 'obras_sociales',
-      label: 'Obras Sociales & Planes',
-      icon: ShieldCheck,
-      count: obrasSociales?.length || 0,
-      subCount: `${planes?.length || 0} planes`
-    },
-    {
-      id: 'profesionales',
-      label: 'Profesionales & Médicos',
-      icon: UserCheck,
-      count: profesionales?.length || 0,
-      subCount: 'Médicos'
-    },
-    {
-      id: 'consultorios',
-      label: 'Consultorios Físicos',
-      icon: DoorClosed,
-      count: consultorios?.length || 0,
-      subCount: 'Espacios'
-    },
-    {
-      id: 'nomenclador',
-      label: 'Nomenclador PMO',
-      icon: BookOpen,
-      count: nomenclador?.length || 0,
-      subCount: 'Prácticas'
-    },
-    {
-      id: 'bloqueos',
-      label: 'Vacaciones & Feriados',
-      icon: CalendarOff,
-      count: bloqueos?.length || 0,
-      subCount: 'Bloqueos'
-    },
-    {
-      id: 'motivos',
-      label: 'Motivos Cancel / Reprog',
-      icon: AlertCircle,
-      count: motivos?.length || 0,
-      subCount: 'Catálogo'
-    },
-    {
-      id: 'clinicas_saas',
-      label: 'Centros Médicos (SaaS)',
-      icon: Building2,
-      count: allClinicas?.length || 0,
-      subCount: 'Clientes'
-    },
-    {
-      id: 'clinica',
-      label: 'Configuración & Supabase',
-      icon: Building,
-      count: null,
-      subCount: 'Ajustes'
+      category: 'Sistema & Ajustes',
+      items: [
+        { id: 'clinicas_saas', label: 'Centros Médicos (SaaS)', icon: Building2, count: allClinicas?.length || 0, color: 'text-slate-600', bg: 'bg-slate-50' },
+        { id: 'clinica', label: 'Configuración & Nube', icon: Settings2, count: null, color: 'text-slate-600', bg: 'bg-slate-50' }
+      ]
     }
   ];
 
+  // Encontrar el módulo activo actual
+  const allItems = categories.flatMap(c => c.items);
+  const activeItem = allItems.find(i => i.id === adminTab) || allItems[0];
+  const ActiveIcon = activeItem?.icon || Settings2;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header del Panel de Configuración */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Panel de Configuración y Maestros (ABM)
-            </h1>
-            <span className="px-2.5 py-1 text-xs font-bold bg-medical-50 text-medical-700 rounded-lg border border-medical-200">
-              Administración
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Administra especialidades médicas, obras sociales, planes, profesionales, consultorios físicos, feriados y centros médicos multi-tenant.
-          </p>
-        </div>
+    <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+      
+      {/* HEADER COMPACTO Y MODERNO */}
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition hidden md:flex items-center justify-center shadow-2xs"
+            title={isSidebarCollapsed ? "Expandir menú de módulos" : "Colapsar menú para mayor espacio"}
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
 
-        <button
-          onClick={() => setShowAgendaModal(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-md transition"
-        >
-          <CalendarRange className="w-4 h-4 text-sky-400" />
-          <span>Configurar Agendas de Médicos</span>
-        </button>
-      </div>
-
-      {/* Grid de pestañas */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
-        {tabs.map((t) => {
-          const Icon = t.icon;
-          const isActive = adminTab === t.id;
-
-          return (
-            <button
-              key={t.id}
-              onClick={() => setAdminTab(t.id)}
-              className={`p-3 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
-                isActive
-                  ? 'bg-medical-700 text-white border-medical-800 shadow-md shadow-medical-900/10'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-medical-300 hover:bg-slate-50 shadow-xs'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-medical-600'}`} />
-                {t.count !== null && (
-                  <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-800'
-                  }`}>
-                    {t.count}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2">
-                <p className="font-bold text-xs leading-tight line-clamp-1">{t.label}</p>
-                <span className={`text-[10px] font-medium block mt-0.5 ${isActive ? 'text-sky-100' : 'text-slate-400'}`}>
-                  {t.subCount}
+          <div className="flex items-center gap-2.5">
+            <div className={`p-2.5 rounded-2xl ${activeItem.bg} ${activeItem.color} border border-slate-200/60 shadow-2xs`}>
+              <ActiveIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                  {activeItem.label}
+                </h1>
+                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-extrabold uppercase bg-medical-50 text-medical-700 rounded-md border border-medical-200">
+                  Módulo de Gestión
                 </span>
               </div>
-            </button>
-          );
-        })}
+              <p className="text-xs text-slate-500 font-medium">
+                Panel de Administración y Control Maestro
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* SELECTOR DESPLEGABLE RÁPIDO & BOTÓN DE AGENDA */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Dropdown Selector para cambiar de módulo con 1 clic */}
+          <div className="relative inline-block flex-1 sm:flex-initial">
+            <select
+              value={adminTab}
+              onChange={(e) => setAdminTab(e.target.value)}
+              className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-2xl text-xs font-black text-slate-800 cursor-pointer focus:ring-2 focus:ring-medical-500 shadow-2xs pr-8"
+            >
+              {categories.map((cat) => (
+                <optgroup key={cat.category} label={`── ${cat.category} ──`}>
+                  {cat.items.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label} {item.count !== null ? `(${item.count})` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* Botón Configurar Agendas Semanales */}
+          <button
+            onClick={() => setShowAgendaModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-md transition whitespace-nowrap cursor-pointer"
+          >
+            <CalendarRange className="w-4 h-4 text-sky-400" />
+            <span className="hidden sm:inline">Configurar Agendas Médicas</span>
+            <span className="sm:hidden">Agendas</span>
+          </button>
+        </div>
       </div>
 
-      {/* Contenido según la pestaña activa */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
-        {adminTab === 'usuarios' && <AbmUsuarios />}
-        {adminTab === 'pacientes' && <AbmPacientes />}
-        {adminTab === 'especialidades' && <AbmEspecialidades />}
-        {adminTab === 'servicios' && <AbmServicios />}
-        {adminTab === 'obras_sociales' && <AbmObrasSociales />}
-        {adminTab === 'profesionales' && <AbmProfesionales />}
-        {adminTab === 'consultorios' && <AbmConsultorios />}
-        {adminTab === 'nomenclador' && <AbmNomenclador />}
-        {adminTab === 'bloqueos' && <AbmBloqueos />}
-        {adminTab === 'motivos' && <AbmMotivos />}
-        {adminTab === 'clinicas_saas' && <AbmClinicas />}
-        {adminTab === 'clinica' && <ConfigClinica />}
+      {/* CONTENEDOR PRINCIPAL: SIDEBAR COLAPSABLE + ÁREA DE TRABAJO */}
+      <div className="flex gap-5 items-start">
+        
+        {/* SIDEBAR LATERAL DESPLEGABLE / COLAPSABLE (DESKTOP) */}
+        <aside
+          className={`transition-all duration-300 bg-white border border-slate-200/80 rounded-3xl shadow-xs p-3 hidden md:flex flex-col gap-4 flex-shrink-0 ${
+            isSidebarCollapsed ? 'w-16 items-center' : 'w-64'
+          }`}
+        >
+          {categories.map((cat) => (
+            <div key={cat.category} className="w-full space-y-1">
+              {!isSidebarCollapsed && (
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1 block">
+                  {cat.category}
+                </span>
+              )}
+
+              <div className="space-y-1">
+                {cat.items.map((item) => {
+                  const ItemIcon = item.icon;
+                  const isActive = adminTab === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setAdminTab(item.id)}
+                      title={`${item.label} (${item.count !== null ? item.count : ''})`}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-xs font-bold transition-all ${
+                        isSidebarCollapsed ? 'justify-center px-0' : 'justify-between'
+                      } ${
+                        isActive
+                          ? 'bg-medical-600 text-white shadow-md shadow-medical-600/20 font-black'
+                          : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <ItemIcon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : item.color}`} />
+                        {!isSidebarCollapsed && (
+                          <span className="truncate max-w-[130px]">{item.label}</span>
+                        )}
+                      </div>
+
+                      {!isSidebarCollapsed && item.count !== null && (
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}>
+                          {item.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </aside>
+
+        {/* ÁREA DE CONTENIDO ADAPTABLE AL 100% DEL ESPACIO */}
+        <main className="flex-1 w-full bg-white rounded-3xl border border-slate-200/80 shadow-xs p-4 sm:p-7 overflow-hidden animate-fadeIn">
+          {adminTab === 'usuarios' && <AbmUsuarios />}
+          {adminTab === 'pacientes' && <AbmPacientes />}
+          {adminTab === 'especialidades' && <AbmEspecialidades />}
+          {adminTab === 'servicios' && <AbmServicios />}
+          {adminTab === 'obras_sociales' && <AbmObrasSociales />}
+          {adminTab === 'profesionales' && <AbmProfesionales />}
+          {adminTab === 'consultorios' && <AbmConsultorios />}
+          {adminTab === 'nomenclador' && <AbmNomenclador />}
+          {adminTab === 'bloqueos' && <AbmBloqueos />}
+          {adminTab === 'motivos' && <AbmMotivos />}
+          {adminTab === 'clinicas_saas' && <AbmClinicas />}
+          {adminTab === 'clinica' && <ConfigClinica />}
+        </main>
       </div>
 
       {/* Modal Configurador de Agendas */}

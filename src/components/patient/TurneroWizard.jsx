@@ -40,7 +40,16 @@ export const TurneroWizard = () => {
     createTurno 
   } = useApp();
 
+  const wizardContainerRef = React.useRef(null);
   const [step, setStep] = useState(1);
+
+  // Auto-scroll suave a la parte superior del asistente al avanzar/retroceder de paso
+  useEffect(() => {
+    if (wizardContainerRef.current) {
+      wizardContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
 
   // Modo de búsqueda en Paso 1: 'especialidad' | 'profesional'
   const [searchMode, setSearchMode] = useState('especialidad');
@@ -331,7 +340,7 @@ export const TurneroWizard = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div ref={wizardContainerRef} id="turnero-wizard-container" className="max-w-4xl mx-auto space-y-6 scroll-mt-6">
       {/* Banner de Bienvenida */}
       <div className="bg-gradient-to-r from-medical-700 via-sky-600 to-tealmed-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-sky-600/10">
         <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-sky-200 mb-1">

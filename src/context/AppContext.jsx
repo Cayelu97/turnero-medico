@@ -378,16 +378,17 @@ export const AppProvider = ({ children }) => {
     } else if (nuevoEstado === 'EN_ATENCION') {
       updates.hora_llamado_atencion = now;
       
-      // Notificar al llamador de TV
+      // Notificar al llamador de TV local y a Smart TVs en la nube por WebSocket
       const pac = pacientes.find(p => p.id === turno.paciente_id);
       const prof = profesionales.find(p => p.id === turno.profesional_id);
       const cons = consultorios.find(c => c.id === turno.consultorio_id);
-      StorageService.addTvCall(
+      const newCall = StorageService.addTvCall(
         { ...turno, paciente: pac },
         cons?.nombre,
-        prof ? `Dr(a). ${prof.apellido}` : ''
+        prof ? `Dr(a). ${prof.nombre} ${prof.apellido}` : ''
       );
       setTvCalls(StorageService.getTvCalls());
+      CloudSyncService.broadcastTvCall(newCall);
     } else if (nuevoEstado === 'ATENDIDO') {
       updates.hora_fin_atencion = now;
     }

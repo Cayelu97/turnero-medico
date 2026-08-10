@@ -23,7 +23,8 @@ const SYNC_KEYS = [
   'mediturnos_turnos',
   'mediturnos_atenciones_hce',
   'mediturnos_motivos',
-  'mediturnos_movimientos_caja'
+  'mediturnos_movimientos_caja',
+  'mediturnos_tv_calls'
 ];
 
 export const CloudSyncService = {
@@ -59,7 +60,7 @@ export const CloudSyncService = {
     try {
       const payload = CloudSyncService.getLocalBackupPayload();
       
-      // Intentar guardar en tabla 'app_sync' de Supabase
+      // Guardar en tabla 'app_sync' de Supabase
       const { data, error } = await supabase
         .from('app_sync')
         .upsert({ 
@@ -111,6 +112,41 @@ export const CloudSyncService = {
     } catch (err) {
       console.error('Error al descargar de Supabase Cloud:', err);
       return { success: false, message: err.message };
+    }
+  },
+
+  // TRANSMISIÓN EN TIEMPO REAL PARA EL LLAMADOR TV (Smart TV / Monitor en otra habitación)
+  broadcastTvCall: async (callData) => {
+    try {
+      const channel = supabase.channel('saludnet_tv_broadcast');
+      await channel.send({
+        type: 'broadcast',
+        event: 'patient_called',
+        payload: callData
+      });
+    } catch (e) {
+      console.warn('Realtime broadcast error:', e);
+    }
+    // Sincronizar en la nube para Smart TVs con polling
+    CloudSyncService.pushToCloud();
+  },
+
+  subscribeTvCalls: (onCallReceived) => {
+    try {
+      const channel = supabase.channel('saludnet_tv_broadcast')
+        .on('broadcast', { event: 'patient_called' }, (msg) => {
+          if (msg && msg.payload) {
+            onCallReceived(msg.payload);
+          }
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (e) {
+      console.warn('Realtime subscribe error:', e);
+      return () => {};
     }
   }
 };

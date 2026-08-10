@@ -19,7 +19,8 @@ import {
   LogOut,
   KeyRound,
   Copy,
-  Check
+  Check,
+  Cloud
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LoginModal } from './LoginModal';
@@ -34,6 +35,8 @@ export const Navbar = () => {
     switchClinica, 
     currentUser,
     logoutUser,
+    syncWithCloud,
+    pullFromCloudNow,
     showToast 
   } = useApp();
 
@@ -147,6 +150,16 @@ export const Navbar = () => {
 
             {/* BOTONES DE ACCESO RÁPIDO & PERFIL */}
             <div className="flex items-center gap-2">
+              {/* Botón Sincronizar Nube */}
+              <button
+                onClick={syncWithCloud}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded-xl text-xs font-bold transition shadow-2xs"
+                title="Sincronizar datos con Supabase Cloud (guardar en la nube para ver en el celular)"
+              >
+                <Cloud className="w-3.5 h-3.5 text-sky-600" />
+                <span className="hidden sm:inline">Sync Nube</span>
+              </button>
+
               {/* Botón Copiar Link Pacientes */}
               <button
                 onClick={handleCopyPatientLink}

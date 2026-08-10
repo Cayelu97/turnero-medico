@@ -1,11 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { StorageService, initLocalStorage } from '../services/storage';
+import { CloudSyncService } from '../services/cloudSync';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   useEffect(() => {
     initLocalStorage();
+    CloudSyncService.pullFromCloud().then(res => {
+      if (res && res.success) {
+        refreshAll();
+      }
+    });
   }, []);
 
   // Vistas principales: 'paciente' | 'agenda' | 'recepcion' | 'tv' | 'doctor' | 'admin' | 'hce' | 'facturacion'
@@ -140,6 +146,28 @@ export const AppProvider = ({ children }) => {
 
   const authenticateUser = (email, password) => {
     return StorageService.authenticateUser(email, password);
+  };
+
+  // Sincronización en la Nube (PC ↔ Celular)
+  const syncWithCloud = async () => {
+    showToast('Subiendo cambios a Supabase...', 'info');
+    const res = await CloudSyncService.pushToCloud();
+    if (res.success) {
+      showToast('☁️ ¡Cambios sincronizados en la nube con éxito!');
+    } else {
+      showToast(`Nube: ${res.message || 'Guardado local'}`, 'info');
+    }
+  };
+
+  const pullFromCloudNow = async () => {
+    showToast('Descargando datos de la nube...', 'info');
+    const res = await CloudSyncService.pullFromCloud();
+    if (res.success) {
+      refreshAll();
+      showToast('☁️ ¡Datos actualizados desde la nube!');
+    } else {
+      showToast('Tu dispositivo ya está actualizado.', 'info');
+    }
   };
 
   // Guardar Clínica
@@ -555,7 +583,10 @@ export const AppProvider = ({ children }) => {
         users,
         saveUser,
         deleteUser,
-        authenticateUser
+        authenticateUser,
+        // Nube & Supabase Sync
+        syncWithCloud,
+        pullFromCloudNow
       }}
     >
       {children}

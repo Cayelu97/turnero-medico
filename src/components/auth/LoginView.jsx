@@ -75,7 +75,7 @@ export const LoginView = ({ onSelectPatientView }) => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-black tracking-tight text-white">
-                MediTurnos <span className="text-sky-400">Pro</span>
+                SaludNet <span className="text-sky-400">Pro</span>
               </h1>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-sky-500/20 text-sky-300 rounded-md border border-sky-500/30">
                 SaaS v1.0
@@ -248,7 +248,7 @@ export const LoginView = ({ onSelectPatientView }) => {
 
       {/* FOOTER */}
       <footer className="max-w-6xl w-full mx-auto py-4 text-center text-xs text-slate-500">
-        MediTurnos Pro • Sistema Integral de Consultorios Médicos & Turnero Online
+        SaludNet Pro • Sistema Integral de Consultorios Médicos & Turnero Online
       </footer>
 
       {/* MODAL DISCRETO DE CUENTAS DEMO (Solo para testing rápido del usuario) */}

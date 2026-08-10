@@ -209,7 +209,7 @@ const MainContent = () => {
 
       {/* Footer General */}
       <footer className="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500 font-medium no-print">
-        <span>MediTurnos Pro • Sistema Integral de Consultorios Médicos & Turnero Online</span>
+        <span>SaludNet Pro • Sistema Integral de Consultorios Médicos & Turnero Online</span>
       </footer>
 
       <Toast />

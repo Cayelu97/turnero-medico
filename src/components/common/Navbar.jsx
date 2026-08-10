@@ -73,7 +73,7 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="font-black text-sm text-slate-900 tracking-tight leading-none">
-                    MediTurnos
+                    SaludNet
                   </span>
                   <span className="text-[10px] font-black text-medical-700 bg-medical-50 px-1.5 py-0.2 rounded border border-medical-200 uppercase">
                     PRO

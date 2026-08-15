@@ -69,6 +69,7 @@ export const TurneroWizard = () => {
   const [selectedPracticaFilter, setSelectedPracticaFilter] = useState('');
 
   // Wizard state
+  const [modalidadTurno, setModalidadTurno] = useState('PRESENCIAL'); // 'PRESENCIAL' | 'ONLINE'
   const [selectedEspecialidad, setSelectedEspecialidad] = useState('');
   const [selectedServicioId, setSelectedServicioId] = useState('');
   const [selectedProfesionalId, setSelectedProfesionalId] = useState('');
@@ -359,6 +360,8 @@ export const TurneroWizard = () => {
         hora_inicio: selectedSlot.hora_inicio,
         hora_fin: selectedSlot.hora_fin,
         es_sobreturno: false,
+        modalidad: modalidadTurno,
+        link_videoconsulta: modalidadTurno === 'ONLINE' ? `https://meet.jit.si/SanLucas-Consulta-${Date.now().toString().slice(-6)}` : null,
         monto_coseguro: coseguroCalculado,
         observaciones: pacienteForm.motivo_consulta
       }
@@ -1062,6 +1065,39 @@ export const TurneroWizard = () => {
               </div>
             </div>
 
+            {/* SELECTOR DE MODALIDAD (PRESENCIAL VS TELECONSULTA) */}
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                Modalidad de la Sesión:
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setModalidadTurno('PRESENCIAL')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition cursor-pointer border ${
+                    modalidadTurno === 'PRESENCIAL'
+                      ? 'bg-medical-600 text-white border-medical-600 shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  <Building className="w-3.5 h-3.5" />
+                  <span>🏢 Presencial en Consultorio</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalidadTurno('ONLINE')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition cursor-pointer border ${
+                    modalidadTurno === 'ONLINE'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>💻 Sesión Virtual / Online</span>
+                </button>
+              </div>
+            </div>
+
             {/* CARRUSEL DE PRÓXIMOS DÍAS DISPONIBLES */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">
@@ -1082,7 +1118,7 @@ export const TurneroWizard = () => {
                         key={dia.fecha}
                         type="button"
                         onClick={() => setSelectedFecha(dia.fecha)}
-                        className={`flex-shrink-0 p-3 rounded-2xl border-2 text-center transition flex flex-col items-center min-w-[85px] ${
+                        className={`flex-shrink-0 p-3 rounded-2xl border-2 text-center transition flex flex-col items-center min-w-[85px] cursor-pointer ${
                           isSelected
                             ? 'bg-medical-600 text-white border-medical-700 shadow-md shadow-medical-600/20 scale-105'
                             : 'bg-white border-slate-200 text-slate-700 hover:border-medical-300 hover:bg-slate-50'
@@ -1150,7 +1186,7 @@ export const TurneroWizard = () => {
                       <span className="text-xs font-extrabold text-slate-600 flex items-center gap-1.5">
                         ☀️ Turno Mañana (08:00 a 13:00 hs)
                       </span>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
                         {slots.filter(s => Number(s.hora_inicio.split(':')[0]) < 13).map((s, idx) => {
                           const isSelected = selectedSlot?.hora_inicio === s.hora_inicio;
                           return (
@@ -1159,17 +1195,25 @@ export const TurneroWizard = () => {
                               type="button"
                               disabled={!s.disponible}
                               onClick={() => setSelectedSlot(s)}
-                              className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center ${
+                              className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
                                 isSelected
                                   ? 'bg-medical-600 text-white border-medical-700 shadow-md shadow-medical-600/20'
                                   : s.disponible
-                                  ? 'bg-white border-slate-200 text-slate-800 hover:border-medical-400 hover:bg-medical-50/40 shadow-xs'
+                                  ? 'bg-white border-slate-200 text-slate-800 hover:border-medical-400 hover:bg-medical-50/40 shadow-2xs'
                                   : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
                               }`}
                             >
-                              <span className="font-mono text-sm">{s.hora_inicio}</span>
-                              <span className="text-[9px] mt-0.5 font-medium">
-                                {s.disponible ? 'Disponible' : 'Ocupado'}
+                              <span className="font-mono text-sm font-black">{s.hora_inicio}</span>
+                              <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded mt-1 truncate max-w-full ${
+                                isSelected
+                                  ? 'bg-white/20 text-white'
+                                  : s.disponible
+                                  ? (coseguroCalculado === 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-indigo-50 text-indigo-800 border border-indigo-200')
+                                  : 'text-slate-400'
+                              }`}>
+                                {s.disponible
+                                  ? (selectedOS?.sigla === 'PART' ? `$${Number(selectedPractica?.valor_particular || 16000).toLocaleString('es-AR')}` : coseguroCalculado === 0 ? '100% Cubierto' : `Copago $${coseguroCalculado}`)
+                                  : 'Ocupado'}
                               </span>
                             </button>
                           );
@@ -1184,7 +1228,7 @@ export const TurneroWizard = () => {
                       <span className="text-xs font-extrabold text-slate-600 flex items-center gap-1.5">
                         🌙 Turno Tarde (13:00 a 20:00 hs)
                       </span>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
                         {slots.filter(s => Number(s.hora_inicio.split(':')[0]) >= 13).map((s, idx) => {
                           const isSelected = selectedSlot?.hora_inicio === s.hora_inicio;
                           return (
@@ -1193,17 +1237,25 @@ export const TurneroWizard = () => {
                               type="button"
                               disabled={!s.disponible}
                               onClick={() => setSelectedSlot(s)}
-                              className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center ${
+                              className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
                                 isSelected
                                   ? 'bg-medical-600 text-white border-medical-700 shadow-md shadow-medical-600/20'
                                   : s.disponible
-                                  ? 'bg-white border-slate-200 text-slate-800 hover:border-medical-400 hover:bg-medical-50/40 shadow-xs'
+                                  ? 'bg-white border-slate-200 text-slate-800 hover:border-medical-400 hover:bg-medical-50/40 shadow-2xs'
                                   : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
                               }`}
                             >
-                              <span className="font-mono text-sm">{s.hora_inicio}</span>
-                              <span className="text-[9px] mt-0.5 font-medium">
-                                {s.disponible ? 'Disponible' : 'Ocupado'}
+                              <span className="font-mono text-sm font-black">{s.hora_inicio}</span>
+                              <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded mt-1 truncate max-w-full ${
+                                isSelected
+                                  ? 'bg-white/20 text-white'
+                                  : s.disponible
+                                  ? (coseguroCalculado === 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-indigo-50 text-indigo-800 border border-indigo-200')
+                                  : 'text-slate-400'
+                              }`}>
+                                {s.disponible
+                                  ? (selectedOS?.sigla === 'PART' ? `$${Number(selectedPractica?.valor_particular || 16000).toLocaleString('es-AR')}` : coseguroCalculado === 0 ? '100% Cubierto' : `Copago $${coseguroCalculado}`)
+                                  : 'Ocupado'}
                               </span>
                             </button>
                           );

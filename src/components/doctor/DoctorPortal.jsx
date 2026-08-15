@@ -74,6 +74,10 @@ export const DoctorPortal = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [turnoToCancel, setTurnoToCancel] = useState(null);
 
+  // Modo Zen (Enfoque Clínico) y Timeline de Sesiones Previas
+  const [zenMode, setZenMode] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+
   // Reconocimiento de Voz / Dictado
   const [isRecording, setIsRecording] = useState(false);
   const [speechRecognitionInstance, setSpeechRecognitionInstance] = useState(null);
@@ -210,6 +214,44 @@ export const DoctorPortal = () => {
     setInformeProrrogaPreview(informe);
   };
 
+  // Sesiones anteriores del paciente actual
+  const prevSessions = currentPaciente
+    ? atencionesHce.filter(a => a.paciente_id === currentPaciente.id).sort((a, b) => new Date(b.fecha_atencion) - new Date(a.fecha_atencion))
+    : [];
+
+  // Plantillas rápidas de encuadre
+  const applyClinicalTemplate = (tipo) => {
+    if (tipo === 'ADMISIÓN') {
+      setEvolucionForm(prev => ({
+        ...prev,
+        motivo_consulta: 'Primera Entrevista / Admisión Clínica y Encuadre Terapéutico',
+        anamnesis_examen_fisico: '1. Motivo de Consulta Manifiesto y Latente:\n2. Historia del Problema Actual y Desencadenantes:\n3. Antecedentes Personales y Red de Apoyo:\n4. Examen del Estado Psíquico (Orientación, Ánimo, Afecto, Ansiedad):\n5. Encuadre Acordado (Frecuencia semanal, honorarios, modalidad):',
+        plan_tratamiento: 'Evaluación diagnóstica en próximas 2 sesiones. Psicoeducación inicial.'
+      }));
+    } else if (tipo === 'SEGUIMIENTO') {
+      setEvolucionForm(prev => ({
+        ...prev,
+        motivo_consulta: 'Sesión de Psicoterapia / Seguimiento y Revisión de Tareas',
+        anamnesis_examen_fisico: '1. Estado Actual y Revisión de Tareas Inter-sesión:\n2. Situaciones Disparadoras de Ansiedad/Malestar en la semana:\n3. Intervenciones Clínicas / Reestructuración Cognitiva:\n4. Respuesta del Paciente e Insights:',
+        plan_tratamiento: '1. Registro de autoregistro conductual.\n2. Práctica de respiración diafragmática y defusión cognitiva.'
+      }));
+    } else if (tipo === 'CRISIS') {
+      setEvolucionForm(prev => ({
+        ...prev,
+        motivo_consulta: 'Atención / Intervención en Crisis Aguda',
+        anamnesis_examen_fisico: '1. Desencadenante Inmediato de la Crisis:\n2. Evaluación de Riesgo (Ideación, Conducta, Contención Familiar):\n3. Técnicas de Estabilización y Desescalada Emocional:\n4. Contacto de Red de Apoyo y Acuerdos de Seguridad:',
+        plan_tratamiento: 'Plan de seguridad activo. Seguimiento telefónico a las 48hs. Derivación a psiquiatría o interconsulta si corresponde.'
+      }));
+    } else if (tipo === 'ALTA') {
+      setEvolucionForm(prev => ({
+        ...prev,
+        motivo_consulta: 'Sesión de Cierre / Consolidación de Logros y Alta Terapéutica',
+        anamnesis_examen_fisico: '1. Evaluación de Objetivos Alcanzados vs Estado Inicial:\n2. Herramientas y Recursos Consolidados por el Paciente:\n3. Plan de Prevención de Recaídas:\n4. Despedida y Encuadre de Puertas Abiertas:',
+        plan_tratamiento: 'Alta del proceso terapéutico regular. Sesión de control optativa a los 3 meses.'
+      }));
+    }
+  };
+
   // Finalizar atención y guardar HCE
   const handleFinalizarAtencion = (e) => {
     e.preventDefault();
@@ -231,6 +273,8 @@ export const DoctorPortal = () => {
 
     updateTurnoEstado(currentTurno.id, 'ATENDIDO');
     setActiveTurnoId(null);
+    setZenMode(false);
+    setShowTimeline(false);
     setEvolucionForm({
       motivo_consulta: '',
       anamnesis_examen_fisico: '',
@@ -325,8 +369,8 @@ export const DoctorPortal = () => {
       {portalTab === 'hoy' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* COLUMNA IZQUIERDA: SALA DE ESPERA (4 COLS) */}
-          <div className="lg:col-span-4 space-y-4">
+          {/* COLUMNA IZQUIERDA: SALA DE ESPERA (4 COLS o Oculta en Modo Zen) */}
+          <div className={zenMode ? 'hidden' : 'lg:col-span-4 space-y-4'}>
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -408,8 +452,8 @@ export const DoctorPortal = () => {
             </div>
           </div>
 
-          {/* COLUMNA DERECHA: HISTORIA CLÍNICA & SESIÓN ASISTIDA POR IA (8 COLS) */}
-          <div className="lg:col-span-8 space-y-4">
+          {/* COLUMNA DERECHA: HISTORIA CLÍNICA & SESIÓN ASISTIDA POR IA (8 COLS o 12 COLS en Modo Zen) */}
+          <div className={zenMode ? 'lg:col-span-12 space-y-4 max-w-4xl mx-auto w-full transition-all' : 'lg:col-span-8 space-y-4 transition-all'}>
             {currentPaciente && currentTurno ? (
               <form onSubmit={handleFinalizarAtencion} className="bg-white p-6 sm:p-8 rounded-3xl border border-indigo-200 shadow-md space-y-6">
                 
@@ -432,11 +476,83 @@ export const DoctorPortal = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1">
-                      <Volume2 className="w-3.5 h-3.5" /> En Consultorio
+                    <button
+                      type="button"
+                      onClick={() => setShowTimeline(!showTimeline)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                        showTimeline
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                          : 'bg-white text-indigo-700 hover:bg-indigo-50 border-indigo-200'
+                      }`}
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Historial Sesiones ({prevSessions.length})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setZenMode(!zenMode)}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                        zenMode
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                          : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-200'
+                      }`}
+                      title={zenMode ? "Salir de Modo Zen" : "Activar Modo Enfoque Zen"}
+                    >
+                      <span>{zenMode ? 'Normal' : 'Modo Zen'}</span>
+                    </button>
+
+                    <span className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1">
+                      <Volume2 className="w-3.5 h-3.5" /> En Sesión
                     </span>
                   </div>
                 </div>
+
+                {/* TIMELINE DE SESIONES PREVIAS DEL PACIENTE (DESPLEGABLE) */}
+                {showTimeline && (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 animate-fadeIn">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                      <h4 className="font-black text-xs text-slate-900 flex items-center gap-1.5">
+                        <Clock className="w-4 h-4 text-indigo-600" />
+                        Línea de Tiempo de Evoluciones Anteriores ({prevSessions.length} registros)
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setShowTimeline(false)}
+                        className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+
+                    {prevSessions.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic py-2">
+                        Esta es la primera sesión registrada en Historia Clínica para este paciente.
+                      </p>
+                    ) : (
+                      <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                        {prevSessions.map((ses, idx) => (
+                          <div key={ses.id || idx} className="p-3 bg-white border border-slate-200 rounded-xl space-y-1 text-xs shadow-2xs">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-indigo-700">{formatDateAR(ses.fecha_atencion)}</span>
+                              <span className="text-[10px] px-2 py-0.5 bg-indigo-50 text-indigo-800 rounded font-semibold">
+                                {ses.diagnostico_cie10 || 'Psicoterapia'}
+                              </span>
+                            </div>
+                            <p className="font-medium text-slate-800 font-sans line-clamp-2">
+                              {ses.anamnesis_examen_fisico || ses.motivo_consulta}
+                            </p>
+                            {ses.plan_tratamiento && (
+                              <p className="text-[11px] text-slate-500 italic">
+                                Plan acordado: {ses.plan_tratamiento}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* MODALIDAD Y TELEPSICOLOGÍA */}
                 <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
@@ -494,6 +610,30 @@ export const DoctorPortal = () => {
                   )}
                 </div>
 
+                {/* PLANTILLAS RÁPIDAS DE ENCUADRE CLÍNICO */}
+                <div className="p-3 bg-white border border-slate-200 rounded-2xl space-y-1.5">
+                  <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">
+                    Plantillas Clínicas en 1 Clic:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: 'ADMISIÓN', label: '🌱 Admisión / 1ra Entrevista' },
+                      { id: 'SEGUIMIENTO', label: '🔄 Seguimiento TCC / Sesión Regular' },
+                      { id: 'CRISIS', label: '⚡ Intervención en Crisis' },
+                      { id: 'ALTA', label: '🎓 Cierre / Alta Terapéutica' }
+                    ].map(tpl => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => applyClinicalTemplate(tpl.id)}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 transition cursor-pointer"
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* HERRAMIENTAS ASISTIDAS POR IA */}
                 <div className="p-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-sky-50 border border-indigo-200 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
@@ -517,7 +657,7 @@ export const DoctorPortal = () => {
                       }`}
                     >
                       {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                      <span>{isRecording ? 'Detener Dictado...' : 'Dictar por Voz'}</span>
+                      <span>{isRecording ? 'Grabando voz en vivo...' : 'Dictar por Voz'}</span>
                     </button>
 
                     <button

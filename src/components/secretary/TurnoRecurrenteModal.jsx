@@ -140,7 +140,7 @@ export const TurnoRecurrenteModal = ({ isOpen, onClose }) => {
   }, [profesionalId]);
 
   const diasQueAtiendeElMedico = useMemo(() => {
-    return new Set(horariosDelMedico.map(h => h.dia_semana));
+    return new Set(horariosDelMedico.map(h => Number(h.dia_semana)));
   }, [horariosDelMedico]);
 
   // Autocompletar datos del paciente por DNI
@@ -170,26 +170,23 @@ export const TurnoRecurrenteModal = ({ isOpen, onClose }) => {
     });
   };
 
-  // Previsualización de fechas calculadas en tiempo real
+  // Previsualización de fechas calculadas en tiempo real de forma segura
   const previewSesiones = useMemo(() => {
     if (!fechaInicio || diasSeleccionados.length === 0 || !profesionalId) return [];
 
     const bloqueos = StorageService.getBloqueos();
     const result = [];
-    let currentDate = new Date(fechaInicio + 'T00:00:00');
     let sessionsFound = 0;
-    let safetyCounter = 0;
     const maxTarget = tipoFin === 'SESIONES' ? Number(cantidadSesiones) : 60;
-    const dateLimit = tipoFin === 'FECHA' ? new Date(fechaFin + 'T23:59:59') : null;
+    const diasNorm = diasSeleccionados.map(Number);
 
-    while (sessionsFound < maxTarget && safetyCounter < 180) {
-      safetyCounter++;
-      const diaSemana = currentDate.getDay();
-      const dateStr = currentDate.toISOString().split('T')[0];
+    for (let i = 0; i < 180 && sessionsFound < maxTarget; i++) {
+      const dateStr = addDaysToDateString(fechaInicio, i);
+      const dayDetails = getDayDetailsFromDateString(dateStr);
 
-      if (dateLimit && currentDate > dateLimit) break;
+      if (tipoFin === 'FECHA' && fechaFin && dateStr > fechaFin) break;
 
-      if (diasSeleccionados.includes(diaSemana)) {
+      if (diasNorm.includes(dayDetails.diaSemana)) {
         const isBlocked = bloqueos.some(b => {
           const matchFecha = dateStr >= b.fecha_inicio && dateStr <= b.fecha_fin;
           if (!matchFecha) return false;
@@ -197,21 +194,19 @@ export const TurnoRecurrenteModal = ({ isOpen, onClose }) => {
           return false;
         });
 
-        const atiendeEsteDia = diasQueAtiendeElMedico.has(diaSemana);
+        const atiendeEsteDia = diasQueAtiendeElMedico.has(dayDetails.diaSemana);
 
         sessionsFound++;
         result.push({
           nro: sessionsFound,
           fecha: dateStr,
-          diaNombre: currentDate.toLocaleDateString('es-AR', { weekday: 'short' }),
-          diaNumero: currentDate.getDate(),
-          mesNombre: currentDate.toLocaleDateString('es-AR', { month: 'short' }),
+          diaNombre: dayDetails.diaNombre,
+          diaNumero: dayDetails.diaNumero,
+          mesNombre: dayDetails.mesNombre,
           isBlocked,
           atiendeEsteDia
         });
       }
-
-      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return result;

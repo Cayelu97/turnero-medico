@@ -33,6 +33,7 @@ import { CancelarTurnoModal } from './CancelarTurnoModal';
 import { DetalleTurnoModal } from './DetalleTurnoModal';
 import { VoucherModal } from '../patient/VoucherModal';
 import { WhatsAppService } from '../../services/whatsapp';
+import { getDayOfWeekFromDateString, getLocalDateString, addDaysToDateString } from '../../utils/dateUtils';
 
 export const AgendaView = () => {
   const { 
@@ -55,7 +56,7 @@ export const AgendaView = () => {
 
   // Modos de Vista: 'diaria' | 'semanal' | 'futuros'
   const [viewMode, setViewMode] = useState('diaria');
-  const [currentDate, setCurrentDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [currentDate, setCurrentDate] = useState(() => getLocalDateString(new Date()));
   const [selectedCentroFilter, setSelectedCentroFilter] = useState('TODOS');
   const [selectedProfFilter, setSelectedProfFilter] = useState('');
   const [selectedServicioFilter, setSelectedServicioFilter] = useState('');
@@ -103,19 +104,15 @@ export const AgendaView = () => {
 
   // Navegación de fechas
   const handlePrevDay = () => {
-    const d = new Date(currentDate + 'T00:00:00');
-    d.setDate(d.getDate() - 1);
-    setCurrentDate(d.toISOString().split('T')[0]);
+    setCurrentDate(prev => addDaysToDateString(prev, -1));
   };
 
   const handleNextDay = () => {
-    const d = new Date(currentDate + 'T00:00:00');
-    d.setDate(d.getDate() + 1);
-    setCurrentDate(d.toISOString().split('T')[0]);
+    setCurrentDate(prev => addDaysToDateString(prev, 1));
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date().toISOString().split('T')[0]);
+    setCurrentDate(getLocalDateString(new Date()));
   };
 
   const visibleProfessionals = profesionales.filter(p => {
@@ -142,7 +139,7 @@ export const AgendaView = () => {
   });
 
   // Turnos futuros filtrados
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString(new Date());
   const turnosFuturos = turnos.filter(t => {
     if (t.fecha < todayStr) return false; // Solo hoy o futuro
     if (selectedCentroFilter !== 'TODOS' && t.clinica_id && t.clinica_id !== selectedCentroFilter) return false;
@@ -152,17 +149,14 @@ export const AgendaView = () => {
 
     // Filtro por rango
     if (futurosRango === '7d') {
-      const maxDate = new Date();
-      maxDate.setDate(maxDate.getDate() + 7);
-      if (t.fecha > maxDate.toISOString().split('T')[0]) return false;
+      const maxDate = addDaysToDateString(todayStr, 7);
+      if (t.fecha > maxDate) return false;
     } else if (futurosRango === '15d') {
-      const maxDate = new Date();
-      maxDate.setDate(maxDate.getDate() + 15);
-      if (t.fecha > maxDate.toISOString().split('T')[0]) return false;
+      const maxDate = addDaysToDateString(todayStr, 15);
+      if (t.fecha > maxDate) return false;
     } else if (futurosRango === '30d') {
-      const maxDate = new Date();
-      maxDate.setDate(maxDate.getDate() + 30);
-      if (t.fecha > maxDate.toISOString().split('T')[0]) return false;
+      const maxDate = addDaysToDateString(todayStr, 30);
+      if (t.fecha > maxDate) return false;
     }
 
     if (searchPatientQuery.trim()) {
@@ -178,15 +172,14 @@ export const AgendaView = () => {
     return a.hora_inicio.localeCompare(b.hora_inicio);
   });
 
-  // Obtener fechas de la semana actual para la vista semanal
+  // Obtener fechas de la semana actual para la vista semanal de forma determinista
   const getSemanaDays = () => {
-    const curr = new Date(currentDate + 'T00:00:00');
-    const firstDay = curr.getDate() - curr.getDay() + 1; // Lunes
+    const dayOfWeek = getDayOfWeekFromDateString(currentDate); // 0=Dom, 1=Lun, ..., 6=Sab
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const mondayStr = addDaysToDateString(currentDate, diffToMonday);
     const days = [];
     for (let i = 0; i < 6; i++) { // Lun a Sáb
-      const next = new Date(curr);
-      next.setDate(firstDay + i);
-      days.push(next.toISOString().split('T')[0]);
+      days.push(addDaysToDateString(mondayStr, i));
     }
     return days;
   };
@@ -260,8 +253,8 @@ export const AgendaView = () => {
     const hora_fin = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
 
     const horariosProf = StorageService.getHorariosByProfesional(quickForm.profesional_id);
-    const dateObj = new Date(currentDate + 'T00:00:00');
-    const horario = horariosProf.find(h => h.dia_semana === dateObj.getDay());
+    const diaSemana = getDayOfWeekFromDateString(currentDate);
+    const horario = horariosProf.find(h => Number(h.dia_semana) === Number(diaSemana));
     const consultorioId = horario?.consultorio_id || consultorios[0]?.id;
 
     const result = createTurno({

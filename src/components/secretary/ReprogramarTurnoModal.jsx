@@ -16,6 +16,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
 import { WhatsAppService } from '../../services/whatsapp';
+import { getLocalDateString, getDayDetailsFromDateString, addDaysToDateString, formatDateAR } from '../../utils/dateUtils';
 
 export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSuccess }) => {
   const { 
@@ -49,6 +50,7 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
       setMotivoId(motivos.find(m => m.tipo === 'REPROGRAMACION')?.id || '');
       setObservaciones('');
       setStep(1);
+      setReprogrammedData(null);
     }
   }, [turno, isOpen, motivos]);
 
@@ -65,38 +67,36 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
   const DIAS_NOMBRES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const diasAtencionTexto = useMemo(() => {
     if (horariosDelMedico.length === 0) return 'Sin horarios configurados';
-    const dias = Array.from(new Set(horariosDelMedico.map(h => DIAS_NOMBRES[h.dia_semana]))).join(', ');
+    const dias = Array.from(new Set(horariosDelMedico.map(h => DIAS_NOMBRES[Number(h.dia_semana)]))).join(', ');
     const horas = horariosDelMedico.map(h => `${h.hora_inicio} a ${h.hora_fin}`).slice(0, 2).join(' / ');
     return `${dias} • ${horas}`;
   }, [horariosDelMedico]);
 
   // Próximos días disponibles del profesional seleccionado
   const proximosDiasDisponibles = useMemo(() => {
-    if (!selectedProfId) return [];
-    if (horariosDelMedico.length === 0) return [];
+    if (!selectedProfId || horariosDelMedico.length === 0) return [];
 
-    const diasSemanaAtencion = new Set(horariosDelMedico.map(h => h.dia_semana));
+    const diasSemanaAtencion = new Set(horariosDelMedico.map(h => Number(h.dia_semana)));
     const result = [];
-    const curr = new Date();
+    const todayStr = getLocalDateString(new Date());
 
-    for (let i = 0; i < 35 && result.length < 12; i++) {
-      const dateStr = curr.toISOString().split('T')[0];
-      const diaSemana = curr.getDay();
+    for (let i = 0; i < 45 && result.length < 12; i++) {
+      const dateStr = addDaysToDateString(todayStr, i);
+      const dayDetails = getDayDetailsFromDateString(dateStr);
 
-      if (diasSemanaAtencion.has(diaSemana)) {
+      if (diasSemanaAtencion.has(dayDetails.diaSemana)) {
         const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfId, dateStr, turno?.servicio_id || null);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {
           result.push({
             fecha: dateStr,
-            diaNombre: curr.toLocaleDateString('es-AR', { weekday: 'short' }),
-            diaNumero: curr.getDate(),
-            mesNombre: curr.toLocaleDateString('es-AR', { month: 'short' }),
+            diaNombre: dayDetails.diaNombre,
+            diaNumero: dayDetails.diaNumero,
+            mesNombre: dayDetails.mesNombre,
             disponiblesCount
           });
         }
       }
-      curr.setDate(curr.getDate() + 1);
     }
     return result;
   }, [selectedProfId, horariosDelMedico, turno]);
@@ -176,7 +176,7 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden">
-      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
+      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
         {step === 1 ? (
           <>
             {/* Header del Modal */}

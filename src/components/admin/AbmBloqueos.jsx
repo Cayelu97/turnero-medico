@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, CalendarOff, Palmtree, Flag, Wrench, Search, X, Calendar } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export const AbmBloqueos = () => {
   const { bloqueos, profesionales, consultorios, saveBloqueo, deleteBloqueo } = useApp();
@@ -13,8 +14,8 @@ export const AbmBloqueos = () => {
     tipo: 'FERIADO_NACIONAL',
     profesional_id: '',
     consultorio_id: '',
-    fecha_inicio: new Date().toISOString().split('T')[0],
-    fecha_fin: new Date().toISOString().split('T')[0],
+    fecha_inicio: getLocalDateString(new Date()),
+    fecha_fin: getLocalDateString(new Date()),
     motivo: ''
   });
 
@@ -28,7 +29,7 @@ export const AbmBloqueos = () => {
       });
     } else {
       setEditingBloqueo(null);
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalDateString(new Date());
       setForm({
         tipo: 'VACACIONES',
         profesional_id: profesionales[0]?.id || '',

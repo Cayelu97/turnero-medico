@@ -15,6 +15,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const { 
@@ -24,7 +25,7 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
     currentUser 
   } = useApp();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString(new Date());
   const turnosHoy = turnos.filter(t => t.fecha === todayStr && t.estado !== 'CANCELADO');
   const enEsperaCount = turnosHoy.filter(t => t.estado === 'EN_ESPERA').length;
 

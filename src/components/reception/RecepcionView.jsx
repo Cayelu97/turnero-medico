@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { CobroCoseguroModal } from './CobroCoseguroModal';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export const RecepcionView = () => {
   const { 
@@ -34,7 +35,7 @@ export const RecepcionView = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTurnoForCobro, setSelectedTurnoForCobro] = useState(null);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString(new Date());
 
   // Turnos de hoy
   const turnosHoy = turnos.filter(t => t.fecha === todayStr);

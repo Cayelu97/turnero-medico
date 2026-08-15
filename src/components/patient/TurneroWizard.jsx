@@ -29,6 +29,7 @@ import { StorageService } from '../../services/storage';
 import { AiService } from '../../services/aiService';
 import { VoucherModal } from './VoucherModal';
 import { formatDateAR } from '../../utils/formatters';
+import { getLocalDateString, getDayDetailsFromDateString, addDaysToDateString } from '../../utils/dateUtils';
 
 export const TurneroWizard = () => {
   const { 
@@ -112,39 +113,38 @@ export const TurneroWizard = () => {
   const diasAtencionTexto = React.useMemo(() => {
     const horariosFiltrados = horariosDelMedico.filter(h => !modalidadTurno || !h.modalidad || h.modalidad === 'AMBAS' || h.modalidad === modalidadTurno);
     if (horariosFiltrados.length === 0) return `Sin horarios para modalidad ${modalidadTurno.toLowerCase()}`;
-    const dias = Array.from(new Set(horariosFiltrados.map(h => DIAS_NOMBRES[h.dia_semana]))).join(', ');
+    const dias = Array.from(new Set(horariosFiltrados.map(h => DIAS_NOMBRES[Number(h.dia_semana)]))).join(', ');
     const horas = horariosFiltrados.map(h => `${h.hora_inicio} a ${h.hora_fin}`).slice(0, 2).join(' / ');
     return `${dias} • ${horas}`;
   }, [horariosDelMedico, modalidadTurno]);
 
-  // Próximos días con disponibilidad real según modalidad (siguientes 30 días)
+  // Próximos días con disponibilidad real calculados de forma determinista y segura
   const proximosDiasDisponibles = React.useMemo(() => {
     if (!selectedProfesionalId) return [];
     if (horariosDelMedico.length === 0) return [];
 
     const horariosFiltrados = horariosDelMedico.filter(h => !modalidadTurno || !h.modalidad || h.modalidad === 'AMBAS' || h.modalidad === modalidadTurno);
-    const diasSemanaAtencion = new Set(horariosFiltrados.map(h => h.dia_semana));
+    const diasSemanaAtencion = new Set(horariosFiltrados.map(h => Number(h.dia_semana)));
     const result = [];
-    const curr = new Date();
+    const todayStr = getLocalDateString(new Date());
 
-    for (let i = 0; i < 35 && result.length < 12; i++) {
-      const dateStr = curr.toISOString().split('T')[0];
-      const diaSemana = curr.getDay();
+    for (let i = 0; i < 45 && result.length < 14; i++) {
+      const dateStr = addDaysToDateString(todayStr, i);
+      const dayDetails = getDayDetailsFromDateString(dateStr);
 
-      if (diasSemanaAtencion.has(diaSemana)) {
+      if (diasSemanaAtencion.has(dayDetails.diaSemana)) {
         const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfesionalId, dateStr, selectedServicioId || null, modalidadTurno);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {
           result.push({
             fecha: dateStr,
-            diaNombre: curr.toLocaleDateString('es-AR', { weekday: 'short' }),
-            diaNumero: curr.getDate(),
-            mesNombre: curr.toLocaleDateString('es-AR', { month: 'short' }),
+            diaNombre: dayDetails.diaNombre,
+            diaNumero: dayDetails.diaNumero,
+            mesNombre: dayDetails.mesNombre,
             disponiblesCount
           });
         }
       }
-      curr.setDate(curr.getDate() + 1);
     }
     return result;
   }, [selectedProfesionalId, selectedServicioId, horariosDelMedico, modalidadTurno]);
@@ -423,7 +423,7 @@ export const TurneroWizard = () => {
   };
 
   return (
-    <div ref={wizardContainerRef} id="turnero-wizard-container" className="max-w-4xl mx-auto space-y-6 scroll-mt-6">
+    <div ref={wizardContainerRef} id="turnero-wizard-container" className="max-w-5xl mx-auto space-y-6 scroll-mt-6">
       {/* Banner de Bienvenida */}
       <div className="bg-gradient-to-r from-medical-700 via-sky-600 to-tealmed-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-sky-600/10">
         <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-sky-200 mb-1">

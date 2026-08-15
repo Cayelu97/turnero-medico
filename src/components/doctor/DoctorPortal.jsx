@@ -33,6 +33,7 @@ import { StorageService } from '../../services/storage';
 import { WhatsAppService } from '../../services/whatsapp';
 import { AiService, CIE10_DSM5_CATALOGO } from '../../services/aiService';
 import { formatDateAR } from '../../utils/formatters';
+import { getLocalDateString } from '../../utils/dateUtils';
 import { AgendarTurnoSecretariaModal } from '../secretary/AgendarTurnoSecretariaModal';
 import { ReprogramarTurnoModal } from '../secretary/ReprogramarTurnoModal';
 import { CancelarTurnoModal } from '../secretary/CancelarTurnoModal';

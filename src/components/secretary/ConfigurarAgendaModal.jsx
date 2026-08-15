@@ -10,6 +10,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
   const [diasSeleccionados, setDiasSeleccionados] = useState([1, 2, 3, 4, 5]); // Lunes a Viernes por defecto
   const [duracionSlot, setDuracionSlot] = useState(20);
   const [consultorioId, setConsultorioId] = useState(() => consultorios[0]?.id || '');
+  const [modalidad, setModalidad] = useState('PRESENCIAL');
 
   // Horarios de turnos
   const [habilitarManana, setHabilitarManana] = useState(true);
@@ -64,10 +65,10 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
 
     const turnos_horarios = [];
     if (habilitarManana && mananaInicio && mananaFin) {
-      turnos_horarios.push({ hora_inicio: mananaInicio, hora_fin: mananaFin });
+      turnos_horarios.push({ hora_inicio: mananaInicio, hora_fin: mananaFin, modalidad });
     }
     if (habilitarTarde && tardeInicio && tardeFin) {
-      turnos_horarios.push({ hora_inicio: tardeInicio, hora_fin: tardeFin });
+      turnos_horarios.push({ hora_inicio: tardeInicio, hora_fin: tardeFin, modalidad });
     }
 
     if (turnos_horarios.length === 0) {
@@ -81,7 +82,8 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
       dias_semana: diasSeleccionados,
       turnos_horarios,
       consultorio_id: consultorioId,
-      duracion_slot_min: Number(duracionSlot)
+      duracion_slot_min: Number(duracionSlot),
+      modalidad
     });
 
     onClose();
@@ -89,7 +91,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8">
+      <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
           <div className="flex items-center gap-2">
             <div className="p-2.5 bg-medical-50 text-medical-600 rounded-2xl border border-medical-200">
@@ -272,8 +274,8 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
             </div>
           </div>
 
-          {/* 4. Duración de Turno / Intervalo de tiempo */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* 4. Duración de Turno, Consultorio y Modalidad */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Fracción de Tiempo (Slot) *</label>
               <select
@@ -281,17 +283,17 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
                 onChange={(e) => setDuracionSlot(Number(e.target.value))}
                 className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
               >
-                <option value={10}>Cada 10 minutos (6 turnos/hora)</option>
-                <option value={15}>Cada 15 minutos (4 turnos/hora)</option>
-                <option value={20}>Cada 20 minutos (3 turnos/hora)</option>
-                <option value={30}>Cada 30 minutos (2 turnos/hora)</option>
-                <option value={45}>Cada 45 minutos</option>
-                <option value={60}>Cada 60 minutos (1 turno/hora)</option>
+                <option value={10}>Cada 10 min</option>
+                <option value={15}>Cada 15 min</option>
+                <option value={20}>Cada 20 min</option>
+                <option value={30}>Cada 30 min</option>
+                <option value={45}>Cada 45 min (Terapia/Psicología)</option>
+                <option value={60}>Cada 60 min (1 turno/hora)</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Consultorio Físico Asignado</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Consultorio Asignado</label>
               <select
                 value={consultorioId}
                 onChange={(e) => setConsultorioId(e.target.value)}
@@ -300,6 +302,19 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
                 {consultorios.map(c => (
                   <option key={c.id} value={c.id}>{c.nombre}</option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Modalidad de Atención</label>
+              <select
+                value={modalidad}
+                onChange={(e) => setModalidad(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
+              >
+                <option value="PRESENCIAL">🏢 Solo Presencial</option>
+                <option value="ONLINE">💻 Solo Online / Teleconsulta</option>
+                <option value="AMBAS">🔄 Ambas Modalidades</option>
               </select>
             </div>
           </div>

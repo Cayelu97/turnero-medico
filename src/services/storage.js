@@ -365,6 +365,26 @@ export const INITIAL_DATA = {
       activo: true
     },
     {
+      id: 'prof-psi-3',
+      clinica_id: 'clinica-1',
+      nombre: 'Nahuel',
+      apellido: 'López',
+      matricula_provincial: 'M.P. 9.871 CPPC',
+      matricula_nacional: 'MN 46.520',
+      especialidad: 'Psicología y Salud Mental',
+      especialidad_id: 'esp-0',
+      servicios_ids: ['serv-0a', 'serv-0b', 'serv-0c'],
+      email: 'nlopez@centrosanlucas.com.ar',
+      telefono: '351 445-9922',
+      duracion_turno_minutos: 45,
+      max_sobreturnos_dia: 2,
+      color_agenda: '#0ea5e9',
+      obras_sociales_ids: ['os-1', 'os-apross', 'os-cppc', 'os-2', 'os-3'],
+      atiende_particular: true,
+      atiende_online: true,
+      activo: true
+    },
+    {
       id: 'prof-1',
       clinica_id: 'clinica-1',
       nombre: 'Martín',
@@ -390,6 +410,12 @@ export const INITIAL_DATA = {
     { id: 'h-psi-1', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
     { id: 'h-psi-2', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
     { id: 'h-psi-3', profesional_id: 'prof-psi-1', servicio_id: 'serv-0b', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'AMBAS', activo: true },
+    // Lic. Nahuel López: Lunes a Viernes (Días 1, 2, 3, 4, 5) de 08:00 a 14:00
+    { id: 'h-nl-1', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-2', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 2, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-3', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
+    { id: 'h-nl-4', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-5', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 5, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'AMBAS', activo: true },
     // Dr. Pérez Rossi: Lunes (Presencial), Miércoles (Presencial), Viernes (Online)
     { id: 'h-1', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
     { id: 'h-2', profesional_id: 'prof-1', servicio_id: 'serv-2', consultorio_id: 'c-2', dia_semana: 3, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 30, modalidad: 'PRESENCIAL', activo: true },
@@ -938,17 +964,18 @@ export const StorageService = {
     StorageService.saveCollection(STORAGE_KEYS.HORARIOS, items);
   },
   // CONFIGURADOR EN LOTE DE AGENDA SEMANAL
-  configurarAgendaSemanal: ({ profesional_id, servicio_id, dias_semana, turnos_horarios, consultorio_id, duracion_slot_min }) => {
+  configurarAgendaSemanal: ({ profesional_id, servicio_id, dias_semana, turnos_horarios, consultorio_id, duracion_slot_min, modalidad = 'PRESENCIAL' }) => {
     const allHorarios = StorageService.getHorarios();
+    const diasNum = dias_semana.map(Number);
     // Eliminar horarios anteriores de esos días para este médico y servicio
     const filtered = allHorarios.filter(h => !(
-      h.profesional_id === profesional_id && 
-      dias_semana.includes(h.dia_semana) &&
+      String(h.profesional_id) === String(profesional_id) && 
+      diasNum.includes(Number(h.dia_semana)) &&
       (!servicio_id || h.servicio_id === servicio_id)
     ));
 
     const newFranjas = [];
-    dias_semana.forEach(dia => {
+    diasNum.forEach(dia => {
       turnos_horarios.forEach((th, idx) => {
         if (th.hora_inicio && th.hora_fin) {
           newFranjas.push({
@@ -960,6 +987,7 @@ export const StorageService = {
             hora_inicio: th.hora_inicio,
             hora_fin: th.hora_fin,
             duracion_slot_min: Number(duracion_slot_min || 20),
+            modalidad: th.modalidad || modalidad || 'PRESENCIAL',
             activo: true
           });
         }
@@ -1069,7 +1097,7 @@ export const StorageService = {
     if (!profesionalId || !fechaStr) return [];
 
     const [year, month, day] = fechaStr.split('-').map(Number);
-    const dateObj = new Date(year, month - 1, day);
+    const dateObj = new Date(year, month - 1, day, 12, 0, 0); // Mediodía local seguro
     const diaSemana = dateObj.getDay();
 
     const bloqueos = StorageService.getBloqueos();
@@ -1083,7 +1111,10 @@ export const StorageService = {
 
     if (esFeriadoOBloqueado) return [];
 
-    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => h.dia_semana === diaSemana && h.activo !== false);
+    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => 
+      Number(h.dia_semana) === Number(diaSemana) && 
+      h.activo !== false
+    );
     if (servicioId) {
       horarios = horarios.filter(h => !h.servicio_id || h.servicio_id === servicioId);
     }
@@ -1181,16 +1212,20 @@ export const StorageService = {
     const bloqueos = StorageService.getBloqueos(clinicaId);
     const generatedTurnos = [];
 
-    let currentDate = new Date(fecha_inicio + 'T00:00:00');
+    const [startYear, startMonth, startDay] = fecha_inicio.split('T')[0].split('-').map(Number);
+    let currentDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
     let sessionsFound = 0;
     let safetyCounter = 0; // Evitar loop infinito
 
     while (sessionsFound < cantidad_sesiones && safetyCounter < 180) {
       safetyCounter++;
       const diaSemana = currentDate.getDay();
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const y = currentDate.getFullYear();
+      const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const d = String(currentDate.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
 
-      if (dias_semana.includes(diaSemana)) {
+      if (dias_semana.map(Number).includes(diaSemana)) {
         // Verificar si la fecha está bloqueada
         const isBlocked = bloqueos.some(b => {
           const matchFecha = dateStr >= b.fecha_inicio && dateStr <= b.fecha_fin;

@@ -22,11 +22,15 @@ import {
   X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { formatDateAR } from '../../utils/formatters';
+import { formatDateAR, formatMoneda } from '../../utils/formatters';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export const CajaView = () => {
   const { 
     movimientosCaja = [], 
+    profesionales, 
+    turnos, 
+    pacientes, 
     saveMovimientoCaja, 
     deleteMovimientoCaja, 
     clinica,
@@ -34,7 +38,7 @@ export const CajaView = () => {
     showToast 
   } = useApp();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString(new Date());
 
   // Filtros
   const [selectedFecha, setSelectedFecha] = useState(todayStr);

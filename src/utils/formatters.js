@@ -20,3 +20,5 @@ export const formatCurrencyAR = (amount) => {
   const num = Number(amount) || 0;
   return `$${num.toLocaleString('es-AR')}`;
 };
+
+export const formatMoneda = formatCurrencyAR;

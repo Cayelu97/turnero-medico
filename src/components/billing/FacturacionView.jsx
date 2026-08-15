@@ -18,10 +18,17 @@ import {
   Stethoscope, 
   ChevronRight, 
   Layers, 
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Eye,
+  QrCode,
+  Brain
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDateAR } from '../../utils/formatters';
+import { ComprobanteArcaModal } from './ComprobanteArcaModal';
+import { LoteFacturacionModal } from './LoteFacturacionModal';
+import { CuentaCorrienteModal } from './CuentaCorrienteModal';
 
 export const FacturacionView = () => {
   const { 
@@ -33,10 +40,14 @@ export const FacturacionView = () => {
     pacientes, 
     allClinicas, 
     activeClinica,
-    updateTurnoEstado 
+    lotesFacturacion,
+    comprobantesArca
   } = useApp();
 
-  // Filtros principales
+  // Sub-módulos principales
+  const [activeTab, setActiveTab] = useState('master'); // 'master' | 'lotes' | 'cta_cte' | 'arca'
+
+  // Filtros del Master
   const today = new Date();
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -45,12 +56,16 @@ export const FacturacionView = () => {
   const [fechaHasta, setFechaHasta] = useState(lastDayOfMonth);
   const [selectedOsId, setSelectedOsId] = useState('');
   const [selectedProfId, setSelectedProfId] = useState('');
-  const [selectedClinicaId, setSelectedClinicaId] = useState('TODAS');
-  const [selectedEstadoTurno, setSelectedEstadoTurno] = useState('VALIDOS'); // 'VALIDOS' | 'TODOS' | 'ATENDIDO'
+  const [selectedEstadoTurno, setSelectedEstadoTurno] = useState('ATENDIDO');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('master'); // 'master' | 'por_medico' | 'por_pmo'
 
-  // Accesos rápidos de rango de fechas
+  // Modales
+  const [selectedCbteParaVer, setSelectedCbteParaVer] = useState(null);
+  const [showLoteModal, setShowLoteModal] = useState(false);
+  const [ctaCteSelectedPaciente, setCtaCteSelectedPaciente] = useState(null);
+  const [ctaCteSelectedOs, setCtaCteSelectedOs] = useState(null);
+
+  // Accesos rápidos de fechas
   const handleSetRango = (tipo) => {
     const now = new Date();
     if (tipo === 'este_mes') {
@@ -59,45 +74,27 @@ export const FacturacionView = () => {
     } else if (tipo === 'mes_anterior') {
       setFechaDesde(new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]);
       setFechaHasta(new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0]);
-    } else if (tipo === 'quincena_1') {
-      setFechaDesde(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]);
-      setFechaHasta(new Date(now.getFullYear(), now.getMonth(), 15).toISOString().split('T')[0]);
-    } else if (tipo === 'quincena_2') {
-      setFechaDesde(new Date(now.getFullYear(), now.getMonth(), 16).toISOString().split('T')[0]);
-      setFechaHasta(new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]);
     } else if (tipo === 'todos') {
       setFechaDesde('2020-01-01');
       setFechaHasta('2030-12-31');
     }
   };
 
-  // Filtrado y cálculo valorizado del Master de Facturación
+  // Filtrado y cálculo valorizado del Master
   const masterData = useMemo(() => {
     return turnos.filter(t => {
-      // Filtro de Fechas
       if (t.fecha < fechaDesde || t.fecha > fechaHasta) return false;
-
-      // Filtro de Estado
       if (selectedEstadoTurno === 'VALIDOS' && (t.estado === 'CANCELADO' || t.estado === 'NO_ASISTIO')) return false;
       if (selectedEstadoTurno === 'ATENDIDO' && t.estado !== 'ATENDIDO') return false;
-
-      // Filtro de Obra Social
       if (selectedOsId && t.obra_social_id !== selectedOsId) return false;
-
-      // Filtro de Profesional
       if (selectedProfId && t.profesional_id !== selectedProfId) return false;
 
-      // Filtro de Clínica / Sede
-      if (selectedClinicaId !== 'TODAS' && t.clinica_id && t.clinica_id !== selectedClinicaId) return false;
-
-      // Buscador
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const pac = pacientes.find(p => p.id === t.paciente_id);
         const matchPac = pac && (`${pac.nombre} ${pac.apellido}`.toLowerCase().includes(q) || pac.dni.includes(q));
         const matchCode = t.codigo_reserva && t.codigo_reserva.toLowerCase().includes(q);
-        const matchBono = t.numero_bono && t.numero_bono.toLowerCase().includes(q);
-        if (!matchPac && !matchCode && !matchBono) return false;
+        if (!matchPac && !matchCode) return false;
       }
 
       return true;
@@ -107,21 +104,17 @@ export const FacturacionView = () => {
       const os = obrasSociales.find(o => o.id === t.obra_social_id);
       const plan = planes.find(p => p.id === t.plan_id);
       const practica = nomenclador.find(p => p.id === t.practica_id);
-      const clin = allClinicas.find(c => c.id === t.clinica_id) || activeClinica;
 
-      // Cálculo de Aranceles
       const esParticular = !os || os.sigla === 'PART';
-      const valorParticularPractica = Number(practica?.valor_particular || 18000);
+      const valorBase = Number(practica?.valor_particular || 16000);
       const coseguroCobrado = Number(t.monto_coseguro || 0);
 
-      // Si es Particular, el arancel de la OS es 0 y el total se cobró al paciente.
-      // Si es Obra Social, la OS cubre el arancel menos el coseguro o arancel neto.
-      const arancelObraSocial = esParticular ? 0 : Math.max(0, valorParticularPractica - coseguroCobrado);
-      const totalLiquidacionPrestacion = esParticular ? coseguroCobrado || valorParticularPractica : arancelObraSocial + coseguroCobrado;
+      const arancelObraSocial = esParticular ? 0 : Math.max(0, valorBase - coseguroCobrado);
+      const totalLiquidacion = esParticular ? coseguroCobrado || valorBase : arancelObraSocial + coseguroCobrado;
 
-      // Honorario profesional (80% para el médico, 20% retención clínica)
-      const retencionClinica = totalLiquidacionPrestacion * 0.20;
-      const honorarioNetoMedico = totalLiquidacionPrestacion * 0.80;
+      // Honorario profesional (80% para el psicólogo/médico, 20% retención clínica)
+      const retencionClinica = totalLiquidacion * 0.20;
+      const honorarioNetoMedico = totalLiquidacion * 0.80;
 
       return {
         id: t.id,
@@ -134,668 +127,618 @@ export const FacturacionView = () => {
         numero_afiliado: t.numero_afiliado || pac?.numero_afiliado || 'S/D',
         pacienteNombre: pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente',
         pacienteDni: pac?.dni || 'S/D',
-        profesionalNombre: prof ? `Dr(a). ${prof.apellido}` : 'Profesional',
-        profesionalMatricula: prof?.matricula_nacional || prof?.matricula_provincial || 'MN S/D',
-        profesionalEspecialidad: prof?.especialidad || 'Especialidad',
-        obraSocialNombre: os?.nombre || 'Particular / Privado',
+        profesionalNombre: prof ? `${prof.nombre} ${prof.apellido}` : 'Profesional',
+        profesionalMatricula: prof?.matricula_provincial || prof?.matricula_nacional || 'M.P. S/D',
+        profesionalEspecialidad: prof?.especialidad || 'Salud Mental',
+        obraSocialNombre: os?.nombre || 'Particular',
         obraSocialSigla: os?.sigla || 'PART',
         planNombre: plan?.nombre_plan || 'Estándar',
-        practicaCodigo: practica?.codigo_pmo || '42.01.01',
-        practicaDescripcion: practica?.descripcion || 'Consulta Médica Especializada',
-        clinicaNombre: clin?.nombre || 'Centro Médico',
+        practicaCodigo: practica?.codigo_pmo || '33.01.02',
+        practicaDescripcion: practica?.descripcion || 'Sesión de Psicoterapia Individual',
         estadoTurno: t.estado,
         estadoCoseguro: t.estado_coseguro || 'COBRADO',
         arancelObraSocial,
         coseguroCobrado,
-        totalLiquidacionPrestacion,
-        honorarioNetoMedico,
-        retencionClinica
+        totalLiquidacion,
+        retencionClinica,
+        honorarioNetoMedico
       };
     });
-  }, [turnos, fechaDesde, fechaHasta, selectedOsId, selectedProfId, selectedClinicaId, selectedEstadoTurno, searchQuery, pacientes, profesionales, obrasSociales, planes, nomenclador, allClinicas, activeClinica]);
+  }, [turnos, fechaDesde, fechaHasta, selectedEstadoTurno, selectedOsId, selectedProfId, searchQuery, pacientes, profesionales, obrasSociales, planes, nomenclador]);
 
   // Totales Globales
-  const totalRegistros = masterData.length;
-  const totalFacturadoOS = masterData.reduce((acc, r) => acc + r.arancelObraSocial, 0);
-  const totalCosegurosCaja = masterData.reduce((acc, r) => acc + r.coseguroCobrado, 0);
-  const totalGlobalValorizado = masterData.reduce((acc, r) => acc + r.totalLiquidacionPrestacion, 0);
-  const totalNetoMedicos = masterData.reduce((acc, r) => acc + r.honorarioNetoMedico, 0);
-  const totalRetencionClinica = masterData.reduce((acc, r) => acc + r.retencionClinica, 0);
+  const totalSesiones = masterData.length;
+  const totalArancelOS = masterData.reduce((acc, row) => acc + row.arancelObraSocial, 0);
+  const totalCoseguros = masterData.reduce((acc, row) => acc + row.coseguroCobrado, 0);
+  const totalBruto = totalArancelOS + totalCoseguros;
+  const totalHonorariosNetos = masterData.reduce((acc, row) => acc + row.honorarioNetoMedico, 0);
+  const totalRetencionClinica = masterData.reduce((acc, row) => acc + row.retencionClinica, 0);
 
-  // Resumen Agrupado por Obra Social
-  const resumenPorOS = useMemo(() => {
-    const grouped = {};
-    masterData.forEach(r => {
-      const key = r.obraSocialNombre;
-      if (!grouped[key]) {
-        grouped[key] = {
-          nombre: r.obraSocialNombre,
-          sigla: r.obraSocialSigla,
-          cantPrestaciones: 0,
-          totalOS: 0,
-          totalCoseguros: 0,
-          totalGeneral: 0
-        };
-      }
-      grouped[key].cantPrestaciones += 1;
-      grouped[key].totalOS += r.arancelObraSocial;
-      grouped[key].totalCoseguros += r.coseguroCobrado;
-      grouped[key].totalGeneral += r.totalLiquidacionPrestacion;
-    });
-    return Object.values(grouped);
-  }, [masterData]);
-
-  // Resumen Agrupado por Profesional
-  const resumenPorMedico = useMemo(() => {
-    const grouped = {};
-    masterData.forEach(r => {
-      const key = r.profesionalNombre;
-      if (!grouped[key]) {
-        grouped[key] = {
-          profesional: r.profesionalNombre,
-          matricula: r.profesionalMatricula,
-          especialidad: r.profesionalEspecialidad,
-          cantConsultas: 0,
-          totalFacturado: 0,
-          retencionClinica: 0,
-          netoMedico: 0
-        };
-      }
-      grouped[key].cantConsultas += 1;
-      grouped[key].totalFacturado += r.totalLiquidacionPrestacion;
-      grouped[key].retencionClinica += r.retencionClinica;
-      grouped[key].netoMedico += r.honorarioNetoMedico;
-    });
-    return Object.values(grouped);
-  }, [masterData]);
-
-  // Resumen Agrupado por Código PMO
-  const resumenPorPMO = useMemo(() => {
-    const grouped = {};
-    masterData.forEach(r => {
-      const key = r.practicaCodigo;
-      if (!grouped[key]) {
-        grouped[key] = {
-          codigo: r.practicaCodigo,
-          descripcion: r.practicaDescripcion,
-          cantidad: 0,
-          totalOS: 0,
-          totalCoseguros: 0,
-          totalGeneral: 0
-        };
-      }
-      grouped[key].cantidad += 1;
-      grouped[key].totalOS += r.arancelObraSocial;
-      grouped[key].totalCoseguros += r.coseguroCobrado;
-      grouped[key].totalGeneral += r.totalLiquidacionPrestacion;
-    });
-    return Object.values(grouped);
-  }, [masterData]);
-
-  // Exportar Master a CSV / Excel
-  const exportMasterCsv = () => {
+  // Exportar a CSV / Excel
+  const exportarCSV = () => {
     const headers = [
-      'Nro Orden',
-      'Fecha Atencion',
+      'Nro',
+      'Fecha',
       'Hora',
-      'Nro Bono / Token',
+      'Codigo Reserva',
       'Paciente',
-      'DNI Paciente',
+      'DNI',
+      'Nro Afiliado',
       'Obra Social',
       'Plan',
-      'Nro Afiliado',
-      'Profesional Prestador',
+      'Bono / Token',
+      'Codigo PMO/CPPC',
+      'Prestacion',
+      'Profesional',
       'Matricula',
-      'Especialidad',
-      'Codigo PMO',
-      'Practica / Prestacion',
-      'Sede / Centro',
-      'Arancel Obra Social ($)',
-      'Coseguro Afiliado ($)',
-      'Total Facturado ($)',
-      'Neto Profesional ($)',
-      'Estado Turno'
+      'Arancel OS',
+      'Coseguro Cobrado',
+      'Total Bruto',
+      'Retencion Clinica (20%)',
+      'Neto Profesional (80%)',
+      'Estado'
     ];
 
     const rows = masterData.map(r => [
       r.index,
-      `"${r.fecha}"`,
-      `"${r.hora}"`,
-      `"${r.numero_bono}"`,
+      r.fecha,
+      r.hora,
+      r.codigo_reserva,
       `"${r.pacienteNombre}"`,
       r.pacienteDni,
+      r.numero_afiliado,
       `"${r.obraSocialNombre}"`,
       `"${r.planNombre}"`,
-      `"${r.numero_afiliado}"`,
-      `"${r.profesionalNombre}"`,
-      `"${r.profesionalMatricula}"`,
-      `"${r.profesionalEspecialidad}"`,
-      `"${r.practicaCodigo}"`,
+      r.numero_bono,
+      r.practicaCodigo,
       `"${r.practicaDescripcion}"`,
-      `"${r.clinicaNombre}"`,
+      `"${r.profesionalNombre}"`,
+      r.profesionalMatricula,
       r.arancelObraSocial,
       r.coseguroCobrado,
-      r.totalLiquidacionPrestacion,
+      r.totalLiquidacion,
+      r.retencionClinica,
       r.honorarioNetoMedico,
-      `"${r.estadoTurno}"`
+      r.estadoTurno
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' 
+      + [headers.join(';'), ...rows.map(e => e.join(';'))].join('\n');
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Master_Facturacion_OS_${fechaDesde}_al_${fechaHasta}.csv`);
+    link.setAttribute('download', `Liquidacion_Prestaciones_${fechaDesde}_al_${fechaHasta}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* HEADER DE FACTURACIÓN */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Master de Facturación & Liquidación Obras Sociales
-            </h1>
-            <span className="px-2.5 py-0.5 text-xs font-bold bg-medical-100 text-medical-800 rounded-lg border border-medical-200">
-              Argentina PMO
-            </span>
+    <div className="space-y-6">
+      
+      {/* HEADER PRINCIPAL */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-md shadow-indigo-600/20">
+            <DollarSign className="w-6 h-6" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Listados valorizados por Obra Social, rendición de coseguros, detalle por código nomenclador y liquidación de honorarios a prestadores.
-          </p>
+          <div>
+            <h2 className="text-lg font-black text-slate-900">
+              Módulo de Facturación & Obras Sociales (APROSS / CPPC / ARCA)
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Liquidación de prestaciones, presentación de lotes oficiales, cuentas corrientes y Factura Electrónica
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           <button
-            onClick={exportMasterCsv}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-md shadow-emerald-600/20 transition"
-            title="Descargar planilla compatible con Excel"
+            onClick={() => setShowLoteModal(true)}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition cursor-pointer"
           >
-            <Download className="w-4 h-4" />
-            <span>Exportar Excel (CSV)</span>
-          </button>
-
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-md transition"
-            title="Imprimir carátula y detalle de facturación"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Imprimir Master Oficial</span>
+            <Layers className="w-4 h-4" />
+            <span>Generar Lote de Presentación</span>
           </button>
         </div>
       </div>
 
-      {/* PANEL DE FILTROS AVANZADOS DE FACTURACIÓN (NO PRINT) */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs space-y-4 no-print">
-        {/* Fila 1: Accesos Rápidos de Rango */}
-        <div className="flex items-center justify-between gap-2 flex-wrap border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-bold text-slate-500 flex items-center gap-1 mr-1">
-              <Calendar className="w-3.5 h-3.5 text-medical-600" /> Periodo:
-            </span>
-            {[
-              { id: 'este_mes', label: 'Mes Actual' },
-              { id: 'quincena_1', label: '1ra Quincena' },
-              { id: 'quincena_2', label: '2da Quincena' },
-              { id: 'mes_anterior', label: 'Mes Anterior' },
-              { id: 'todos', label: 'Histórico Completo' }
-            ].map(r => (
-              <button
-                key={r.id}
-                onClick={() => handleSetRango(r.id)}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition"
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
+      {/* TABS DE SUB-MÓDULOS */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <button
+          onClick={() => setActiveTab('master')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+            activeTab === 'master'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Master de Liquidación ({totalSesiones})</span>
+        </button>
 
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-bold text-slate-600">Desde:</label>
-            <input
-              type="date"
-              value={fechaDesde}
-              onChange={(e) => setFechaDesde(e.target.value)}
-              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50"
-            />
-            <label className="text-xs font-bold text-slate-600">Hasta:</label>
-            <input
-              type="date"
-              value={fechaHasta}
-              onChange={(e) => setFechaHasta(e.target.value)}
-              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50"
-            />
-          </div>
-        </div>
+        <button
+          onClick={() => setActiveTab('lotes')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+            activeTab === 'lotes'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Lotes de Presentación OS / CPPC ({lotesFacturacion?.length || 0})</span>
+        </button>
 
-        {/* Fila 2: Selectores de Financiador, Profesional, Sede y Estado */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Obra Social / Prepaga</label>
-            <select
-              value={selectedOsId}
-              onChange={(e) => setSelectedOsId(e.target.value)}
-              className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
-            >
-              <option value="">Todas las Coberturas ({obrasSociales.length})</option>
-              {obrasSociales.map(os => (
-                <option key={os.id} value={os.id}>{os.nombre}</option>
-              ))}
-            </select>
-          </div>
+        <button
+          onClick={() => setActiveTab('cta_cte')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+            activeTab === 'cta_cte'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          <span>Cuentas Corrientes (Pacientes & OS)</span>
+        </button>
 
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Profesional Prestador</label>
-            <select
-              value={selectedProfId}
-              onChange={(e) => setSelectedProfId(e.target.value)}
-              className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
-            >
-              <option value="">Todos los Médicos ({profesionales.length})</option>
-              {profesionales.map(p => (
-                <option key={p.id} value={p.id}>Dr(a). {p.nombre} {p.apellido} ({p.especialidad})</option>
-              ))}
-            </select>
-          </div>
+        <button
+          onClick={() => setActiveTab('arca')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+            activeTab === 'arca'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>Factura Electrónica ARCA (AFIP) ({comprobantesArca?.length || 0})</span>
+        </button>
+      </div>
 
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Sede / Centro</label>
-            <select
-              value={selectedClinicaId}
-              onChange={(e) => setSelectedClinicaId(e.target.value)}
-              className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
-            >
-              <option value="TODAS">Todas las Sedes ({allClinicas.length})</option>
-              {allClinicas.map(c => (
-                <option key={c.id} value={c.id}>🏥 {c.nombre}</option>
-              ))}
-            </select>
-          </div>
+      {/* 1. SUB-MÓDULO: MASTER DE LIQUIDACIÓN */}
+      {activeTab === 'master' && (
+        <div className="space-y-6">
+          
+          {/* TARJETAS RESUMEN DE LIQUIDACIÓN */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 block">Total Prestaciones</span>
+              <p className="text-2xl font-black text-slate-900 mt-1">{totalSesiones}</p>
+              <span className="text-[10px] text-indigo-600 font-semibold">Sesiones atendidas</span>
+            </div>
 
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Estado Prestación</label>
-            <select
-              value={selectedEstadoTurno}
-              onChange={(e) => setSelectedEstadoTurno(e.target.value)}
-              className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
-            >
-              <option value="VALIDOS">Válidos (Sin Cancelados)</option>
-              <option value="ATENDIDO">Solo Atendidos</option>
-              <option value="TODOS">Todos los Estados</option>
-            </select>
-          </div>
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 block">A Facturar a Obras Soc.</span>
+              <p className="text-xl font-black text-indigo-700 mt-1 font-mono">
+                ${totalArancelOS.toLocaleString('es-AR')}
+              </p>
+              <span className="text-[10px] text-slate-400">Aranceles directos/convenios</span>
+            </div>
 
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Buscar Paciente / Bono</label>
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="DNI, Nombre o Bono..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500"
-              />
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 block">Coseguros Cobrados</span>
+              <p className="text-xl font-black text-emerald-700 mt-1 font-mono">
+                ${totalCoseguros.toLocaleString('es-AR')}
+              </p>
+              <span className="text-[10px] text-slate-400">En mano / caja clínica</span>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 block">Honorarios Netos Médicos (80%)</span>
+              <p className="text-xl font-black text-slate-900 mt-1 font-mono">
+                ${totalHonorariosNetos.toLocaleString('es-AR')}
+              </p>
+              <span className="text-[10px] text-slate-400">A liquidar a terapeutas</span>
+            </div>
+
+            <div className="bg-indigo-900 text-white p-4 rounded-2xl shadow-xs col-span-2 lg:col-span-1">
+              <span className="text-[11px] font-bold text-indigo-200 block">Retención Clínica (20%)</span>
+              <p className="text-xl font-black text-white mt-1 font-mono">
+                ${totalRetencionClinica.toLocaleString('es-AR')}
+              </p>
+              <span className="text-[10px] text-indigo-300">Margen institucional</span>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ÁREA IMPRIMIBLE / REPORTE OFICIAL */}
-      <div id="printable-area" className="space-y-6">
-        
-        {/* CARÁTULA MEMBRETADA PARA PRESENTACIÓN (Visible en Impresión) */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm print:border-none print:shadow-none print:p-0">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-4 gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Building className="w-6 h-6 text-medical-600" />
-                <h2 className="text-xl font-black text-slate-900">{activeClinica?.nombre || 'Centro Médico San Lucas'}</h2>
+          {/* BARRA DE FILTROS */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto">
+                <button
+                  onClick={() => handleSetRango('este_mes')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  Este Mes
+                </button>
+                <button
+                  onClick={() => handleSetRango('mes_anterior')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  Mes Anterior
+                </button>
+                <button
+                  onClick={() => handleSetRango('todos')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  Ver Todo
+                </button>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                CUIT: {activeClinica?.cuit || '30-71234567-9'} • {activeClinica?.direccion || 'Av. Santa Fe 2450, CABA'} • Tel: {activeClinica?.telefono || '+54 11 4821-9000'}
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={exportarCSV}
+                  disabled={masterData.length === 0}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Exportar Excel / CSV</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Desde</label>
+                <input
+                  type="date"
+                  value={fechaDesde}
+                  onChange={(e) => setFechaDesde(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Hasta</label>
+                <input
+                  type="date"
+                  value={fechaHasta}
+                  onChange={(e) => setFechaHasta(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Obra Social</label>
+                <select
+                  value={selectedOsId}
+                  onChange={(e) => setSelectedOsId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-800"
+                >
+                  <option value="">Todas las Obras Sociales</option>
+                  {obrasSociales.map(os => (
+                    <option key={os.id} value={os.id}>{os.nombre} ({os.sigla})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Profesional</label>
+                <select
+                  value={selectedProfId}
+                  onChange={(e) => setSelectedProfId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-800"
+                >
+                  <option value="">Todos los Profesionales</option>
+                  {profesionales.map(p => (
+                    <option key={p.id} value={p.id}>{p.nombre} {p.apellido}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* TABLA MASTER DE PRESTACIONES */}
+          <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black text-slate-500">
+                <tr>
+                  <th className="px-3 py-3">Fecha / Hora</th>
+                  <th className="px-3 py-3">Paciente & DNI</th>
+                  <th className="px-3 py-3">Cobertura & Afiliado</th>
+                  <th className="px-3 py-3">Bono / Token</th>
+                  <th className="px-3 py-3">Práctica / Código</th>
+                  <th className="px-3 py-3">Profesional (M.P.)</th>
+                  <th className="px-3 py-3 text-right">Arancel OS</th>
+                  <th className="px-3 py-3 text-right">Coseguro</th>
+                  <th className="px-3 py-3 text-right">Neto Profesional</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {masterData.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="px-4 py-8 text-center text-slate-400 font-medium">
+                      No se encontraron prestaciones atendidas para los filtros seleccionados.
+                    </td>
+                  </tr>
+                ) : (
+                  masterData.map(r => (
+                    <tr key={r.id} className="hover:bg-slate-50 transition">
+                      <td className="px-3 py-2.5 font-medium whitespace-nowrap">
+                        <span className="font-bold text-slate-900">{formatDateAR(r.fecha)}</span>
+                        <span className="text-slate-400 block text-[10px]">{r.hora} hs</span>
+                      </td>
+                      <td className="px-3 py-2.5 font-bold text-slate-900">
+                        {r.pacienteNombre}
+                        <span className="text-[10px] text-slate-400 block font-normal">DNI: {r.pacienteDni}</span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className="font-bold text-slate-800">{r.obraSocialSigla}</span>
+                        <span className="text-[10px] text-slate-500 block font-mono">Afil: {r.numero_afiliado}</span>
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-indigo-700 font-bold whitespace-nowrap">
+                        {r.numero_bono}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className="font-mono font-bold text-indigo-800 text-[11px] block">{r.practicaCodigo}</span>
+                        <span className="text-[10px] text-slate-600 truncate max-w-[140px] block">{r.practicaDescripcion}</span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className="font-bold text-slate-900">{r.profesionalNombre}</span>
+                        <span className="text-[10px] text-slate-400 block">{r.profesionalMatricula}</span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-mono font-bold text-slate-900">
+                        ${r.arancelObraSocial.toLocaleString('es-AR')}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-mono font-bold text-emerald-700">
+                        ${r.coseguroCobrado.toLocaleString('es-AR')}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-mono font-black text-indigo-700">
+                        ${r.honorarioNetoMedico.toLocaleString('es-AR')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      )}
+
+      {/* 2. SUB-MÓDULO: LOTES DE PRESENTACIÓN A OBRAS SOCIALES & CPPC */}
+      {activeTab === 'lotes' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-black text-slate-900 text-sm">Lotes de Presentación Generados</h3>
+              <p className="text-xs text-slate-500">
+                Padrón mensual de prestaciones agrupadas para APROSS, CPPC y prepagas con auditoría y débitos
               </p>
             </div>
-
-            <div className="text-left sm:text-right bg-slate-50 p-3 rounded-2xl border border-slate-100">
-              <span className="text-[10px] font-black uppercase text-slate-500 block">Periodo de Facturación</span>
-              <span className="text-sm font-black text-slate-900">
-                {formatDateAR(fechaDesde)} al {formatDateAR(fechaHasta)}
-              </span>
-              <span className="text-[11px] text-medical-700 font-bold block mt-0.5">
-                {selectedOsId ? obrasSociales.find(o => o.id === selectedOsId)?.nombre : 'Consolidado Todas las Coberturas'}
-              </span>
-            </div>
+            <button
+              onClick={() => setShowLoteModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Nuevo Lote</span>
+            </button>
           </div>
 
-          {/* TARJETAS DE MÉTRICAS FINANCIERAS (KPIs) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <span className="text-[10px] font-black uppercase text-slate-500 block">Bonos / Prestaciones</span>
-              <p className="text-2xl font-black text-slate-900 mt-0.5 font-mono">{totalRegistros}</p>
-              <span className="text-[10px] text-slate-500 font-medium">Órdenes registradas</span>
-            </div>
-
-            <div className="bg-sky-50 p-4 rounded-2xl border border-sky-200">
-              <span className="text-[10px] font-black uppercase text-sky-800 block">A Facturar a Obra Social</span>
-              <p className="text-2xl font-black text-sky-900 mt-0.5 font-mono">${totalFacturadoOS.toLocaleString('es-AR')}</p>
-              <span className="text-[10px] text-sky-700 font-medium">Aranceles a liquidar</span>
-            </div>
-
-            <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
-              <span className="text-[10px] font-black uppercase text-emerald-800 block">Coseguros en Caja</span>
-              <p className="text-2xl font-black text-emerald-900 mt-0.5 font-mono">${totalCosegurosCaja.toLocaleString('es-AR')}</p>
-              <span className="text-[10px] text-emerald-700 font-medium">Recaudación directa</span>
-            </div>
-
-            <div className="bg-purple-50 p-4 rounded-2xl border border-purple-200">
-              <span className="text-[10px] font-black uppercase text-purple-800 block">Total Valorizado Global</span>
-              <p className="text-2xl font-black text-purple-900 mt-0.5 font-mono">${totalGlobalValorizado.toLocaleString('es-AR')}</p>
-              <span className="text-[10px] text-purple-700 font-medium">Bruto prestacional</span>
-            </div>
-          </div>
-        </div>
-
-        {/* TABS DE VISTA: MASTER DETALLADO / RESUMEN POR OBRA SOCIAL / LIQUIDACIÓN MÉDICOS (NO PRINT) */}
-        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl w-fit no-print">
-          <button
-            onClick={() => setActiveTab('master')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
-              activeTab === 'master'
-                ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileSpreadsheet className="w-4 h-4 text-medical-600" />
-            <span>Master Detallado por Orden ({masterData.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('por_os')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
-              activeTab === 'por_os'
-                ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4 text-sky-600" />
-            <span>Resumen por Obra Social ({resumenPorOS.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('por_medico')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
-              activeTab === 'por_medico'
-                ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <UserCheck className="w-4 h-4 text-purple-600" />
-            <span>Liquidación Médicos ({resumenPorMedico.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('por_pmo')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
-              activeTab === 'por_pmo'
-                ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Layers className="w-4 h-4 text-emerald-600" />
-            <span>Por Código PMO ({resumenPorPMO.length})</span>
-          </button>
-        </div>
-
-        {/* TABLA 1: MASTER DETALLADO POR ORDEN / PRESTACIÓN */}
-        {activeTab === 'master' && (
-          <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs space-y-4 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-extrabold text-slate-900">
-                  Planilla Master de Prestaciones Médicas Realizadas
-                </h3>
-                <span className="text-xs text-slate-500">
-                  Desglose individual por paciente, bono, profesional y arancel pactado.
-                </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(!lotesFacturacion || lotesFacturacion.length === 0) ? (
+              <div className="col-span-full p-8 bg-white border border-slate-200 rounded-2xl text-center text-slate-400">
+                Aún no has generado lotes de presentación para este centro. Haz clic en "Nuevo Lote" para crear uno.
               </div>
-              <span className="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-xl">
-                {masterData.length} registros
-              </span>
-            </div>
+            ) : (
+              lotesFacturacion.map(lote => (
+                <div key={lote.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-black text-indigo-700 text-xs px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-100">
+                      {lote.numero_lote}
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                      {lote.estado || 'PRESENTADO'}
+                    </span>
+                  </div>
 
-            <div className="overflow-x-auto border border-slate-100 rounded-2xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase tracking-wider">
-                  <tr>
-                    <th className="px-3 py-3">N°</th>
-                    <th className="px-3 py-3">Fecha & Hora</th>
-                    <th className="px-3 py-3">N° Bono / Token</th>
-                    <th className="px-3 py-3">Paciente (DNI)</th>
-                    <th className="px-3 py-3">Obra Social & Plan</th>
-                    <th className="px-3 py-3">N° Afiliado</th>
-                    <th className="px-3 py-3">Médico Prestador</th>
-                    <th className="px-3 py-3">Cód. PMO & Práctica</th>
-                    <th className="px-3 py-3 text-right">Arancel OS ($)</th>
-                    <th className="px-3 py-3 text-right">Coseguro ($)</th>
-                    <th className="px-3 py-3 text-right font-black text-slate-900">Total ($)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold">
-                  {masterData.length === 0 ? (
-                    <tr>
-                      <td colSpan="11" className="text-center py-10 text-slate-400">
-                        No hay prestaciones registradas en el periodo y filtros seleccionados.
-                      </td>
-                    </tr>
-                  ) : (
-                    masterData.map((r) => (
-                      <tr key={r.id} className="hover:bg-slate-50/80 transition">
-                        <td className="px-3 py-2.5 font-mono text-slate-400">{r.index}</td>
-                        <td className="px-3 py-2.5 whitespace-nowrap font-bold text-slate-900">
-                          {formatDateAR(r.fecha)} <span className="text-[11px] text-slate-500 font-normal">{r.hora} hs</span>
-                        </td>
-                        <td className="px-3 py-2.5 font-mono font-bold text-medical-800">
-                          {r.numero_bono}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className="font-extrabold text-slate-900 block">{r.pacienteNombre}</span>
-                          <span className="text-[11px] text-slate-500 font-mono">DNI {r.pacienteDni}</span>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className="font-bold text-slate-900 block">{r.obraSocialSigla || r.obraSocialNombre}</span>
-                          <span className="text-[10px] text-slate-500">{r.planNombre}</span>
-                        </td>
-                        <td className="px-3 py-2.5 font-mono text-slate-600">
-                          {r.numero_afiliado}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className="font-bold text-slate-900 block">{r.profesionalNombre}</span>
-                          <span className="text-[10px] text-slate-500">{r.profesionalMatricula}</span>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] mr-1">
-                            {r.practicaCodigo}
-                          </span>
-                          <span className="text-slate-700 text-[11px]">{r.practicaDescripcion}</span>
-                        </td>
-                        <td className="px-3 py-2.5 text-right font-mono font-bold text-sky-800">
-                          ${r.arancelObraSocial.toLocaleString('es-AR')}
-                        </td>
-                        <td className="px-3 py-2.5 text-right font-mono text-emerald-700">
-                          ${r.coseguroCobrado.toLocaleString('es-AR')}
-                        </td>
-                        <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900">
-                          ${r.totalLiquidacionPrestacion.toLocaleString('es-AR')}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-                {masterData.length > 0 && (
-                  <tfoot className="bg-slate-100/80 font-black text-slate-900 border-t-2 border-slate-300">
-                    <tr>
-                      <td colSpan="8" className="px-3 py-3 text-right uppercase text-[11px]">
-                        Totales Facturación del Periodo:
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono text-sky-900 text-sm">
-                        ${totalFacturadoOS.toLocaleString('es-AR')}
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono text-emerald-900 text-sm">
-                        ${totalCosegurosCaja.toLocaleString('es-AR')}
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono text-purple-900 text-sm">
-                        ${totalGlobalValorizado.toLocaleString('es-AR')}
-                      </td>
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            </div>
-          </div>
-        )}
+                  <div>
+                    <h4 className="font-black text-slate-900 text-sm">{lote.obra_social_nombre}</h4>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Período: {lote.periodo_mes}/{lote.periodo_anio} • {lote.total_prestaciones} sesiones
+                    </span>
+                  </div>
 
-        {/* TABLA 2: RESUMEN POR OBRA SOCIAL */}
-        {activeTab === 'por_os' && (
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-sky-600" />
-              <span>Resumen y Lotes Agrupados por Financiador / Obra Social</span>
-            </h3>
+                  <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between text-xs">
+                    <span className="text-slate-500 font-bold">Total Presentado:</span>
+                    <span className="font-black font-mono text-indigo-700 text-sm">
+                      ${Number(lote.monto_total_presentado || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
 
-            <div className="overflow-x-auto border border-slate-100 rounded-2xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase">
-                  <tr>
-                    <th className="px-4 py-3">Obra Social / Financiador</th>
-                    <th className="px-4 py-3 text-center">Cant. Órdenes / Bonos</th>
-                    <th className="px-4 py-3 text-right">A Cobrar de la OS ($)</th>
-                    <th className="px-4 py-3 text-right">Coseguros Pacientes ($)</th>
-                    <th className="px-4 py-3 text-right font-black text-slate-900">Total Facturado ($)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold">
-                  {resumenPorOS.map((os, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80">
-                      <td className="px-4 py-3 font-extrabold text-slate-900">
-                        {os.nombre} {os.sigla && `(${os.sigla})`}
-                      </td>
-                      <td className="px-4 py-3 text-center font-mono font-bold">{os.cantPrestaciones}</td>
-                      <td className="px-4 py-3 text-right font-mono font-bold text-sky-800">
-                        ${os.totalOS.toLocaleString('es-AR')}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-emerald-700">
-                        ${os.totalCoseguros.toLocaleString('es-AR')}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-black text-slate-900 text-sm">
-                        ${os.totalGeneral.toLocaleString('es-AR')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TABLA 3: LIQUIDACIÓN POR PROFESIONAL */}
-        {activeTab === 'por_medico' && (
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-purple-600" />
-              <span>Liquidación de Honorarios Médicos a Prestadores</span>
-            </h3>
-
-            <div className="overflow-x-auto border border-slate-100 rounded-2xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase">
-                  <tr>
-                    <th className="px-4 py-3">Profesional</th>
-                    <th className="px-4 py-3">Especialidad & Matrícula</th>
-                    <th className="px-4 py-3 text-center">Consultas Atendidas</th>
-                    <th className="px-4 py-3 text-right">Monto Bruto Facturado</th>
-                    <th className="px-4 py-3 text-right">Retención Centro (20%)</th>
-                    <th className="px-4 py-3 text-right font-black text-emerald-900">Neto a Liquidar Médico</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold">
-                  {resumenPorMedico.map((m, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80">
-                      <td className="px-4 py-3 font-extrabold text-slate-900">{m.profesional}</td>
-                      <td className="px-4 py-3 text-slate-600">{m.especialidad} • {m.matricula}</td>
-                      <td className="px-4 py-3 text-center font-mono font-bold">{m.cantConsultas}</td>
-                      <td className="px-4 py-3 text-right font-mono">${m.totalFacturado.toLocaleString('es-AR')}</td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-500">-${m.retencionClinica.toLocaleString('es-AR')}</td>
-                      <td className="px-4 py-3 text-right font-mono font-black text-emerald-700 text-sm">
-                        ${m.netoMedico.toLocaleString('es-AR')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TABLA 4: RESUMEN POR CÓDIGO PMO */}
-        {activeTab === 'por_pmo' && (
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-emerald-600" />
-              <span>Rendición por Código Nomenclador PMO</span>
-            </h3>
-
-            <div className="overflow-x-auto border border-slate-100 rounded-2xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase">
-                  <tr>
-                    <th className="px-4 py-3">Código PMO</th>
-                    <th className="px-4 py-3">Descripción de la Práctica</th>
-                    <th className="px-4 py-3 text-center">Cantidad</th>
-                    <th className="px-4 py-3 text-right">Total OS ($)</th>
-                    <th className="px-4 py-3 text-right">Total Coseguros ($)</th>
-                    <th className="px-4 py-3 text-right font-black text-slate-900">Total ($)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold">
-                  {resumenPorPMO.map((p, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80">
-                      <td className="px-4 py-3 font-mono font-bold text-slate-900 bg-slate-50">{p.codigo}</td>
-                      <td className="px-4 py-3 text-slate-800 font-bold">{p.descripcion}</td>
-                      <td className="px-4 py-3 text-center font-mono font-bold">{p.cantidad}</td>
-                      <td className="px-4 py-3 text-right font-mono text-sky-800">${p.totalOS.toLocaleString('es-AR')}</td>
-                      <td className="px-4 py-3 text-right font-mono text-emerald-700">${p.totalCoseguros.toLocaleString('es-AR')}</td>
-                      <td className="px-4 py-3 text-right font-mono font-black text-slate-900 text-sm">
-                        ${p.totalGeneral.toLocaleString('es-AR')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* PIE DE IMPRESIÓN OFICIAL: FIRMAS DE AUDITORÍA (SOLO PRINT) */}
-        <div className="hidden print:grid grid-cols-2 gap-12 pt-16 text-center text-xs">
-          <div className="border-t border-slate-400 pt-2">
-            <p className="font-bold text-slate-900">Firma Auditor Médico / Dirección</p>
-            <p className="text-[10px] text-slate-500">Sello y Matrícula Profesional</p>
-          </div>
-          <div className="border-t border-slate-400 pt-2">
-            <p className="font-bold text-slate-900">Recepción Obra Social / Auditoría</p>
-            <p className="text-[10px] text-slate-500">Fecha de Conformidad y Firma</p>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                    <span>Presentado: {formatDateAR(lote.fecha_presentacion)}</span>
+                    <button
+                      onClick={() => {
+                        alert(`Planilla oficial para ${lote.obra_social_nombre} lista para descargar e imprimir con ${lote.total_prestaciones} prestaciones.`);
+                      }}
+                      className="font-bold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Printer className="w-3 h-3" />
+                      Planilla CPPC
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 3. SUB-MÓDULO: CUENTAS CORRIENTES (PACIENTES Y OBRAS SOCIALES) */}
+      {activeTab === 'cta_cte' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Cuentas Corrientes de Pacientes */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-slate-900 text-sm">Cuentas Corrientes de Pacientes</h3>
+                  <p className="text-xs text-slate-500">Control de abonos mensuales, copagos y saldos</p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+                {pacientes.map(pac => (
+                  <div key={pac.id} className="py-3 flex items-center justify-between hover:bg-slate-50 p-2 rounded-xl transition">
+                    <div>
+                      <p className="font-bold text-slate-900 text-xs">{pac.apellido}, {pac.nombre}</p>
+                      <span className="text-[10px] text-slate-400">DNI: {pac.dni} • Tel: {pac.telefono_whatsapp}</span>
+                    </div>
+                    <button
+                      onClick={() => setCtaCteSelectedPaciente(pac)}
+                      className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Ver Estado
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cuentas Corrientes de Obras Sociales */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-slate-900 text-sm">Cuentas Corrientes de Obras Sociales</h3>
+                  <p className="text-xs text-slate-500">Facturación emitida vs cobranzas y débitos</p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+                {obrasSociales.filter(o => o.sigla !== 'PART').map(os => (
+                  <div key={os.id} className="py-3 flex items-center justify-between hover:bg-slate-50 p-2 rounded-xl transition">
+                    <div>
+                      <p className="font-bold text-slate-900 text-xs">{os.nombre} ({os.sigla})</p>
+                      <span className="text-[10px] text-slate-400">CUIT: {os.cuit || 'S/D'}</span>
+                    </div>
+                    <button
+                      onClick={() => setCtaCteSelectedOs(os)}
+                      className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Ver Estado
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 4. SUB-MÓDULO: FACTURACIÓN ELECTRÓNICA ARCA (AFIP) */}
+      {activeTab === 'arca' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+              <div>
+                <h4 className="font-black text-emerald-950 text-xs sm:text-sm">
+                  Facturación Electrónica ARCA (AFIP WSFE) Conectada
+                </h4>
+                <p className="text-[11px] text-emerald-800">
+                  Punto de Venta {activeClinica?.punto_venta || 1} • CUIT: {activeClinica?.cuit || '30-71234567-9'} • Régimen: {activeClinica?.condicion_iva || 'Monotributo'}
+                </p>
+              </div>
+            </div>
+
+            <span className="text-[10px] font-black uppercase px-2.5 py-1 bg-emerald-600 text-white rounded-lg shadow-xs">
+              CAE Activo
+            </span>
+          </div>
+
+          <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th className="px-3 py-3">Fecha</th>
+                  <th className="px-3 py-3">Tipo Comprobante</th>
+                  <th className="px-3 py-3">Número</th>
+                  <th className="px-3 py-3">Receptor / Paciente</th>
+                  <th className="px-3 py-3">CAE / Vto</th>
+                  <th className="px-3 py-3 text-right">Importe Total</th>
+                  <th className="px-3 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(!comprobantesArca || comprobantesArca.length === 0) ? (
+                  <tr>
+                    <td colSpan="7" className="px-4 py-8 text-center text-slate-400 font-medium">
+                      Aún no se han emitido facturas electrónicas ARCA en este período.
+                    </td>
+                  </tr>
+                ) : (
+                  comprobantesArca.map(cbte => (
+                    <tr key={cbte.id} className="hover:bg-slate-50 transition">
+                      <td className="px-3 py-2.5 font-medium whitespace-nowrap">{formatDateAR(cbte.fecha_emision)}</td>
+                      <td className="px-3 py-2.5 font-bold text-slate-800">
+                        <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-mono mr-1">
+                          {cbte.letra}
+                        </span>
+                        {cbte.tipo_comprobante_nombre}
+                      </td>
+                      <td className="px-3 py-2.5 font-mono font-bold text-indigo-700">{cbte.numero_completo}</td>
+                      <td className="px-3 py-2.5 font-semibold text-slate-900">
+                        {cbte.receptor?.nombre || 'Consumidor Final'}
+                        <span className="text-[10px] text-slate-400 block font-normal">{cbte.receptor?.doc_tipo}: {cbte.receptor?.doc_nro}</span>
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-[11px]">
+                        <span className="font-bold text-emerald-700">{cbte.cae}</span>
+                        <span className="text-slate-400 block text-[10px]">Vto: {formatDateAR(cbte.cae_vto)}</span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900">
+                        ${Number(cbte.importe_total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-3 py-2.5 text-right">
+                        <button
+                          onClick={() => setSelectedCbteParaVer(cbte)}
+                          className="p-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold transition inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Ver Factura</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* MODALES */}
+      {selectedCbteParaVer && (
+        <ComprobanteArcaModal
+          comprobante={selectedCbteParaVer}
+          onClose={() => setSelectedCbteParaVer(null)}
+        />
+      )}
+
+      {showLoteModal && (
+        <LoteFacturacionModal
+          onClose={() => setShowLoteModal(false)}
+          onLoteCreado={(lote) => {
+            setActiveTab('lotes');
+          }}
+        />
+      )}
+
+      {ctaCteSelectedPaciente && (
+        <CuentaCorrienteModal
+          paciente={ctaCteSelectedPaciente}
+          onClose={() => setCtaCteSelectedPaciente(null)}
+        />
+      )}
+
+      {ctaCteSelectedOs && (
+        <CuentaCorrienteModal
+          obraSocial={ctaCteSelectedOs}
+          onClose={() => setCtaCteSelectedOs(null)}
+        />
+      )}
+
     </div>
   );
 };

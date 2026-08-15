@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Stethoscope, 
   Building2, 
@@ -13,10 +13,13 @@ import {
   Cloud,
   PanelLeftOpen,
   PanelLeftClose,
-  Menu
+  Menu,
+  Search,
+  Command
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LoginModal } from './LoginModal';
+import { QuickSearchPalette } from './QuickSearchPalette';
 
 export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
   const { 
@@ -25,12 +28,25 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
     switchClinica, 
     currentUser,
     logoutUser,
-    syncWithCloud,
+    syncWithCloud, 
     showToast 
   } = useApp();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Atajo global Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowQuickSearch(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Copiar link exclusivo para que saquen turnos los pacientes
   const handleCopyPatientLink = () => {
@@ -113,6 +129,19 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
 
             {/* BOTONES DE ACCIÓN RÁPIDA & PERFIL */}
             <div className="flex items-center gap-2">
+              {/* Botón Búsqueda Rápida / Command Palette */}
+              <button
+                onClick={() => setShowQuickSearch(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition shadow-2xs border border-slate-200 cursor-pointer"
+                title="Búsqueda rápida universal (Ctrl + K)"
+              >
+                <Search className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="hidden sm:inline">Buscar</span>
+                <kbd className="hidden md:inline-block px-1.5 py-0.2 bg-white text-slate-500 rounded text-[10px] font-mono border border-slate-200 font-bold shadow-2xs">
+                  Ctrl K
+                </kbd>
+              </button>
+
               {/* Botón Sincronizar Nube */}
               <button
                 onClick={syncWithCloud}
@@ -185,6 +214,12 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
       <LoginModal 
         isOpen={showLoginModal} 
         onClose={() => setShowLoginModal(false)} 
+      />
+
+      {/* Paleta de Búsqueda Rápida Universal (Ctrl+K) */}
+      <QuickSearchPalette
+        isOpen={showQuickSearch}
+        onClose={() => setShowQuickSearch(false)}
       />
     </>
   );

@@ -24,7 +24,15 @@ const SYNC_KEYS = [
   'mediturnos_atenciones_hce',
   'mediturnos_motivos',
   'mediturnos_movimientos_caja',
-  'mediturnos_tv_calls'
+  'mediturnos_tv_calls',
+  'mediturnos_lotes_facturacion',
+  'mediturnos_cuentas_corrientes_pacientes',
+  'mediturnos_movimientos_cta_cte_pacientes',
+  'mediturnos_cuentas_corrientes_os',
+  'mediturnos_movimientos_cta_cte_os',
+  'mediturnos_comprobantes_arca',
+  'mediturnos_consentimientos',
+  'mediturnos_aranceles_convenios'
 ];
 
 export const CloudSyncService = {

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { StorageService, initLocalStorage } from '../services/storage';
 import { CloudSyncService } from '../services/cloudSync';
+import { ArcaService } from '../services/arcaService';
+import { AiService } from '../services/aiService';
 
 const AppContext = createContext();
 
@@ -41,6 +43,9 @@ export const AppProvider = ({ children }) => {
   const [tvCalls, setTvCalls] = useState(() => StorageService.getTvCalls());
   const [users, setUsers] = useState(() => StorageService.getUsers());
   const [movimientosCaja, setMovimientosCaja] = useState(() => StorageService.getMovimientosCaja());
+  const [lotesFacturacion, setLotesFacturacion] = useState(() => StorageService.getLotesFacturacion());
+  const [comprobantesArca, setComprobantesArca] = useState(() => ArcaService.getComprobantes());
+  const [consentimientos, setConsentimientos] = useState(() => StorageService.getConsentimientos());
 
   // Toasts
   const [toast, setToast] = useState(null);
@@ -73,6 +78,9 @@ export const AppProvider = ({ children }) => {
     setAtencionesHce(StorageService.getAtencionesHce());
     setTvCalls(StorageService.getTvCalls());
     setMovimientosCaja(StorageService.getMovimientosCaja(clin.id));
+    setLotesFacturacion(StorageService.getLotesFacturacion(clin.id));
+    setComprobantesArca(ArcaService.getComprobantes(clin.id));
+    setConsentimientos(StorageService.getConsentimientos(clin.id));
   };
 
   // ABM Motivos de Cancelación / Reprogramación
@@ -555,6 +563,57 @@ export const AppProvider = ({ children }) => {
     return saved;
   };
 
+  // LOTES DE FACTURACIÓN (PRESENTACIÓN A OBRAS SOCIALES & CPPC)
+  const saveLoteFacturacion = (loteData) => {
+    const saved = StorageService.saveLoteFacturacion(loteData);
+    setLotesFacturacion(StorageService.getLotesFacturacion(activeClinica?.id));
+    showToast(`Lote ${saved.numero_lote} guardado con éxito`);
+    return saved;
+  };
+
+  const deleteLoteFacturacion = (id) => {
+    StorageService.deleteLoteFacturacion(id);
+    setLotesFacturacion(StorageService.getLotesFacturacion(activeClinica?.id));
+    showToast('Lote eliminado', 'info');
+  };
+
+  // CUENTAS CORRIENTES
+  const saveMovimientoCtaCtePaciente = (movData) => {
+    const saved = StorageService.saveMovimientoCtaCtePaciente(movData);
+    showToast('Movimiento de cuenta corriente registrado');
+    return saved;
+  };
+
+  const saveMovimientoCtaCteOs = (movData) => {
+    const saved = StorageService.saveMovimientoCtaCteOs(movData);
+    showToast('Movimiento de cuenta corriente de obra social registrado');
+    return saved;
+  };
+
+  // FACTURA ELECTRÓNICA ARCA (AFIP WSFE)
+  const emitirComprobanteArca = async (params) => {
+    try {
+      const nuevoCbte = await ArcaService.emitirComprobante({
+        clinica: activeClinica,
+        ...params
+      });
+      setComprobantesArca(ArcaService.getComprobantes(activeClinica?.id));
+      showToast(`Comprobante ${nuevoCbte.numero_completo} emitido ante ARCA (CAE: ${nuevoCbte.cae})`);
+      return nuevoCbte;
+    } catch (err) {
+      showToast(`Error al emitir comprobante ARCA: ${err.message}`, 'error');
+      throw err;
+    }
+  };
+
+  // CONSENTIMIENTO INFORMADO DIGITAL
+  const saveConsentimiento = (consentimientoData) => {
+    const saved = StorageService.saveConsentimiento(consentimientoData);
+    setConsentimientos(StorageService.getConsentimientos(activeClinica?.id));
+    showToast('Consentimiento informado firmado y registrado digitalmente');
+    return saved;
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -621,6 +680,19 @@ export const AppProvider = ({ children }) => {
         reprogramarTurno,
         cancelarTurno,
         saveAtencionHce,
+        // Lotes de Facturación
+        lotesFacturacion,
+        saveLoteFacturacion,
+        deleteLoteFacturacion,
+        // Cuentas Corrientes
+        saveMovimientoCtaCtePaciente,
+        saveMovimientoCtaCteOs,
+        // Factura Electrónica ARCA
+        comprobantesArca,
+        emitirComprobanteArca,
+        // Consentimientos Informados
+        consentimientos,
+        saveConsentimiento,
         // Usuarios & Roles
         users,
         saveUser,

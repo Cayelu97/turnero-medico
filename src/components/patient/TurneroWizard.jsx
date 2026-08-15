@@ -19,10 +19,14 @@ import {
   MapPin,
   Sparkles,
   X,
-  Lock
+  Lock,
+  Brain,
+  Bot,
+  Send
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
+import { AiService } from '../../services/aiService';
 import { VoucherModal } from './VoucherModal';
 import { formatDateAR } from '../../utils/formatters';
 
@@ -37,7 +41,8 @@ export const TurneroWizard = () => {
     nomenclador, 
     consultorios, 
     conveniosCoseguros,
-    createTurno 
+    createTurno,
+    saveConsentimiento
   } = useApp();
 
   const wizardContainerRef = React.useRef(null);
@@ -50,6 +55,12 @@ export const TurneroWizard = () => {
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
+
+  // Asistente de Triage Clínico con IA
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiTriageResult, setAiTriageResult] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [consentimientoAceptado, setConsentimientoAceptado] = useState(true);
 
   // Modo de búsqueda en Paso 1: 'especialidad' | 'profesional'
   const [searchMode, setSearchMode] = useState('especialidad');
@@ -275,6 +286,48 @@ export const TurneroWizard = () => {
     }
   };
 
+  // Asistente IA de Triage Clínico
+  const handleExecuteAiTriage = (queryText) => {
+    const textToAnalyze = queryText || aiQuery;
+    if (!textToAnalyze.trim()) return;
+
+    setAiLoading(true);
+    setTimeout(() => {
+      const result = AiService.triagePaciente({
+        textoPaciente: textToAnalyze,
+        especialidadesDisponibles: especialidades.map(e => e.nombre || e),
+        profesionalesDisponibles: profesionales
+      });
+      setAiTriageResult(result);
+      setAiLoading(false);
+    }, 400);
+  };
+
+  const handleApplyAiRecommendation = (result) => {
+    if (result.especialidadSugerida) {
+      setSelectedEspecialidad(result.especialidadSugerida);
+      setSearchMode('especialidad');
+    }
+    if (result.profesionalesRecomendados?.length > 0) {
+      const matchProf = profesionales.find(p => 
+        result.profesionalesRecomendados.some(rp => rp.toLowerCase().includes(p.apellido.toLowerCase()))
+      );
+      if (matchProf) {
+        setSelectedProfesionalId(matchProf.id);
+      }
+    }
+    if (result.codigoPmoSugerido) {
+      const matchPractica = nomenclador.find(p => p.codigo_pmo === result.codigoPmoSugerido);
+      if (matchPractica) {
+        setSelectedPracticaId(matchPractica.id);
+      }
+    }
+    setPacienteForm(prev => ({
+      ...prev,
+      motivo_consulta: result.resumenMotivo || aiQuery
+    }));
+  };
+
   // Enviar y Confirmar Reserva
   const handleConfirmTurno = (e) => {
     e.preventDefault();
@@ -310,6 +363,20 @@ export const TurneroWizard = () => {
         observaciones: pacienteForm.motivo_consulta
       }
     });
+
+    // Guardar consentimiento informado si fue tildado
+    if (consentimientoAceptado && paciente) {
+      saveConsentimiento({
+        paciente_id: paciente.id,
+        paciente_nombre: `${paciente.apellido}, ${paciente.nombre}`,
+        paciente_dni: paciente.dni,
+        tipo: 'PSICOLOGICO_GENERAL',
+        version: '1.0',
+        firmado: true,
+        fecha_firma: new Date().toISOString(),
+        dispositivo: navigator.userAgent
+      });
+    }
 
     // Disparar confeti de celebración
     try {
@@ -401,9 +468,122 @@ export const TurneroWizard = () => {
 
       {/* Contenido del Paso Actual */}
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8">
-        {/* PASO 1: BÚSQUEDA DUAL (ESPECIALIDAD VS PROFESIONAL) */}
+        {/* PASO 1: BÚSQUEDA DUAL (ESPECIALIDAD VS PROFESIONAL) + ASISTENTE IA */}
         {step === 1 && (
           <div className="space-y-6">
+            
+            {/* ASISTENTE VIRTUAL DE TRIAGE CLÍNICO CON IA */}
+            <div className="p-4 sm:p-5 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 text-white rounded-3xl shadow-lg shadow-indigo-950/20 space-y-3.5 border border-indigo-800/40">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-bold">
+                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm text-white">¿No sabes qué especialista o servicio necesitas?</h3>
+                    <p className="text-[11px] text-indigo-200">Describe tus síntomas o motivo de consulta y nuestro Asistente IA te orientará al instante</p>
+                  </div>
+                </div>
+                <span className="text-[9px] font-black uppercase px-2 py-0.5 bg-indigo-500/30 text-indigo-200 rounded-md border border-indigo-400/30">
+                  Triage Inteligente
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="ej: Siento ataques de pánico y ansiedad recurrente... o Consulta por terapia de pareja..."
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleExecuteAiTriage();
+                    }
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-xs text-white placeholder:text-indigo-300/60 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleExecuteAiTriage()}
+                  disabled={aiLoading || !aiQuery.trim()}
+                  className="px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer flex-shrink-0"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{aiLoading ? 'Analizando...' : 'Orientarme'}</span>
+                </button>
+              </div>
+
+              {/* Sugerencias Rápidas de Triage */}
+              {!aiTriageResult && (
+                <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+                  <span className="text-indigo-300 font-bold">Ejemplos rápidos:</span>
+                  {[
+                    'Ansiedad y ataques de pánico',
+                    'Terapia de pareja / crisis vincular',
+                    'Depresión y falta de motivación',
+                    'Control cardiológico anual'
+                  ].map(ex => (
+                    <button
+                      key={ex}
+                      type="button"
+                      onClick={() => {
+                        setAiQuery(ex);
+                        handleExecuteAiTriage(ex);
+                      }}
+                      className="px-2 py-0.5 bg-white/10 hover:bg-white/20 text-indigo-100 rounded-lg transition cursor-pointer"
+                    >
+                      {ex}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Resultado del Triage IA */}
+              {aiTriageResult && (
+                <div className="p-3.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 space-y-2.5 text-xs animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-4 h-4" /> Recomendación Personalizada:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAiTriageResult(null)}
+                      className="text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <p className="text-white text-xs leading-relaxed">
+                    {aiTriageResult.explicacion}
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] bg-black/20 p-2.5 rounded-xl">
+                    <div>
+                      <span className="text-indigo-300 block">Especialidad Recomendada:</span>
+                      <strong className="text-white">{aiTriageResult.especialidadSugerida}</strong>
+                    </div>
+                    <div>
+                      <span className="text-indigo-300 block">Profesional Sugerido:</span>
+                      <strong className="text-white">{aiTriageResult.profesionalesRecomendados?.join(', ') || 'Profesionales de Salud Mental'}</strong>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleApplyAiRecommendation(aiTriageResult)}
+                      className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-xl text-xs transition shadow-md cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Aplicar recomendación y ver turnos</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Selector de Pestañas estilo Oulton / Doctoralia */}
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <button
@@ -1207,6 +1387,25 @@ export const TurneroWizard = () => {
               />
             </div>
 
+            {/* CONSENTIMIENTO INFORMADO DIGITAL (Ley 26.657 & Ley 26.529) */}
+            <div className="p-4 bg-indigo-50/70 border border-indigo-200 rounded-2xl space-y-2 text-xs">
+              <label className="flex items-start gap-2.5 font-bold text-indigo-950 cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  checked={consentimientoAceptado}
+                  onChange={(e) => setConsentimientoAceptado(e.target.checked)}
+                  className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <div>
+                  <span>He leído y acepto el Consentimiento Informado para la atención asistencial</span>
+                  <p className="text-[11px] font-normal text-indigo-800/80 mt-0.5">
+                    Presto conformidad para la apertura de Historia Clínica y el encuadre profesional conforme a las Leyes Nacionales 26.657 (Salud Mental) y 26.529 (Derechos del Paciente y Secreto Profesional) y normativas del Colegio de Psicólogos de Córdoba.
+                  </p>
+                </div>
+              </label>
+            </div>
+
             <div className="flex justify-between pt-4 border-t border-slate-100">
               <button
                 type="button"
@@ -1218,7 +1417,8 @@ export const TurneroWizard = () => {
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-sm shadow-lg shadow-emerald-600/20 transition"
+                disabled={!consentimientoAceptado}
+                className="flex items-center gap-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-black text-sm shadow-lg shadow-emerald-600/20 transition cursor-pointer"
               >
                 <CheckCircle2 className="w-5 h-5" />
                 <span>Confirmar y Reservar Turno</span>

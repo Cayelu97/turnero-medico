@@ -225,6 +225,99 @@ CREATE TABLE IF NOT EXISTS liquidaciones_medicas (
     creado_en TIMESTAMPTZ DEFAULT now()
 );
 
+-- 15. TABLA: LOTES DE PRESENTACIÓN A OBRAS SOCIALES & CPPC
+CREATE TABLE IF NOT EXISTS lotes_facturacion (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    clinica_id UUID REFERENCES clinicas(id) ON DELETE CASCADE,
+    obra_social_id UUID REFERENCES obras_sociales(id) ON DELETE CASCADE,
+    numero_lote TEXT NOT NULL,
+    periodo_mes INTEGER NOT NULL,
+    periodo_anio INTEGER NOT NULL,
+    total_prestaciones INTEGER DEFAULT 0,
+    monto_total_presentado NUMERIC(12, 2) DEFAULT 0,
+    monto_total_debitos NUMERIC(12, 2) DEFAULT 0,
+    monto_total_liquidado NUMERIC(12, 2) DEFAULT 0,
+    estado TEXT DEFAULT 'PRESENTADO',         -- 'PRESENTADO', 'AUDITADO', 'LIQUIDADO', 'COBRADO'
+    fecha_presentacion DATE DEFAULT CURRENT_DATE,
+    fecha_cobro DATE,
+    items_detalle JSONB DEFAULT '[]'::jsonb,
+    creado_en TIMESTAMPTZ DEFAULT now()
+);
+
+-- 16. TABLA: MOVIMIENTOS DE CUENTA CORRIENTE PACIENTES
+CREATE TABLE IF NOT EXISTS movimientos_cta_cte_pacientes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    clinica_id UUID REFERENCES clinicas(id) ON DELETE CASCADE,
+    paciente_id UUID REFERENCES pacientes(id) ON DELETE CASCADE,
+    fecha TIMESTAMPTZ DEFAULT now(),
+    tipo TEXT NOT NULL,                      -- 'CARGO' (suma deuda) | 'PAGO' (resta deuda)
+    concepto TEXT NOT NULL,
+    monto NUMERIC(12, 2) NOT NULL,
+    medio_pago TEXT,
+    numero_comprobante TEXT,
+    observaciones TEXT,
+    creado_en TIMESTAMPTZ DEFAULT now()
+);
+
+-- 17. TABLA: MOVIMIENTOS DE CUENTA CORRIENTE OBRAS SOCIALES
+CREATE TABLE IF NOT EXISTS movimientos_cta_cte_os (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    clinica_id UUID REFERENCES clinicas(id) ON DELETE CASCADE,
+    obra_social_id UUID REFERENCES obras_sociales(id) ON DELETE CASCADE,
+    fecha TIMESTAMPTZ DEFAULT now(),
+    tipo TEXT NOT NULL,                      -- 'CARGO' | 'PAGO' | 'DEBITO'
+    concepto TEXT NOT NULL,
+    monto NUMERIC(12, 2) NOT NULL,
+    medio_pago TEXT,
+    numero_comprobante TEXT,
+    observaciones TEXT,
+    creado_en TIMESTAMPTZ DEFAULT now()
+);
+
+-- 18. TABLA: FACTURACIÓN ELECTRÓNICA ARCA (AFIP WSFE)
+CREATE TABLE IF NOT EXISTS comprobantes_arca (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    clinica_id UUID REFERENCES clinicas(id) ON DELETE CASCADE,
+    tipo_comprobante_id INTEGER NOT NULL,    -- 1: Factura A, 6: Factura B, 11: Factura C, 15: Recibo C
+    tipo_comprobante_nombre TEXT NOT NULL,
+    letra TEXT NOT NULL,                     -- 'A', 'B', 'C'
+    punto_venta INTEGER NOT NULL,
+    numero_comprobante INTEGER NOT NULL,
+    numero_completo TEXT NOT NULL,           -- '00001-00000042'
+    cae TEXT NOT NULL,
+    cae_vto DATE NOT NULL,
+    fecha_emision TIMESTAMPTZ DEFAULT now(),
+    emisor JSONB NOT NULL,
+    receptor JSONB NOT NULL,
+    items JSONB NOT NULL,
+    subtotal_neto NUMERIC(12, 2) DEFAULT 0,
+    total_iva NUMERIC(12, 2) DEFAULT 0,
+    importe_total NUMERIC(12, 2) NOT NULL,
+    qr_payload TEXT,
+    qr_url TEXT,
+    turno_id UUID REFERENCES turnos(id) ON DELETE SET NULL,
+    lote_id UUID REFERENCES lotes_facturacion(id) ON DELETE SET NULL,
+    paciente_id UUID REFERENCES pacientes(id) ON DELETE SET NULL,
+    obra_social_id UUID REFERENCES obras_sociales(id) ON DELETE SET NULL,
+    estado TEXT DEFAULT 'APROBADO',
+    entorno TEXT DEFAULT 'SANDBOX',          -- 'SANDBOX' | 'PRODUCCION'
+    creado_en TIMESTAMPTZ DEFAULT now()
+);
+
+-- 19. TABLA: CONSENTIMIENTOS INFORMADOS DIGITALES (Ley 26.657 & Ley 26.529)
+CREATE TABLE IF NOT EXISTS consentimientos_informados (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    clinica_id UUID REFERENCES clinicas(id) ON DELETE CASCADE,
+    paciente_id UUID REFERENCES pacientes(id) ON DELETE CASCADE,
+    tipo TEXT NOT NULL,                      -- 'PSICOLOGICO_GENERAL', 'TELECONSULTA', 'TRATAMIENTO_ESPECIAL'
+    version TEXT DEFAULT '1.0',
+    firmado BOOLEAN DEFAULT true,
+    fecha_firma TIMESTAMPTZ DEFAULT now(),
+    dispositivo TEXT,
+    ip_origen TEXT,
+    creado_en TIMESTAMPTZ DEFAULT now()
+);
+
 -- Índices de alto rendimiento para búsquedas y turnero
 CREATE INDEX IF NOT EXISTS idx_turnos_fecha ON turnos(fecha_hora_inicio);
 CREATE INDEX IF NOT EXISTS idx_turnos_profesional ON turnos(profesional_id);
@@ -233,7 +326,33 @@ CREATE INDEX IF NOT EXISTS idx_turnos_estado ON turnos(estado);
 CREATE INDEX IF NOT EXISTS idx_turnos_codigo ON turnos(codigo_reserva);
 CREATE INDEX IF NOT EXISTS idx_pacientes_dni ON pacientes(dni);
 CREATE INDEX IF NOT EXISTS idx_bloqueos_fechas ON bloqueos_agenda(fecha_inicio, fecha_fin);
+CREATE INDEX IF NOT EXISTS idx_comprobantes_arca_cae ON comprobantes_arca(cae);
+CREATE INDEX IF NOT EXISTS idx_lotes_periodo ON lotes_facturacion(periodo_anio, periodo_mes);
 
--- Habilitar Supabase Realtime para tablas críticas
-ALTER PUBLICATION supabase_realtime ADD TABLE turnos;
-ALTER PUBLICATION supabase_realtime ADD TABLE pacientes;
+-- Habilitar Supabase Realtime para tablas críticas de forma segura
+DO $$
+BEGIN
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE turnos;
+    EXCEPTION WHEN duplicate_object THEN
+        -- ya existía
+    END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE pacientes;
+    EXCEPTION WHEN duplicate_object THEN
+        -- ya existía
+    END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE comprobantes_arca;
+    EXCEPTION WHEN duplicate_object THEN
+        -- ya existía
+    END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE lotes_facturacion;
+    EXCEPTION WHEN duplicate_object THEN
+        -- ya existía
+    END;
+END $$;

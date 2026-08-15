@@ -24,7 +24,15 @@ const STORAGE_KEYS = {
   USERS: 'mediturnos_users',
   SUPABASE_CONFIG: 'mediturnos_supabase_config',
   TV_CALLS: 'mediturnos_tv_calls',
-  MOVIMIENTOS_CAJA: 'mediturnos_movimientos_caja'
+  MOVIMIENTOS_CAJA: 'mediturnos_movimientos_caja',
+  LOTES_FACTURACION: 'mediturnos_lotes_facturacion',
+  CUENTAS_CORRIENTES_PACIENTES: 'mediturnos_cta_cte_pacientes',
+  MOVIMIENTOS_CTA_CTE_PACIENTES: 'mediturnos_mov_cta_cte_pacientes',
+  CUENTAS_CORRIENTES_OS: 'mediturnos_cta_cte_os',
+  MOVIMIENTOS_CTA_CTE_OS: 'mediturnos_mov_cta_cte_os',
+  COMPROBANTES_ARCA: 'mediturnos_comprobantes_arca',
+  CONSENTIMIENTOS: 'mediturnos_consentimientos',
+  ARANCELES_CONVENIOS: 'mediturnos_aranceles_convenios'
 };
 
 // Motivos Oficiales de Cancelación y Reprogramación de Turnos
@@ -45,8 +53,9 @@ export const INITIAL_MOTIVOS = [
   { id: 'mot-11', tipo: 'REPROGRAMACION', codigo: 'REAJUSTE_CONSULTORIO', descripcion: 'Reajuste operativo de consultorio o equipamiento médico', aplica_a: 'SECRETARIA', activo: true }
 ];
 
-// Especialidades Médicas Estándar en Argentina
+// Especialidades Médicas y de Salud Mental Estándar en Argentina / Córdoba
 export const INITIAL_ESPECIALIDADES = [
+  { id: 'esp-0', nombre: 'Psicología y Salud Mental', codigo: 'PSIC', descripcion: 'Psicoterapia individual, infanto-juvenil, pareja, familia y psicodiagnóstico', activa: true },
   { id: 'esp-1', nombre: 'Cardiología', codigo: 'CARD', descripcion: 'Diagnóstico y tratamiento de afecciones cardíacas y vasculares', activa: true },
   { id: 'esp-2', nombre: 'Pediatría', codigo: 'PED', descripcion: 'Atención médica integral desde el nacimiento hasta la adolescencia', activa: true },
   { id: 'esp-3', nombre: 'Clínica Médica / Medicina General', codigo: 'CMED', descripcion: 'Atención primaria, diagnóstico integral y prevención en adultos', activa: true },
@@ -59,18 +68,57 @@ export const INITIAL_ESPECIALIDADES = [
   { id: 'esp-10', nombre: 'Endocrinología y Nutrición', codigo: 'ENDO', descripcion: 'Trastornos hormonales, tiroides, diabetes y metabolismo', activa: true },
   { id: 'esp-11', nombre: 'Otorrinolaringología (ORL)', codigo: 'ORL', descripcion: 'Afecciones de oído, nariz, garganta y cuerdas vocales', activa: true },
   { id: 'esp-12', nombre: 'Urología', codigo: 'UROL', descripcion: 'Aparato urinario y reproductor masculino, litiasis y próstata', activa: true },
-  { id: 'esp-13', nombre: 'Psiquiatría y Salud Mental', codigo: 'PSIQ', descripcion: 'Evaluación y tratamiento integral de la salud mental', activa: true },
+  { id: 'esp-13', nombre: 'Psiquiatría', codigo: 'PSIQ', descripcion: 'Evaluación psiquiátrica, psicofarmacología y seguimiento', activa: true },
   { id: 'esp-14', nombre: 'Diagnóstico por Imágenes / Ecografía', codigo: 'IMAG', descripcion: 'Ecografía general, Doppler, radiología y resonancia', activa: true },
   { id: 'esp-15', nombre: 'Kinesiología y Fisioterapia', codigo: 'KINE', descripcion: 'Rehabilitación motora, fisioterapia respiratoria y traumatológica', activa: true },
-  { id: 'esp-16', nombre: 'Odontología', codigo: 'ODONT', descripcion: 'Salud bucal, prevención, operatoria y prótesis', activa: true },
+  { id: 'esp-16', nombre: 'Odontología', codigo: 'ODONT', descripcion: 'Salud bucal, prevención, operatoria, endodoncia y prótesis', activa: true },
   { id: 'esp-17', nombre: 'Neumonología', codigo: 'NEUM', descripcion: 'Enfermedades respiratorias, asma, EPOC y función pulmonar', activa: true },
   { id: 'esp-18', nombre: 'Alergia e Inmunología', codigo: 'ALERG', descripcion: 'Alergias respiratorias, cutáneas, alimentarias e inmunidad', activa: true },
   { id: 'esp-19', nombre: 'Reumatología', codigo: 'REUM', descripcion: 'Artritis, artrosis, lupus y enfermedades autoinmunes', activa: true },
   { id: 'esp-20', nombre: 'Flebología y Cirugía Vascular', codigo: 'FLEB', descripcion: 'Tratamiento de várices, telangiectasias y patología venosa', activa: true }
 ];
 
-// Servicios Médicos (Líneas de Atención por Especialidad)
+// Servicios Médicos y de Psicología
 export const INITIAL_SERVICIOS = [
+  {
+    id: 'serv-0a',
+    clinica_id: 'clinica-1',
+    nombre: 'Psicoterapia Individual (Adultos / Adolescentes)',
+    especialidad_id: 'esp-0',
+    tipo: 'CONSULTA',
+    duracion_default_min: 45,
+    color_etiqueta: '#6366f1',
+    practicas_ids: ['nom-psi-1', 'nom-psi-2'],
+    practica_default_id: 'nom-psi-2',
+    descripcion: 'Sesiones de psicoterapia clínica individual presencial u online.',
+    activo: true
+  },
+  {
+    id: 'serv-0b',
+    clinica_id: 'clinica-1',
+    nombre: 'Terapia de Pareja y Familiar',
+    especialidad_id: 'esp-0',
+    tipo: 'CONSULTA',
+    duracion_default_min: 60,
+    color_etiqueta: '#8b5cf6',
+    practicas_ids: ['nom-psi-3'],
+    practica_default_id: 'nom-psi-3',
+    descripcion: 'Abordaje vincular sistémico de pareja y dinámicas familiares.',
+    activo: true
+  },
+  {
+    id: 'serv-0c',
+    clinica_id: 'clinica-1',
+    nombre: 'Evaluaciones, Psicodiagnóstico y Aptos',
+    especialidad_id: 'esp-0',
+    tipo: 'ESTUDIO_PRACTICA',
+    duracion_default_min: 50,
+    color_etiqueta: '#a855f7',
+    practicas_ids: ['nom-psi-4', 'nom-psi-5', 'nom-psi-6'],
+    practica_default_id: 'nom-psi-4',
+    descripcion: 'Batería de tests proyectivos/psicométricos con informe clínico o laboral.',
+    activo: true
+  },
   {
     id: 'serv-1',
     clinica_id: 'clinica-1',
@@ -80,7 +128,7 @@ export const INITIAL_SERVICIOS = [
     duracion_default_min: 20,
     color_etiqueta: '#0284c7',
     practicas_ids: ['nom-1', 'nom-2', 'nom-5'],
-    practica_default_id: 'nom-1', // Código sugerido por defecto (Consulta Especializada)
+    practica_default_id: 'nom-1',
     descripcion: 'Consultas médicas cardiológicas de primera vez y controles de rutina',
     activo: true
   },
@@ -93,7 +141,7 @@ export const INITIAL_SERVICIOS = [
     duracion_default_min: 30,
     color_etiqueta: '#7c3aed',
     practicas_ids: ['nom-4', 'nom-5'],
-    practica_default_id: 'nom-4', // Código sugerido por defecto (Ecocardiograma Doppler)
+    practica_default_id: 'nom-4',
     descripcion: 'Ecocardiograma Doppler Color, Electrocardiograma (ECG) y Holter',
     activo: true
   },
@@ -124,19 +172,6 @@ export const INITIAL_SERVICIOS = [
     activo: true
   },
   {
-    id: 'serv-5',
-    clinica_id: 'clinica-1',
-    nombre: 'Infiltraciones y Procedimientos Traumatológicos',
-    especialidad_id: 'esp-4',
-    tipo: 'PROCEDIMIENTO',
-    duracion_default_min: 30,
-    color_etiqueta: '#d97706',
-    practicas_ids: ['nom-1'],
-    practica_default_id: 'nom-1',
-    descripcion: 'Infiltraciones articulares ecoguiadas, colocación de férulas y curaciones',
-    activo: true
-  },
-  {
     id: 'serv-6',
     clinica_id: 'clinica-1',
     nombre: 'Ecografía General y Diagnóstico por Imágenes',
@@ -145,7 +180,7 @@ export const INITIAL_SERVICIOS = [
     duracion_default_min: 30,
     color_etiqueta: '#8b5cf6',
     practicas_ids: ['nom-3', 'nom-4'],
-    practica_default_id: 'nom-3', // Código sugerido por defecto (Ecografía Abdominal)
+    practica_default_id: 'nom-3',
     descripcion: 'Ecografía abdominal, ginecológica, tiroidea y partes blandas',
     activo: true
   },
@@ -171,7 +206,7 @@ export const INITIAL_SERVICIOS = [
     duracion_default_min: 40,
     color_etiqueta: '#06b6d4',
     practicas_ids: ['nom-6'],
-    practica_default_id: 'nom-6', // Código sugerido por defecto (Sesión Kinesio)
+    practica_default_id: 'nom-6',
     descripcion: 'Rehabilitación motora, fisioterapia respiratoria y traumatológica',
     activo: true
   }
@@ -181,35 +216,44 @@ export const INITIAL_SERVICIOS = [
 export const INITIAL_CLINICAS = [
   {
     id: 'clinica-1',
-    nombre: 'Centro Médico San Lucas',
+    nombre: 'Centro de Salud y Psicología San Lucas',
     cuit: '30-71234567-9',
-    direccion: 'Av. Santa Fe 2450, Piso 3, CABA',
-    telefono: '+54 11 4821-9000',
-    whatsapp: '+54 9 11 4821-9000',
+    direccion: 'Av. Colón 1250, Córdoba Capital, Córdoba',
+    telefono: '+54 351 428-9000',
+    whatsapp: '+54 9 351 428-9000',
     email: 'turnos@centrosanlucas.com.ar',
-    mensaje_bienvenida: 'Bienvenido al turnero online de Centro Médico San Lucas. Seleccione especialidad, cobertura y horario.',
-    color_primario: '#0284c7',
+    mensaje_bienvenida: 'Bienvenido al turnero online de Centro San Lucas. Atención psicológica y especialidades médicas.',
+    color_primario: '#6366f1',
+    condicion_iva: 'MONO',
+    punto_venta: 1,
+    iibb: '28490182-9',
+    inicio_actividades: '2021-03-01',
     activa: true
   },
   {
     id: 'clinica-2',
-    nombre: 'Policonsultorios Médicos Belgrano',
+    nombre: 'Consultorios de Salud Mental Belgrano',
     cuit: '30-79812345-1',
     direccion: 'Av. Cabildo 1850, Belgrano, CABA',
     telefono: '+54 11 4781-4400',
     whatsapp: '+54 9 11 4781-4400',
     email: 'contacto@consultoriosbelgrano.com.ar',
-    mensaje_bienvenida: 'Policonsultorios Belgrano - Especialidades médicas y estudios de diagnóstico.',
+    mensaje_bienvenida: 'Policonsultorios Belgrano - Psicología, Psiquiatría y Especialidades Médicas.',
     color_primario: '#0d9488',
+    condicion_iva: 'RI',
+    punto_venta: 2,
+    iibb: '90128490-1',
+    inicio_actividades: '2020-01-15',
     activa: true
   }
 ];
 
-// Usuarios y Roles de demostración y producción
+// Usuarios y Roles
 export const INITIAL_USERS = [
   { id: 'usr-1', nombre: 'Administrador General', email: 'admin@clinica.com', password: 'admin', rol: 'ADMIN_CLINICA', clinica_id: 'clinica-1', activo: true },
   { id: 'usr-2', nombre: 'Secretaría de Recepción', email: 'secretaria@clinica.com', password: '123', rol: 'SECRETARIA', clinica_id: 'clinica-1', activo: true },
-  { id: 'usr-3', nombre: 'Dr. Martín Pérez Rossi', email: 'doctor@clinica.com', password: '123', rol: 'PROFESIONAL', clinica_id: 'clinica-1', profesional_id: 'prof-1', activo: true }
+  { id: 'usr-3', nombre: 'Lic. Sofía Albarracín (CPPC)', email: 'psicologia@clinica.com', password: '123', rol: 'PROFESIONAL', clinica_id: 'clinica-1', profesional_id: 'prof-psi-1', activo: true },
+  { id: 'usr-4', nombre: 'Dr. Martín Pérez Rossi', email: 'doctor@clinica.com', password: '123', rol: 'PROFESIONAL', clinica_id: 'clinica-1', profesional_id: 'prof-1', activo: true }
 ];
 
 export const INITIAL_DATA = {
@@ -217,52 +261,109 @@ export const INITIAL_DATA = {
   especialidades: INITIAL_ESPECIALIDADES,
   servicios: INITIAL_SERVICIOS,
   consultorios: [
-    { id: 'c-1', clinica_id: 'clinica-1', nombre: 'Consultorio 1 - Cardiología', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Tensiómetro', activo: true },
-    { id: 'c-2', clinica_id: 'clinica-1', nombre: 'Consultorio 2 - Diagnóstico por Imágenes & Ecografía', piso_ubicacion: 'Piso 1 - Sala A', equipamiento: 'Ecógrafo Doppler Color', activo: true },
-    { id: 'c-3', clinica_id: 'clinica-1', nombre: 'Consultorio 3 - Pediatría', piso_ubicacion: 'Planta Baja', equipamiento: 'Balanza pediátrica, Tallímetro, Otoscopio', activo: true },
-    { id: 'c-4', clinica_id: 'clinica-1', nombre: 'Consultorio 4 - Traumatología', piso_ubicacion: 'Piso 1 - Sala B', equipamiento: 'Negatoscopio, Camilla articulada', activo: true },
-    { id: 'c-5', clinica_id: 'clinica-1', nombre: 'Consultorio 5 - Clínica Médica', piso_ubicacion: 'Planta Baja', equipamiento: 'Equipo diagnóstico general', activo: true },
-    // Consultorios para Clínica 2 (Belgrano)
-    { id: 'c-201', clinica_id: 'clinica-2', nombre: 'Consultorio Belgrano 1', piso_ubicacion: 'PB', equipamiento: 'Camilla, Tensiómetro', activo: true },
-    { id: 'c-202', clinica_id: 'clinica-2', nombre: 'Consultorio Belgrano 2 - Ginecología', piso_ubicacion: 'Piso 1', equipamiento: 'Colposcopio, Camilla ginecológica', activo: true }
+    { id: 'c-0', clinica_id: 'clinica-1', nombre: 'Consultorio 1 - Psicología & Terapia Individual', piso_ubicacion: 'Planta Alta - Sala 1', equipamiento: 'Sillones de lectura, escritorio, insonorización', activo: true },
+    { id: 'c-0b', clinica_id: 'clinica-1', nombre: 'Consultorio 2 - Psicología Infanto-Juvenil & Pareja', piso_ubicacion: 'Planta Alta - Sala 2', equipamiento: 'Caja de juegos diagnósticos, mesa infantil, sillones', activo: true },
+    { id: 'c-1', clinica_id: 'clinica-1', nombre: 'Consultorio 3 - Cardiología & Clínica', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Tensiómetro, Camilla', activo: true },
+    { id: 'c-2', clinica_id: 'clinica-1', nombre: 'Consultorio 4 - Diagnóstico por Imágenes & Ecografía', piso_ubicacion: 'Piso 1 - Sala A', equipamiento: 'Ecógrafo Doppler Color', activo: true },
+    { id: 'c-3', clinica_id: 'clinica-1', nombre: 'Consultorio 5 - Pediatría', piso_ubicacion: 'Planta Baja', equipamiento: 'Balanza pediátrica, Tallímetro, Otoscopio', activo: true }
   ],
   obras_sociales: [
-    { id: 'os-1', clinica_id: 'clinica-1', nombre: 'Particular / Privado', sigla: 'PART', cuit: '', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Abono en recepción al momento de la atención.', activo: true },
+    { id: 'os-1', clinica_id: 'clinica-1', nombre: 'Particular / Privado', sigla: 'PART', cuit: '', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Abono por sesión o pack mensual en recepción/transferencia.', activo: true },
+    { id: 'os-apross', clinica_id: 'clinica-1', nombre: 'APROSS (Córdoba)', sigla: 'APROSS', cuit: '30-99923812-4', requiere_bono: true, requiere_autorizacion: true, instrucciones: 'Validar credencial digital en App oficial APROSS y código de token.', activo: true },
+    { id: 'os-cppc', clinica_id: 'clinica-1', nombre: 'Colegio de Psicólogos de Cba (CPPC)', sigla: 'CPPC', cuit: '30-61849201-3', requiere_bono: true, requiere_autorizacion: false, instrucciones: 'Presentación por planilla oficial del Colegio de Psicólogos.', activo: true },
     { id: 'os-2', clinica_id: 'clinica-1', nombre: 'OSDE', sigla: 'OSDE', cuit: '30-54674125-3', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Presentar credencial digital activa y DNI.', activo: true },
     { id: 'os-3', clinica_id: 'clinica-1', nombre: 'Swiss Medical', sigla: 'SMG', cuit: '30-67890123-4', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Validación por token digital en recepción.', activo: true },
     { id: 'os-4', clinica_id: 'clinica-1', nombre: 'Galeno', sigla: 'GAL', cuit: '30-70809012-5', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Presentar credencial digital o física.', activo: true },
     { id: 'os-5', clinica_id: 'clinica-1', nombre: 'PAMI', sigla: 'PAMI', cuit: '30-52276392-2', requiere_bono: true, requiere_autorizacion: true, instrucciones: 'Presentar carnet PAMI y Orden Médica Electrónica (OME).', activo: true },
-    { id: 'os-6', clinica_id: 'clinica-1', nombre: 'IOMA', sigla: 'IOMA', cuit: '30-60000000-1', requiere_bono: true, requiere_autorizacion: true, instrucciones: 'Traer bono/token de consulta autorizado impreso o digital.', activo: true },
-    { id: 'os-7', clinica_id: 'clinica-1', nombre: 'OSECAC', sigla: 'OSECAC', cuit: '30-54728391-8', requiere_bono: true, requiere_autorizacion: false, instrucciones: 'Carnet de afiliado y último recibo de sueldo.', activo: true },
     { id: 'os-8', clinica_id: 'clinica-1', nombre: 'Medifé', sigla: 'MED', cuit: '30-68192301-7', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Credencial digital y autorización previa para estudios especiales.', activo: true }
   ],
   planes: [
-    { id: 'pl-1', obra_social_id: 'os-1', nombre_plan: 'Particular Estándar', codigo_plan: 'PART-STD', descripcion: 'Arancel de consulta particular', activo: true },
+    { id: 'pl-1', obra_social_id: 'os-1', nombre_plan: 'Particular Sesión Individual', codigo_plan: 'PART-STD', descripcion: 'Arancel ético de referencia CPPC / Particular', activo: true },
+    { id: 'pl-1b', obra_social_id: 'os-1', nombre_plan: 'Abono Mensual (Pack 4 Sesiones)', codigo_plan: 'PART-PACK4', descripcion: 'Pack mensual con descuento para psicoterapia continua', activo: true },
+    { id: 'pl-apross-1', obra_social_id: 'os-apross', nombre_plan: 'APROSS Directo / Adherentes', codigo_plan: 'APROSS-DIR', descripcion: 'Cobertura con copago institucional', activo: true },
+    { id: 'pl-cppc-1', obra_social_id: 'os-cppc', nombre_plan: 'Convenio Colectivo CPPC Obras Sociales', codigo_plan: 'CPPC-CONV', descripcion: 'Liquidación a través del Colegio de Psicólogos', activo: true },
     { id: 'pl-2', obra_social_id: 'os-2', nombre_plan: 'Plan 210', codigo_plan: 'OSDE-210', descripcion: 'Cobertura directa sin coseguro', activo: true },
     { id: 'pl-3', obra_social_id: 'os-2', nombre_plan: 'Plan 310', codigo_plan: 'OSDE-310', descripcion: 'Cobertura amplia', activo: true },
-    { id: 'pl-4', obra_social_id: 'os-2', nombre_plan: 'Plan 410 / 510', codigo_plan: 'OSDE-VIP', descripcion: 'Cobertura premium total', activo: true },
     { id: 'pl-5', obra_social_id: 'os-3', nombre_plan: 'SMG20', codigo_plan: 'SMG-20', descripcion: 'Con copago en ciertas prácticas', activo: true },
-    { id: 'pl-6', obra_social_id: 'os-3', nombre_plan: 'SMG30 / SMG50', codigo_plan: 'SMG-TOP', descripcion: 'Sin coseguros en consultas', activo: true },
     { id: 'pl-7', obra_social_id: 'os-4', nombre_plan: 'Plata / Oro', codigo_plan: 'GAL-PO', descripcion: 'Cobertura integral', activo: true },
-    { id: 'pl-8', obra_social_id: 'os-5', nombre_plan: 'PAMI Integral', codigo_plan: 'PAMI-INT', descripcion: 'Requiere OME', activo: true },
-    { id: 'pl-9', obra_social_id: 'os-6', nombre_plan: 'IOMA Obligatorio', codigo_plan: 'IOMA-OBL', descripcion: 'Bono categoría B/C', activo: true },
-    { id: 'pl-10', obra_social_id: 'os-7', nombre_plan: 'OSECAC General', codigo_plan: 'OSECAC-GEN', descripcion: 'Coseguro según práctica', activo: true },
-    { id: 'pl-11', obra_social_id: 'os-8', nombre_plan: 'Plan Bronce / Plata', codigo_plan: 'MED-BP', descripcion: 'Cobertura base', activo: true }
+    { id: 'pl-8', obra_social_id: 'os-5', nombre_plan: 'PAMI Integral', codigo_plan: 'PAMI-INT', descripcion: 'Requiere OME', activo: true }
   ],
   nomenclador: [
-    { id: 'nom-1', clinica_id: 'clinica-1', codigo_pmo: '42.01.01', descripcion: 'Consulta Médica Especializada en Consultorio', duracion_minutos: 20, valor_particular: 18000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Concurrir con estudios previos y medicación habitual.', activo: true },
-    { id: 'nom-2', clinica_id: 'clinica-1', codigo_pmo: '42.01.02', descripcion: 'Consulta de Control / Seguimiento', duracion_minutos: 15, valor_particular: 12000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Traer resultados de estudios solicitados.', activo: true },
-    { id: 'nom-3', clinica_id: 'clinica-1', codigo_pmo: '18.01.01', descripcion: 'Ecografía Abdominal Completa', duracion_minutos: 30, valor_particular: 32000, coseguro_defecto: 4500, requiere_orden: true, requiere_autorizacion: true, instrucciones_preparacion: 'Ayuno estricto de 8 horas. No tomar mate, café ni bebidas con gas.', activo: true },
-    { id: 'nom-4', clinica_id: 'clinica-1', codigo_pmo: '18.01.06', descripcion: 'Ecocardiograma Doppler Color', duracion_minutos: 30, valor_particular: 42000, coseguro_defecto: 6000, requiere_orden: true, requiere_autorizacion: true, instrucciones_preparacion: 'Concurrir con ropa cómoda de dos piezas.', activo: true },
-    { id: 'nom-5', clinica_id: 'clinica-1', codigo_pmo: '17.01.01', descripcion: 'Electrocardiograma (ECG) con Informe', duracion_minutos: 15, valor_particular: 14000, coseguro_defecto: 2000, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'No colocarse cremas corporales en el torso.', activo: true },
-    { id: 'nom-6', clinica_id: 'clinica-1', codigo_pmo: '25.01.01', descripcion: 'Sesión de Kinesiología y Fisioterapia', duracion_minutos: 40, valor_particular: 15000, coseguro_defecto: 2500, requiere_orden: true, requiere_autorizacion: false, instrucciones_preparacion: 'Asistir con ropa deportiva cómoda y toalla de mano.', activo: true }
+    // 1. PSICOLOGÍA & SALUD MENTAL (CPPC / PMO)
+    { id: 'nom-psi-1', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.01', descripcion: 'Consulta de Admisión / Entrevista Inicial de Psicología', duracion_minutos: 45, valor_particular: 18000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Concurrir 5 minutos antes o conectarse con anticipación si es online.', activo: true },
+    { id: 'nom-psi-2', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.02', descripcion: 'Sesión de Psicoterapia Individual (Adultos / Adolescentes / Niños)', duracion_minutos: 45, valor_particular: 16000, coseguro_defecto: 2000, requiere_orden: false, requiere_autorizacion: true, instrucciones_preparacion: 'En sesiones virtuales, procurar un espacio tranquilo y libre de interrupciones.', activo: true },
+    { id: 'nom-psi-3', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.03', descripcion: 'Psicoterapia de Pareja y Familia', duracion_minutos: 60, valor_particular: 24000, coseguro_defecto: 3500, requiere_orden: false, requiere_autorizacion: true, instrucciones_preparacion: 'Asistencia de ambos integrantes del vínculo.', activo: true },
+    { id: 'nom-psi-4', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.05', descripcion: 'Psicodiagnóstico Clínico (Batería de Tests + Informe Devolución)', duracion_minutos: 50, valor_particular: 65000, coseguro_defecto: 8000, requiere_orden: true, requiere_autorizacion: true, instrucciones_preparacion: 'Proceso de 4 sesiones de evaluación psicométrica y proyectiva.', activo: true },
+    { id: 'nom-psi-5', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.06', descripcion: 'Evaluación Psicolaboral / Perfil de Puesto (Apto Psicológico)', duracion_minutos: 60, valor_particular: 35000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Traer DNI original y anteojos recetados si utiliza.', activo: true },
+    { id: 'nom-psi-6', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.08', descripcion: 'Orientación Vocacional y Ocupacional (Módulo Completo)', duracion_minutos: 50, valor_particular: 50000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Proceso de 5 encuentros de orientación.', activo: true },
+    { id: 'nom-psi-7', clinica_id: 'clinica-1', tipo_nomenclador: 'PSICOLOGIA', codigo_pmo: '33.01.09', descripcion: 'Informe Psicológico y Solicitud de Prórroga a Obra Social', duracion_minutos: 20, valor_particular: 12000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Emisión de informe técnico para auditoría médica / APROSS.', activo: true },
+
+    // 2. MÉDICO / PMO
+    { id: 'nom-1', clinica_id: 'clinica-1', tipo_nomenclador: 'PMO_MEDICO', codigo_pmo: '42.01.01', descripcion: 'Consulta Médica Especializada en Consultorio', duracion_minutos: 20, valor_particular: 18000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Concurrir con estudios previos y medicación habitual.', activo: true },
+    { id: 'nom-2', clinica_id: 'clinica-1', tipo_nomenclador: 'PMO_MEDICO', codigo_pmo: '42.01.02', descripcion: 'Consulta de Control / Seguimiento', duracion_minutos: 15, valor_particular: 12000, coseguro_defecto: 0, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Traer resultados de estudios solicitados.', activo: true },
+    { id: 'nom-3', clinica_id: 'clinica-1', tipo_nomenclador: 'IMAGENES', codigo_pmo: '18.01.01', descripcion: 'Ecografía Abdominal Completa', duracion_minutos: 30, valor_particular: 32000, coseguro_defecto: 4500, requiere_orden: true, requiere_autorizacion: true, instrucciones_preparacion: 'Ayuno estricto de 8 horas. No tomar mate, café ni bebidas con gas.', activo: true },
+    { id: 'nom-4', clinica_id: 'clinica-1', tipo_nomenclador: 'IMAGENES', codigo_pmo: '18.01.06', descripcion: 'Ecocardiograma Doppler Color', duracion_minutos: 30, valor_particular: 42000, coseguro_defecto: 6000, requiere_orden: true, requiere_autorizacion: true, instrucciones_preparacion: 'Concurrir con ropa cómoda de dos piezas.', activo: true },
+    { id: 'nom-5', clinica_id: 'clinica-1', tipo_nomenclador: 'IMAGENES', codigo_pmo: '17.01.01', descripcion: 'Electrocardiograma (ECG) con Informe', duracion_minutos: 15, valor_particular: 14000, coseguro_defecto: 2000, requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'No colocarse cremas corporales en el torso.', activo: true },
+    { id: 'nom-6', clinica_id: 'clinica-1', tipo_nomenclador: 'KINESICO', codigo_pmo: '25.01.01', descripcion: 'Sesión de Kinesiología y Fisioterapia', duracion_minutos: 40, valor_particular: 15000, coseguro_defecto: 2500, requiere_orden: true, requiere_autorizacion: false, instrucciones_preparacion: 'Asistir con ropa deportiva cómoda y toalla de mano.', activo: true },
+
+    // 3. NBU (NOMENCLADOR BIOQUÍMICO ÚNICO)
+    { id: 'nom-nbu-1', clinica_id: 'clinica-1', tipo_nomenclador: 'NBU_BIOQUIMICO', codigo_pmo: '66.00.01', descripcion: 'Hemograma Completo Automatizado con Fórmula Leucocitaria', duracion_minutos: 10, valor_particular: 9500, coseguro_defecto: 1000, unidades_bioquimicas: 12, unidades_gastos: 4, requiere_orden: true, requiere_autorizacion: false, instrucciones_preparacion: 'Ayuno de 8 a 12 horas.', activo: true },
+    { id: 'nom-nbu-2', clinica_id: 'clinica-1', tipo_nomenclador: 'NBU_BIOQUIMICO', codigo_pmo: '66.01.20', descripcion: 'Glucemia en Sangre (Glicemia en ayunas)', duracion_minutos: 10, valor_particular: 4800, coseguro_defecto: 500, unidades_bioquimicas: 6, unidades_gastos: 2, requiere_orden: true, requiere_autorizacion: false, instrucciones_preparacion: 'Ayuno estricto de 8 horas.', activo: true },
+    { id: 'nom-nbu-3', clinica_id: 'clinica-1', tipo_nomenclador: 'NBU_BIOQUIMICO', codigo_pmo: '66.03.40', descripcion: 'Perfil Lipídico Completo (Colesterol Total, HDL, LDL, Triglicéridos)', duracion_minutos: 10, valor_particular: 14000, coseguro_defecto: 1500, unidades_bioquimicas: 18, unidades_gastos: 6, requiere_orden: true, requiere_autorizacion: false, instrucciones_preparacion: 'Ayuno de 12 horas. Evitar comidas grasas la noche anterior.', activo: true },
+
+    // 4. NOMENCLADOR ODONTOLÓGICO
+    { id: 'nom-odo-1', clinica_id: 'clinica-1', tipo_nomenclador: 'ODONTOLOGICO', codigo_pmo: '01.01', descripcion: 'Consulta y Diagnóstico Bucodental con Ficha Odontológica', duracion_minutos: 25, valor_particular: 15000, coseguro_defecto: 0, capitulo_odontologia: '01 - Consultas', requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Higiene dental previa a la consulta.', activo: true },
+    { id: 'nom-odo-2', clinica_id: 'clinica-1', tipo_nomenclador: 'ODONTOLOGICO', codigo_pmo: '02.01', descripcion: 'Restauración Operatoria con Resina Fotocurable (Composite)', duracion_minutos: 35, valor_particular: 28000, coseguro_defecto: 3000, capitulo_odontologia: '02 - Operatoria Dental', requiere_orden: false, requiere_autorizacion: true, instrucciones_preparacion: 'Indicar pieza y caras afectadas.', activo: true },
+    { id: 'nom-odo-3', clinica_id: 'clinica-1', tipo_nomenclador: 'ODONTOLOGICO', codigo_pmo: '03.01', descripcion: 'Tratamiento de Conducto Unirradicular (Endodoncia)', duracion_minutos: 45, valor_particular: 48000, coseguro_defecto: 6000, capitulo_odontologia: '03 - Endodoncia', requiere_orden: false, requiere_autorizacion: true, instrucciones_preparacion: 'Presentar radiografía periapical previa.', activo: true },
+    { id: 'nom-odo-4', clinica_id: 'clinica-1', tipo_nomenclador: 'ODONTOLOGICO', codigo_pmo: '08.01', descripcion: 'Radiografía Periapical Diagnóstica', duracion_minutos: 15, valor_particular: 8000, coseguro_defecto: 1000, capitulo_odontologia: '08 - Radiología Dental', requiere_orden: false, requiere_autorizacion: false, instrucciones_preparacion: 'Sin elementos metálicos en la boca.', activo: true }
   ],
   convenios_coseguros: [
     { id: 'cov-1', plan_id: 'pl-5', practica_id: 'nom-3', monto_coseguro: 3000, cubierto_100: false, observaciones: 'Coseguro reducido para SMG20' },
     { id: 'cov-2', plan_id: 'pl-5', practica_id: 'nom-4', monto_coseguro: 4500, cubierto_100: false, observaciones: 'Requiere bono digital' },
-    { id: 'cov-3', plan_id: 'pl-9', practica_id: 'nom-1', monto_coseguro: 2500, cubierto_100: false, observaciones: 'Bono consulta categoría C' }
+    { id: 'cov-3', plan_id: 'pl-apross-1', practica_id: 'nom-psi-2', monto_coseguro: 2000, cubierto_100: false, observaciones: 'Copago APROSS Psicología individual' },
+    { id: 'cov-4', plan_id: 'pl-cppc-1', practica_id: 'nom-psi-2', monto_coseguro: 1500, cubierto_100: false, observaciones: 'Convenio Colegio de Psicólogos' }
   ],
   profesionales: [
+    {
+      id: 'prof-psi-1',
+      clinica_id: 'clinica-1',
+      nombre: 'Sofía',
+      apellido: 'Albarracín',
+      matricula_provincial: 'M.P. 10.492 CPPC',
+      matricula_nacional: 'MN 49.201',
+      especialidad: 'Psicología y Salud Mental',
+      especialidad_id: 'esp-0',
+      servicios_ids: ['serv-0a', 'serv-0b', 'serv-0c'],
+      email: 'salbarracin@centrosanlucas.com.ar',
+      telefono: '351 552-8811',
+      duracion_turno_minutos: 45,
+      max_sobreturnos_dia: 2,
+      color_agenda: '#6366f1',
+      obras_sociales_ids: ['os-1', 'os-apross', 'os-cppc', 'os-2', 'os-3', 'os-4'],
+      atiende_particular: true,
+      atiende_online: true,
+      activo: true
+    },
+    {
+      id: 'prof-psi-2',
+      clinica_id: 'clinica-1',
+      nombre: 'Gonzalo',
+      apellido: 'Maidana',
+      matricula_provincial: 'M.P. 8.921 CPPC',
+      matricula_nacional: 'MN 42.110',
+      especialidad: 'Psicología y Salud Mental',
+      especialidad_id: 'esp-0',
+      servicios_ids: ['serv-0a', 'serv-0c'],
+      email: 'gmaidana@centrosanlucas.com.ar',
+      telefono: '351 619-3322',
+      duracion_turno_minutos: 50,
+      max_sobreturnos_dia: 2,
+      color_agenda: '#8b5cf6',
+      obras_sociales_ids: ['os-1', 'os-apross', 'os-cppc', 'os-2'],
+      atiende_particular: true,
+      atiende_online: true,
+      activo: true
+    },
     {
       id: 'prof-1',
       clinica_id: 'clinica-1',
@@ -272,19 +373,24 @@ export const INITIAL_DATA = {
       matricula_provincial: 'MP 45.291',
       especialidad: 'Cardiología',
       especialidad_id: 'esp-1',
-      servicios_ids: ['serv-1', 'serv-2'], // Consultas y Prácticas
+      servicios_ids: ['serv-1', 'serv-2'],
       email: 'mperez@centrosanlucas.com.ar',
-      telefono: '11 5521-4411',
+      telefono: '351 5521-4411',
       duracion_turno_minutos: 20,
       max_sobreturnos_dia: 4,
       color_agenda: '#0284c7',
-      obras_sociales_ids: ['os-1', 'os-2', 'os-3', 'os-4', 'os-5', 'os-6', 'os-7', 'os-8'],
+      obras_sociales_ids: ['os-1', 'os-apross', 'os-2', 'os-3', 'os-4', 'os-5', 'os-8'],
       atiende_particular: true,
+      atiende_online: false,
       activo: true
     }
   ],
   horarios: [
-    // Dr. Pérez Rossi: Lunes y Viernes Consultas (Consultorio 1), Miércoles Estudios Ecocardiograma (Consultorio 2)
+    // Lic. Sofía Albarracín: Lunes, Miércoles y Jueves (Consultorio 1 de Psicología)
+    { id: 'h-psi-1', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, activo: true },
+    { id: 'h-psi-2', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, activo: true },
+    { id: 'h-psi-3', profesional_id: 'prof-psi-1', servicio_id: 'serv-0b', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, activo: true },
+    // Dr. Pérez Rossi
     { id: 'h-1', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, activo: true },
     { id: 'h-2', profesional_id: 'prof-1', servicio_id: 'serv-2', consultorio_id: 'c-2', dia_semana: 3, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 30, activo: true },
     { id: 'h-3', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 5, hora_inicio: '14:00', hora_fin: '18:00', duracion_slot_min: 20, activo: true }
@@ -303,14 +409,29 @@ export const INITIAL_DATA = {
       dni: '35890123',
       nombre: 'Lucas',
       apellido: 'Fernández',
-      telefono_whatsapp: '+54 9 11 5500-1122',
+      telefono_whatsapp: '+54 9 351 550-1122',
       email: 'lucas.fernandez@gmail.com',
+      obra_social_id: 'os-apross',
+      plan_id: 'pl-apross-1',
+      numero_afiliado: '1098492019/01',
+      alergias: 'Ninguna conocida',
+      antecedentes: 'Trastorno de ansiedad generalizada y crisis de angustia',
+      medicacion_habitual: 'Clonazepam 0.5mg según indicación psiquiátrica'
+    },
+    {
+      id: 'pac-2',
+      clinica_id: 'clinica-1',
+      dni: '29749777',
+      nombre: 'Mariana',
+      apellido: 'Gómez',
+      telefono_whatsapp: '+54 9 351 680-4455',
+      email: 'mariana.gomez@hotmail.com',
       obra_social_id: 'os-2',
       plan_id: 'pl-2',
-      numero_afiliado: '1098492019/01',
-      alergias: 'Penicilina, Sulfas',
-      antecedentes: 'Hipertensión arterial diagnosticada en 2021',
-      medicacion_habitual: 'Losartán 50mg/día'
+      numero_afiliado: '482019482/02',
+      alergias: 'Penicilina',
+      antecedentes: 'Psicoterapia por duelo reciente y estrés laboral',
+      medicacion_habitual: 'Ninguna'
     }
   ],
   turnos: []
@@ -1170,11 +1291,106 @@ export const StorageService = {
     StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA, items);
     return mov;
   },
-  deleteMovimientoCaja: (id) => {
-    const items = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA);
-    const filtered = items.filter(m => m.id !== id);
-    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA, filtered);
+  // LOTES DE FACTURACIÓN (PRESENTACIÓN A OBRAS SOCIALES & CPPC)
+  getLotesFacturacion: (clinicaId = null) => {
+    const all = StorageService.getCollection(STORAGE_KEYS.LOTES_FACTURACION);
+    const targetClinicaId = clinicaId || StorageService.getClinicaActiva().id;
+    return all.filter(l => !l.clinica_id || l.clinica_id === targetClinicaId);
+  },
+  saveLoteFacturacion: (lote) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.LOTES_FACTURACION);
+    const clinicaId = StorageService.getClinicaActiva().id;
+    lote.clinica_id = lote.clinica_id || clinicaId;
+    if (lote.id) {
+      const idx = items.findIndex(l => l.id === lote.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...lote, updated_at: new Date().toISOString() };
+      else items.unshift(lote);
+    } else {
+      lote.id = `lote-${Date.now()}`;
+      lote.numero_lote = lote.numero_lote || `LOTE-${new Date().getFullYear()}-${String(items.length + 1).padStart(4, '0')}`;
+      lote.estado = lote.estado || 'BORRADOR'; // 'BORRADOR' | 'PRESENTADO' | 'AUDITADO' | 'LIQUIDADO' | 'COBRADO'
+      lote.created_at = new Date().toISOString();
+      items.unshift(lote);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.LOTES_FACTURACION, items);
+    return lote;
+  },
+  deleteLoteFacturacion: (id) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.LOTES_FACTURACION);
+    const filtered = items.filter(l => l.id !== id);
+    StorageService.saveCollection(STORAGE_KEYS.LOTES_FACTURACION, filtered);
     return true;
+  },
+
+  // CUENTAS CORRIENTES DE PACIENTES
+  getMovimientosCtaCtePaciente: (pacienteId) => {
+    const all = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_PACIENTES);
+    if (!pacienteId) return all;
+    return all.filter(m => m.paciente_id === pacienteId).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  },
+  saveMovimientoCtaCtePaciente: (mov) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_PACIENTES);
+    const clinicaId = StorageService.getClinicaActiva().id;
+    mov.clinica_id = mov.clinica_id || clinicaId;
+    if (mov.id) {
+      const idx = items.findIndex(m => m.id === mov.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...mov };
+      else items.unshift(mov);
+    } else {
+      mov.id = `mctap-${Date.now()}`;
+      mov.fecha = mov.fecha || new Date().toISOString().split('T')[0];
+      mov.created_at = new Date().toISOString();
+      items.unshift(mov);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_PACIENTES, items);
+    return mov;
+  },
+
+  // CUENTAS CORRIENTES DE OBRAS SOCIALES / FINANCIADORES
+  getMovimientosCtaCteOs: (obraSocialId) => {
+    const all = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_OS);
+    if (!obraSocialId) return all;
+    return all.filter(m => m.obra_social_id === obraSocialId).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  },
+  saveMovimientoCtaCteOs: (mov) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_OS);
+    const clinicaId = StorageService.getClinicaActiva().id;
+    mov.clinica_id = mov.clinica_id || clinicaId;
+    if (mov.id) {
+      const idx = items.findIndex(m => m.id === mov.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...mov };
+      else items.unshift(mov);
+    } else {
+      mov.id = `mctaos-${Date.now()}`;
+      mov.fecha = mov.fecha || new Date().toISOString().split('T')[0];
+      mov.created_at = new Date().toISOString();
+      items.unshift(mov);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_OS, items);
+    return mov;
+  },
+
+  // CONSENTIMIENTOS INFORMADOS DIGITALES
+  getConsentimientos: (clinicaId = null) => {
+    const all = StorageService.getCollection(STORAGE_KEYS.CONSENTIMIENTOS);
+    const targetClinicaId = clinicaId || StorageService.getClinicaActiva().id;
+    return all.filter(c => !c.clinica_id || c.clinica_id === targetClinicaId);
+  },
+  saveConsentimiento: (consentimiento) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.CONSENTIMIENTOS);
+    const clinicaId = StorageService.getClinicaActiva().id;
+    consentimiento.clinica_id = consentimiento.clinica_id || clinicaId;
+    if (consentimiento.id) {
+      const idx = items.findIndex(c => c.id === consentimiento.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...consentimiento };
+      else items.unshift(consentimiento);
+    } else {
+      consentimiento.id = `cons-${Date.now()}`;
+      consentimiento.firmado_en = new Date().toISOString();
+      items.unshift(consentimiento);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.CONSENTIMIENTOS, items);
+    return consentimiento;
   },
 
   // EXPORT / IMPORT

@@ -386,14 +386,14 @@ export const INITIAL_DATA = {
     }
   ],
   horarios: [
-    // Lic. Sofía Albarracín: Lunes, Miércoles y Jueves (Consultorio 1 de Psicología)
-    { id: 'h-psi-1', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, activo: true },
-    { id: 'h-psi-2', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, activo: true },
-    { id: 'h-psi-3', profesional_id: 'prof-psi-1', servicio_id: 'serv-0b', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, activo: true },
-    // Dr. Pérez Rossi
-    { id: 'h-1', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, activo: true },
-    { id: 'h-2', profesional_id: 'prof-1', servicio_id: 'serv-2', consultorio_id: 'c-2', dia_semana: 3, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 30, activo: true },
-    { id: 'h-3', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 5, hora_inicio: '14:00', hora_fin: '18:00', duracion_slot_min: 20, activo: true }
+    // Lic. Sofía Albarracín: Lunes (Presencial), Miércoles (Online/Telepsicología), Jueves (Ambas)
+    { id: 'h-psi-1', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-psi-2', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
+    { id: 'h-psi-3', profesional_id: 'prof-psi-1', servicio_id: 'serv-0b', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'AMBAS', activo: true },
+    // Dr. Pérez Rossi: Lunes (Presencial), Miércoles (Presencial), Viernes (Online)
+    { id: 'h-1', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-2', profesional_id: 'prof-1', servicio_id: 'serv-2', consultorio_id: 'c-2', dia_semana: 3, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 30, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-3', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 5, hora_inicio: '14:00', hora_fin: '18:00', duracion_slot_min: 20, modalidad: 'ONLINE', activo: true }
   ],
   bloqueos: [
     { id: 'b-1', clinica_id: 'clinica-1', profesional_id: null, consultorio_id: null, tipo: 'FERIADO_NACIONAL', fecha_inicio: '2026-01-01', fecha_fin: '2026-01-01', motivo: 'Año Nuevo' },
@@ -1064,8 +1064,8 @@ export const StorageService = {
     return turno;
   },
 
-  // SLOTS DISPONIBLES (Filtrado por profesional, servicio opcional y fecha)
-  getSlotsDisponibles: (profesionalId, fechaStr, servicioId = null) => {
+  // SLOTS DISPONIBLES (Filtrado por profesional, fecha, servicio opcional y modalidad opcional)
+  getSlotsDisponibles: (profesionalId, fechaStr, servicioId = null, modalidad = null) => {
     if (!profesionalId || !fechaStr) return [];
 
     const [year, month, day] = fechaStr.split('-').map(Number);
@@ -1083,25 +1083,29 @@ export const StorageService = {
 
     if (esFeriadoOBloqueado) return [];
 
-    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => h.dia_semana === diaSemana);
+    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => h.dia_semana === diaSemana && h.activo !== false);
     if (servicioId) {
       horarios = horarios.filter(h => !h.servicio_id || h.servicio_id === servicioId);
     }
+    // Filtrar por modalidad si fue especificada ('PRESENCIAL' u 'ONLINE')
+    if (modalidad) {
+      horarios = horarios.filter(h => !h.modalidad || h.modalidad === 'AMBAS' || h.modalidad === modalidad);
+    }
     if (horarios.length === 0) return [];
 
+    // Turnos ya agendados para este profesional y fecha (excluyendo cancelados)
     const turnosExistentes = StorageService.getTurnos().filter(t => 
-      t.profesional_id === profesionalId && 
+      String(t.profesional_id) === String(profesionalId) && 
       t.fecha === fechaStr && 
       t.estado !== 'CANCELADO'
     );
 
-    const occupiedHours = new Set(turnosExistentes.map(t => t.hora_inicio));
     const slots = [];
 
     horarios.forEach(h => {
       const [hIni, mIni] = h.hora_inicio.split(':').map(Number);
       const [hFin, mFin] = h.hora_fin.split(':').map(Number);
-      const slotDuration = h.duracion_slot_min || 20;
+      const slotDuration = Number(h.duracion_slot_min) || 20;
 
       let currentMinutes = hIni * 60 + mIni;
       const endMinutes = hFin * 60 + mFin;
@@ -1116,7 +1120,20 @@ export const StorageService = {
         const endSlotMin = endSlotMinutes % 60;
         const horaFinStr = `${String(endSlotHour).padStart(2, '0')}:${String(endSlotMin).padStart(2, '0')}`;
 
-        const isOccupied = occupiedHours.has(horaStr);
+        // Validación estricta de solapamiento matemático: max(start1, start2) < min(end1, end2)
+        const isOccupied = turnosExistentes.some(t => {
+          if (!t.hora_inicio) return false;
+          const [tHIni, tMIni] = t.hora_inicio.split(':').map(Number);
+          const tStartMin = tHIni * 60 + tMIni;
+          let tEndMin;
+          if (t.hora_fin) {
+            const [tHFin, tMFin] = t.hora_fin.split(':').map(Number);
+            tEndMin = tHFin * 60 + tMFin;
+          } else {
+            tEndMin = tStartMin + slotDuration;
+          }
+          return Math.max(tStartMin, currentMinutes) < Math.min(tEndMin, endSlotMinutes);
+        });
 
         slots.push({
           hora_inicio: horaStr,
@@ -1124,12 +1141,16 @@ export const StorageService = {
           disponible: !isOccupied,
           consultorio_id: h.consultorio_id,
           servicio_id: h.servicio_id,
+          modalidad: h.modalidad || 'PRESENCIAL',
           duracion_min: slotDuration
         });
 
         currentMinutes += slotDuration;
       }
     });
+
+    // Ordenar slots cronológicamente
+    slots.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
 
     return slots;
   },

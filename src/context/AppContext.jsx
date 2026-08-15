@@ -347,6 +347,44 @@ export const AppProvider = ({ children }) => {
 
   // Turnos
   const createTurno = ({ pacienteData, turnoData }) => {
+    // 1. Verificación estricta de colisión / solapamiento para el mismo profesional y fecha
+    if (!turnoData.es_sobreturno) {
+      const turnosExistentes = StorageService.getTurnos();
+      const [nHIni, nMIni] = (turnoData.hora_inicio || '00:00').split(':').map(Number);
+      const nStart = nHIni * 60 + nMIni;
+      let nEnd;
+      if (turnoData.hora_fin) {
+        const [nHFin, nMFin] = turnoData.hora_fin.split(':').map(Number);
+        nEnd = nHFin * 60 + nMFin;
+      } else {
+        nEnd = nStart + 20;
+      }
+
+      const isColliding = turnosExistentes.some(t => {
+        if (String(t.profesional_id) !== String(turnoData.profesional_id)) return false;
+        if (t.fecha !== turnoData.fecha) return false;
+        if (t.estado === 'CANCELADO') return false;
+        if (turnoData.id && t.id === turnoData.id) return false;
+
+        const [tHIni, tMIni] = (t.hora_inicio || '00:00').split(':').map(Number);
+        const tStart = tHIni * 60 + tMIni;
+        let tEnd;
+        if (t.hora_fin) {
+          const [tHFin, tMFin] = t.hora_fin.split(':').map(Number);
+          tEnd = tHFin * 60 + tMFin;
+        } else {
+          tEnd = tStart + 20;
+        }
+
+        return Math.max(tStart, nStart) < Math.min(tEnd, nEnd);
+      });
+
+      if (isColliding) {
+        showToast('⚠️ Este horario ya está reservado por otro paciente.', 'error');
+        return { error: 'HORARIO_OCUPADO', message: 'El horario seleccionado ya está reservado.' };
+      }
+    }
+
     const pac = StorageService.savePaciente(pacienteData);
     const coseguroCalculado = StorageService.calcularCoseguro(
       turnoData.obra_social_id,

@@ -223,7 +223,7 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
     const horario = horariosProf.find(h => h.dia_semana === diaSemana);
     const consultorioId = selectedSlot?.consultorio_id || horario?.consultorio_id || consultorios[0]?.id;
 
-    const { turno, paciente } = createTurno({
+    const result = createTurno({
       pacienteData: {
         dni: pacienteForm.dni,
         nombre: pacienteForm.nombre,
@@ -248,6 +248,12 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
         observaciones: pacienteForm.observaciones
       }
     });
+
+    if (result?.error) {
+      return;
+    }
+
+    const { turno, paciente } = result;
 
     const profObj = profesionales.find(p => p.id === selectedProfId);
     const consObj = consultorios.find(c => c.id === consultorioId);

@@ -110,18 +110,20 @@ export const TurneroWizard = () => {
 
   const DIAS_NOMBRES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const diasAtencionTexto = React.useMemo(() => {
-    if (horariosDelMedico.length === 0) return 'Sin horarios cargados';
-    const dias = Array.from(new Set(horariosDelMedico.map(h => DIAS_NOMBRES[h.dia_semana]))).join(', ');
-    const horas = horariosDelMedico.map(h => `${h.hora_inicio} a ${h.hora_fin}`).slice(0, 2).join(' / ');
+    const horariosFiltrados = horariosDelMedico.filter(h => !modalidadTurno || !h.modalidad || h.modalidad === 'AMBAS' || h.modalidad === modalidadTurno);
+    if (horariosFiltrados.length === 0) return `Sin horarios para modalidad ${modalidadTurno.toLowerCase()}`;
+    const dias = Array.from(new Set(horariosFiltrados.map(h => DIAS_NOMBRES[h.dia_semana]))).join(', ');
+    const horas = horariosFiltrados.map(h => `${h.hora_inicio} a ${h.hora_fin}`).slice(0, 2).join(' / ');
     return `${dias} • ${horas}`;
-  }, [horariosDelMedico]);
+  }, [horariosDelMedico, modalidadTurno]);
 
-  // Próximos días con disponibilidad real (siguientes 30 días)
+  // Próximos días con disponibilidad real según modalidad (siguientes 30 días)
   const proximosDiasDisponibles = React.useMemo(() => {
     if (!selectedProfesionalId) return [];
     if (horariosDelMedico.length === 0) return [];
 
-    const diasSemanaAtencion = new Set(horariosDelMedico.map(h => h.dia_semana));
+    const horariosFiltrados = horariosDelMedico.filter(h => !modalidadTurno || !h.modalidad || h.modalidad === 'AMBAS' || h.modalidad === modalidadTurno);
+    const diasSemanaAtencion = new Set(horariosFiltrados.map(h => h.dia_semana));
     const result = [];
     const curr = new Date();
 
@@ -130,7 +132,7 @@ export const TurneroWizard = () => {
       const diaSemana = curr.getDay();
 
       if (diasSemanaAtencion.has(diaSemana)) {
-        const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfesionalId, dateStr, selectedServicioId || null);
+        const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfesionalId, dateStr, selectedServicioId || null, modalidadTurno);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {
           result.push({
@@ -145,7 +147,7 @@ export const TurneroWizard = () => {
       curr.setDate(curr.getDate() + 1);
     }
     return result;
-  }, [selectedProfesionalId, selectedServicioId, horariosDelMedico]);
+  }, [selectedProfesionalId, selectedServicioId, horariosDelMedico, modalidadTurno]);
 
   // Autoseleccionar la primera fecha disponible cuando cambia el médico o entramos al paso 3
   useEffect(() => {
@@ -157,11 +159,11 @@ export const TurneroWizard = () => {
     }
   }, [proximosDiasDisponibles, selectedProfesionalId]);
 
-  // Cargar slots cuando cambian profesional, fecha o servicio
+  // Cargar slots cuando cambian profesional, fecha, servicio o modalidad
   useEffect(() => {
     if (selectedProfesionalId && selectedFecha) {
       setLoadingSlots(true);
-      const available = StorageService.getSlotsDisponibles(selectedProfesionalId, selectedFecha, selectedServicioId || null);
+      const available = StorageService.getSlotsDisponibles(selectedProfesionalId, selectedFecha, selectedServicioId || null, modalidadTurno);
       setSlots(available);
       setSelectedSlot(null);
       setLoadingSlots(false);
@@ -169,7 +171,7 @@ export const TurneroWizard = () => {
       setSlots([]);
       setSelectedSlot(null);
     }
-  }, [selectedProfesionalId, selectedFecha, selectedServicioId]);
+  }, [selectedProfesionalId, selectedFecha, selectedServicioId, modalidadTurno]);
 
 
 
@@ -337,7 +339,7 @@ export const TurneroWizard = () => {
       return;
     }
 
-    const { turno, paciente } = createTurno({
+    const result = createTurno({
       pacienteData: {
         dni: pacienteForm.dni,
         nombre: pacienteForm.nombre,
@@ -366,6 +368,17 @@ export const TurneroWizard = () => {
         observaciones: pacienteForm.motivo_consulta
       }
     });
+
+    if (result?.error) {
+      alert('⚠️ El horario seleccionado ya fue reservado por otro paciente. Por favor elija otro horario disponible.');
+      const available = StorageService.getSlotsDisponibles(selectedProfesionalId, selectedFecha, selectedServicioId || null, modalidadTurno);
+      setSlots(available);
+      setSelectedSlot(null);
+      setStep(3);
+      return;
+    }
+
+    const { turno, paciente } = result;
 
     // Guardar consentimiento informado si fue tildado
     if (consentimientoAceptado && paciente) {

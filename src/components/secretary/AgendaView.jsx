@@ -264,7 +264,7 @@ export const AgendaView = () => {
     const horario = horariosProf.find(h => h.dia_semana === dateObj.getDay());
     const consultorioId = horario?.consultorio_id || consultorios[0]?.id;
 
-    createTurno({
+    const result = createTurno({
       pacienteData: {
         dni: quickForm.dni,
         nombre: quickForm.nombre,
@@ -287,6 +287,10 @@ export const AgendaView = () => {
         observaciones: quickForm.observaciones
       }
     });
+
+    if (result?.error) {
+      return;
+    }
 
     setShowNuevoTurnoModal(false);
     setShowSobreturnoModal(false);

@@ -65,6 +65,7 @@ export const AbmProfesionales = () => {
     hora_fin: '13:00',
     consultorio_id: '',
     duracion_slot_min: 20,
+    modalidad: 'PRESENCIAL', // 'PRESENCIAL' | 'ONLINE' | 'AMBAS'
     activo: true
   });
 
@@ -137,7 +138,10 @@ export const AbmProfesionales = () => {
 
     if (horario) {
       setEditingHorario(horario);
-      setHorarioForm({ ...horario });
+      setHorarioForm({
+        ...horario,
+        modalidad: horario.modalidad || 'PRESENCIAL'
+      });
     } else {
       setEditingHorario(null);
       setHorarioForm({
@@ -147,6 +151,7 @@ export const AbmProfesionales = () => {
         servicio_id: profServicios[0]?.id || '',
         consultorio_id: consultorios[0]?.id || '',
         duracion_slot_min: prof.duracion_turno_minutos || 20,
+        modalidad: 'PRESENCIAL',
         activo: true
       });
     }
@@ -307,6 +312,15 @@ export const AbmProfesionales = () => {
                               </span>
                               <span className="font-extrabold text-xs text-medical-700">
                                 {h.hora_inicio} a {h.hora_fin}
+                              </span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${
+                                h.modalidad === 'ONLINE' 
+                                  ? 'bg-purple-100 text-purple-900 border border-purple-200' 
+                                  : h.modalidad === 'AMBAS' 
+                                  ? 'bg-indigo-100 text-indigo-900 border border-indigo-200' 
+                                  : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                              }`}>
+                                {h.modalidad === 'ONLINE' ? '💻 Online' : h.modalidad === 'AMBAS' ? '🔄 Híbrido' : '🏢 Presencial'}
                               </span>
                             </div>
                             <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
@@ -602,6 +616,19 @@ export const AbmProfesionales = () => {
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Modalidad de Atención de la Franja *</label>
+                <select
+                  value={horarioForm.modalidad || 'PRESENCIAL'}
+                  onChange={(e) => setHorarioForm({ ...horarioForm, modalidad: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                >
+                  <option value="PRESENCIAL">🏢 Solo Presencial (En Consultorio Físico)</option>
+                  <option value="ONLINE">💻 Solo Online / Teleconsulta (Videollamada)</option>
+                  <option value="AMBAS">🔄 Ambas Modalidades (Híbrido - El paciente puede elegir)</option>
+                </select>
               </div>
 
               <div>

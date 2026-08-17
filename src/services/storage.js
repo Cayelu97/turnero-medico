@@ -2,6 +2,7 @@
 // GESTOR DE ALMACENAMIENTO Y LÓGICA DE NEGOCIO MULTI-TENANT (LOCAL & SUPABASE READY)
 // ==============================================================================
 import { createClient } from '@supabase/supabase-js';
+import { getDayOfWeekFromDateString, getLocalDateString } from '../utils/dateUtils';
 
 const STORAGE_KEYS = {
   CLINICA: 'mediturnos_clinica',
@@ -16,6 +17,7 @@ const STORAGE_KEYS = {
   CONVENIOS_COSEGUROS: 'mediturnos_convenios_coseguros',
   PROFESIONALES: 'mediturnos_profesionales',
   HORARIOS: 'mediturnos_horarios',
+  AGENDAS: 'mediturnos_agendas',
   BLOQUEOS: 'mediturnos_bloqueos',
   PACIENTES: 'mediturnos_pacientes',
   TURNOS: 'mediturnos_turnos',
@@ -463,6 +465,77 @@ export const INITIAL_DATA = {
   turnos: []
 };
 
+// Agendas Iniciales Profesionales (Con Vigencia y Días Deterministas)
+export const INITIAL_AGENDAS = [
+  {
+    id: 'ag-nl-1',
+    clinica_id: 'clinica-1',
+    profesional_id: 'prof-psi-3', // Lic. Nahuel López
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-0',
+    nombre: 'Consultas Psicológicas Lunes a Viernes',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 2, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 3, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'ONLINE' }] },
+      { dia_semana: 4, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 5, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'AMBAS' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-psi-1',
+    clinica_id: 'clinica-1',
+    profesional_id: 'prof-psi-1', // Lic. Sofía Albarracín
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-0',
+    nombre: 'Psicoterapia Individual & Telepsicología',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'AMBAS',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 1, franjas: [{ hora_inicio: '14:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 3, franjas: [{ hora_inicio: '09:00', hora_fin: '15:00', modalidad: 'ONLINE' }] },
+      { dia_semana: 4, franjas: [{ hora_inicio: '15:00', hora_fin: '20:00', modalidad: 'AMBAS' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-med-1',
+    clinica_id: 'clinica-1',
+    profesional_id: 'prof-1', // Dr. Martín Pérez Rossi
+    servicio_id: 'serv-1',
+    consultorio_id: 'c-1',
+    nombre: 'Cardiología Clínica y Prácticas',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 20,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 4,
+    dias_horarios: [
+      { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 3, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 5, franjas: [{ hora_inicio: '14:00', hora_fin: '18:00', modalidad: 'ONLINE' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  }
+];
+
+INITIAL_DATA.agendas = INITIAL_AGENDAS;
+
 // Generador de Turnos Iniciales: Limpio para pruebas reales
 export function generateInitialSampleTurnos() {
   return [];
@@ -475,6 +548,9 @@ export const initLocalStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.CLINICA)) {
     localStorage.setItem(STORAGE_KEYS.CLINICA, JSON.stringify(INITIAL_CLINICAS[0]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.AGENDAS)) {
+    localStorage.setItem(STORAGE_KEYS.AGENDAS, JSON.stringify(INITIAL_AGENDAS));
   }
   if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
@@ -560,6 +636,13 @@ export const initLocalStorage = () => {
         observaciones: 'QR Mercado Pago'
       }
     ]));
+  }
+
+  // Sanitización de horarios huérfanos y domingos residuales
+  try {
+    StorageService.sanitizarHorariosHuerfanos();
+  } catch (e) {
+    console.warn('Error sanitizando horarios:', e);
   }
 };
 
@@ -940,13 +1023,166 @@ export const StorageService = {
     StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, items);
   },
 
+  // ==============================================================================
+  // AGENDAS MÉDICAS PROFESIONALES (Con Vigencia, Ciclo de Vida y Detección de Turnos)
+  // ==============================================================================
+  getAgendas: (clinicaId = null, profesionalId = null) => {
+    let items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
+    if (!items || items.length === 0) {
+      items = INITIAL_AGENDAS;
+      StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
+    }
+    const targetClinicaId = clinicaId || StorageService.getClinicaActiva()?.id;
+    if (targetClinicaId && targetClinicaId !== 'TODAS' && targetClinicaId !== 'ALL') {
+      items = items.filter(a => !a.clinica_id || a.clinica_id === targetClinicaId);
+    }
+    if (profesionalId) {
+      items = items.filter(a => a.profesional_id === profesionalId);
+    }
+    return items;
+  },
+
+  saveAgenda: (agendaData) => {
+    let items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
+    if (!items || items.length === 0) items = [...INITIAL_AGENDAS];
+    const clinicaId = StorageService.getClinicaActiva()?.id;
+    agendaData.clinica_id = agendaData.clinica_id || clinicaId;
+    agendaData.updated_at = new Date().toISOString();
+
+    if (agendaData.id) {
+      const idx = items.findIndex(a => a.id === agendaData.id);
+      if (idx >= 0) items[idx] = { ...items[idx], ...agendaData };
+      else items.push(agendaData);
+    } else {
+      agendaData.id = `ag-${Date.now()}`;
+      agendaData.created_at = new Date().toISOString();
+      agendaData.estado = agendaData.estado || 'ACTIVA';
+      items.push(agendaData);
+    }
+    StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
+
+    // Sincronizar atómicamente la tabla horarios para este profesional
+    StorageService.sincronizarHorariosDesdeAgendas(agendaData.profesional_id);
+    return agendaData;
+  },
+
+  cerrarAgenda: (agendaId, motivo = '') => {
+    const items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
+    const agenda = items.find(a => a.id === agendaId);
+    if (agenda) {
+      agenda.estado = 'CERRADA';
+      agenda.motivo_cierre = motivo;
+      agenda.updated_at = new Date().toISOString();
+      StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
+      StorageService.sincronizarHorariosDesdeAgendas(agenda.profesional_id);
+    }
+    return agenda;
+  },
+
+  deleteAgenda: (agendaId) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
+    const target = items.find(a => a.id === agendaId);
+    const updated = items.filter(a => a.id !== agendaId);
+    StorageService.saveCollection(STORAGE_KEYS.AGENDAS, updated);
+    if (target) {
+      StorageService.sincronizarHorariosDesdeAgendas(target.profesional_id);
+    }
+  },
+
+  // Busca turnos futuros que quedarían afectados al modificar o cerrar una agenda
+  getTurnosAfectadosPorAgenda: (profesionalId, diasHabilitados = [], fechaDesde = null, fechaHasta = null) => {
+    const todayStr = getLocalDateString(new Date());
+    const turnos = StorageService.getTurnos().filter(t => 
+      t.profesional_id === profesionalId && 
+      t.fecha >= todayStr && 
+      t.estado !== 'CANCELADO'
+    );
+
+    const diasNum = diasHabilitados.map(Number);
+    const afectados = turnos.filter(t => {
+      // Si la fecha está fuera de la nueva vigencia
+      if (fechaDesde && t.fecha < fechaDesde) return true;
+      if (fechaHasta && t.fecha > fechaHasta) return true;
+      // Si el día de la semana fue quitado de la atención
+      const dayOfWeek = getDayOfWeekFromDateString(t.fecha);
+      if (!diasNum.includes(dayOfWeek)) return true;
+      return false;
+    });
+
+    return afectados;
+  },
+
+  // Sincroniza la tabla horarios a partir de todas las agendas activas del médico
+  sincronizarHorariosDesdeAgendas: (profesionalId) => {
+    const agendasActivas = StorageService.getAgendas(null, profesionalId).filter(a => a.estado === 'ACTIVA');
+    const allHorarios = StorageService.getHorarios().filter(h => h.profesional_id !== profesionalId);
+
+    const newHorarios = [];
+    agendasActivas.forEach(ag => {
+      if (ag.dias_horarios && Array.isArray(ag.dias_horarios)) {
+        ag.dias_horarios.forEach(dh => {
+          const diaNum = Number(dh.dia_semana);
+          if (diaNum >= 1 && diaNum <= 6) { // Excluye domingo estrictamente
+            (dh.franjas || []).forEach((franja, fIdx) => {
+              if (franja.hora_inicio && franja.hora_fin) {
+                newHorarios.push({
+                  id: `h-${ag.id}-${diaNum}-${fIdx}`,
+                  agenda_id: ag.id,
+                  profesional_id: ag.profesional_id,
+                  servicio_id: ag.servicio_id || null,
+                  consultorio_id: ag.consultorio_id,
+                  dia_semana: diaNum,
+                  hora_inicio: franja.hora_inicio,
+                  hora_fin: franja.hora_fin,
+                  duracion_slot_min: Number(ag.duracion_slot_min || 20),
+                  modalidad: franja.modalidad || ag.modalidad || 'PRESENCIAL',
+                  fecha_desde: ag.fecha_desde || null,
+                  fecha_hasta: ag.fecha_hasta || null,
+                  activo: true
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+
+    const updated = [...allHorarios, ...newHorarios];
+    StorageService.saveCollection(STORAGE_KEYS.HORARIOS, updated);
+    return newHorarios;
+  },
+
+  // Sanitiza y purga definitivamente cualquier horario residual de domingo o corrupto
+  sanitizarHorariosHuerfanos: () => {
+    let horarios = StorageService.getCollection(STORAGE_KEYS.HORARIOS);
+    if (!horarios || !Array.isArray(horarios)) return;
+    
+    // Purgar domingos (dia_semana === 0) y horarios inválidos
+    const clean = horarios.filter(h => 
+      h.profesional_id && 
+      Number(h.dia_semana) !== 0 && 
+      Number(h.dia_semana) >= 1 && 
+      Number(h.dia_semana) <= 6 &&
+      h.activo !== false
+    );
+
+    StorageService.saveCollection(STORAGE_KEYS.HORARIOS, clean);
+  },
+
   // HORARIOS / GRILLAS DE AGENDA
   getHorarios: () => StorageService.getCollection(STORAGE_KEYS.HORARIOS),
   getHorariosByProfesional: (profesionalId) => {
-    return StorageService.getHorarios().filter(h => h.profesional_id === profesionalId && h.activo !== false);
+    return StorageService.getHorarios().filter(h => 
+      h.profesional_id === profesionalId && 
+      Number(h.dia_semana) !== 0 &&
+      Number(h.dia_semana) >= 1 && 
+      Number(h.dia_semana) <= 6 &&
+      h.activo !== false
+    );
   },
   saveHorario: (horario) => {
     const items = StorageService.getHorarios();
+    if (Number(horario.dia_semana) === 0) return horario; // Bloquear domingos
     if (horario.id) {
       const idx = items.findIndex(h => h.id === horario.id);
       if (idx >= 0) items[idx] = { ...items[idx], ...horario };
@@ -964,39 +1200,33 @@ export const StorageService = {
     StorageService.saveCollection(STORAGE_KEYS.HORARIOS, items);
   },
   // CONFIGURADOR EN LOTE DE AGENDA SEMANAL
-  configurarAgendaSemanal: ({ profesional_id, servicio_id, dias_semana, turnos_horarios, consultorio_id, duracion_slot_min, modalidad = 'PRESENCIAL' }) => {
-    const allHorarios = StorageService.getHorarios();
-    const diasNum = dias_semana.map(Number);
-    // Eliminar horarios anteriores de esos días para este médico y servicio
-    const filtered = allHorarios.filter(h => !(
-      String(h.profesional_id) === String(profesional_id) && 
-      diasNum.includes(Number(h.dia_semana)) &&
-      (!servicio_id || h.servicio_id === servicio_id)
-    ));
+  configurarAgendaSemanal: ({ profesional_id, servicio_id, dias_semana, turnos_horarios, consultorio_id, duracion_slot_min, modalidad = 'PRESENCIAL', fecha_desde = null, fecha_hasta = null, nombre = 'Agenda de Consultas' }) => {
+    const diasNum = dias_semana.map(Number).filter(d => d >= 1 && d <= 6);
+    
+    // Crear o actualizar la entidad Agenda formal
+    const agendaObj = {
+      profesional_id,
+      servicio_id: servicio_id || null,
+      consultorio_id,
+      nombre,
+      fecha_desde: fecha_desde || getLocalDateString(new Date()),
+      fecha_hasta: fecha_hasta || null,
+      duracion_slot_min: Number(duracion_slot_min || 20),
+      modalidad,
+      max_sobreturnos_dia: 2,
+      dias_horarios: diasNum.map(dia => ({
+        dia_semana: dia,
+        franjas: turnos_horarios.map(th => ({
+          hora_inicio: th.hora_inicio,
+          hora_fin: th.hora_fin,
+          modalidad: th.modalidad || modalidad
+        }))
+      })),
+      estado: 'ACTIVA'
+    };
 
-    const newFranjas = [];
-    diasNum.forEach(dia => {
-      turnos_horarios.forEach((th, idx) => {
-        if (th.hora_inicio && th.hora_fin) {
-          newFranjas.push({
-            id: `h-${Date.now()}-${dia}-${idx}`,
-            profesional_id,
-            servicio_id: servicio_id || null,
-            consultorio_id,
-            dia_semana: Number(dia),
-            hora_inicio: th.hora_inicio,
-            hora_fin: th.hora_fin,
-            duracion_slot_min: Number(duracion_slot_min || 20),
-            modalidad: th.modalidad || modalidad || 'PRESENCIAL',
-            activo: true
-          });
-        }
-      });
-    });
-
-    const updated = [...filtered, ...newFranjas];
-    StorageService.saveCollection(STORAGE_KEYS.HORARIOS, updated);
-    return newFranjas;
+    StorageService.saveAgenda(agendaObj);
+    return StorageService.getHorariosByProfesional(profesional_id);
   },
 
   // BLOQUEOS Y VACACIONES
@@ -1096,9 +1326,9 @@ export const StorageService = {
   getSlotsDisponibles: (profesionalId, fechaStr, servicioId = null, modalidad = null) => {
     if (!profesionalId || !fechaStr) return [];
 
-    const [year, month, day] = fechaStr.split('-').map(Number);
-    const dateObj = new Date(year, month - 1, day, 12, 0, 0); // Mediodía local seguro
-    const diaSemana = dateObj.getDay();
+    const diaSemana = getDayOfWeekFromDateString(fechaStr);
+    // Domingo nunca tiene atención en nuestro sistema clínico
+    if (diaSemana === 0) return [];
 
     const bloqueos = StorageService.getBloqueos();
     const esFeriadoOBloqueado = bloqueos.some(b => {
@@ -1111,10 +1341,15 @@ export const StorageService = {
 
     if (esFeriadoOBloqueado) return [];
 
-    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => 
-      Number(h.dia_semana) === Number(diaSemana) && 
-      h.activo !== false
-    );
+    // Obtener horarios que coincidan con el día de la semana y vigencia activa
+    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => {
+      if (Number(h.dia_semana) !== Number(diaSemana)) return false;
+      if (h.activo === false) return false;
+      // Validar vigencia de fecha de la agenda
+      if (h.fecha_desde && fechaStr < h.fecha_desde) return false;
+      if (h.fecha_hasta && fechaStr > h.fecha_hasta) return false;
+      return true;
+    });
     if (servicioId) {
       horarios = horarios.filter(h => !h.servicio_id || h.servicio_id === servicioId);
     }

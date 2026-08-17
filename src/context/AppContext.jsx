@@ -35,6 +35,7 @@ export const AppProvider = ({ children }) => {
   const [conveniosCoseguros, setConveniosCoseguros] = useState(() => StorageService.getConveniosCoseguros());
   const [profesionales, setProfesionales] = useState(() => StorageService.getProfesionales());
   const [horarios, setHorarios] = useState(() => StorageService.getHorarios());
+  const [agendas, setAgendas] = useState(() => StorageService.getAgendas());
   const [bloqueos, setBloqueos] = useState(() => StorageService.getBloqueos());
   const [pacientes, setPacientes] = useState(() => StorageService.getPacientes());
   const [turnos, setTurnos] = useState(() => StorageService.getTurnos());
@@ -70,6 +71,7 @@ export const AppProvider = ({ children }) => {
     setNomenclador(StorageService.getNomenclador(clin.id));
     setConveniosCoseguros(StorageService.getConveniosCoseguros());
     setProfesionales(StorageService.getProfesionales(clin.id));
+    setAgendas(StorageService.getAgendas(clin.id));
     setHorarios(StorageService.getHorarios());
     setBloqueos(StorageService.getBloqueos(clin.id));
     setPacientes(StorageService.getPacientes(clin.id));
@@ -310,10 +312,35 @@ export const AppProvider = ({ children }) => {
     showToast('Horario eliminado', 'info');
   };
 
+  // AGENDAS MÉDICAS PROFESIONALES (Vigencias, Cierre y Auditoría)
+  const saveAgenda = (agendaData) => {
+    const saved = StorageService.saveAgenda(agendaData);
+    setAgendas(StorageService.getAgendas());
+    setHorarios(StorageService.getHorarios());
+    showToast(`Agenda "${saved.nombre}" guardada con éxito`);
+    return saved;
+  };
+
+  const cerrarAgenda = (agendaId, motivo) => {
+    const closed = StorageService.cerrarAgenda(agendaId, motivo);
+    setAgendas(StorageService.getAgendas());
+    setHorarios(StorageService.getHorarios());
+    showToast('Agenda cerrada con éxito', 'info');
+    return closed;
+  };
+
+  const deleteAgenda = (agendaId) => {
+    StorageService.deleteAgenda(agendaId);
+    setAgendas(StorageService.getAgendas());
+    setHorarios(StorageService.getHorarios());
+    showToast('Agenda eliminada', 'info');
+  };
+
   const configurarAgendaSemanal = (agendaParams) => {
     const nuevasFranjas = StorageService.configurarAgendaSemanal(agendaParams);
+    setAgendas(StorageService.getAgendas());
     setHorarios(StorageService.getHorarios());
-    showToast(`Agenda configurada con éxito (${nuevasFranjas.length} franjas creadas)`);
+    showToast(`Agenda configurada con éxito`);
     return nuevasFranjas;
   };
 
@@ -681,6 +708,10 @@ export const AppProvider = ({ children }) => {
         nomenclador,
         conveniosCoseguros,
         profesionales,
+        agendas,
+        saveAgenda,
+        cerrarAgenda,
+        deleteAgenda,
         horarios,
         bloqueos,
         pacientes,

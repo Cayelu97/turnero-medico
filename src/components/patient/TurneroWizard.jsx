@@ -132,7 +132,8 @@ export const TurneroWizard = () => {
       const dateStr = addDaysToDateString(todayStr, i);
       const dayDetails = getDayDetailsFromDateString(dateStr);
 
-      if (diasSemanaAtencion.has(dayDetails.diaSemana)) {
+      // Solo procesar si el día está habilitado y NO es domingo (0)
+      if (diasSemanaAtencion.has(dayDetails.diaSemana) && dayDetails.diaSemana !== 0) {
         const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfesionalId, dateStr, selectedServicioId || null, modalidadTurno);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {

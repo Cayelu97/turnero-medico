@@ -23,6 +23,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
 import { formatDateAR } from '../../utils/formatters';
+import { addDaysToDateString, getDayDetailsFromDateString } from '../../utils/dateUtils';
 
 const DIAS_SEMANA_INFO = [
   { dia: 1, corto: 'L', nombre: 'Lunes' },

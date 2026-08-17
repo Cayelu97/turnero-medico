@@ -24,7 +24,7 @@ import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
 import { WhatsAppService } from '../../services/whatsapp';
 import { VoucherModal } from '../patient/VoucherModal';
-import { formatDateAR, getLocalDateString } from '../../utils/dateUtils';
+import { formatDateAR, getLocalDateString, addDaysToDateString, getDayDetailsFromDateString } from '../../utils/dateUtils';
 
 export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = null, defaultProfId = null }) => {
   const { 

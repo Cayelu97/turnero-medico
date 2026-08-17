@@ -71,13 +71,28 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
   // Es agendamiento propio del profesional
   const isDoctorSelfSchedule = Boolean(defaultProfId);
 
-  // RESETEAR SIEMPRE AL ABRIR EL MODAL (Soluciona que no quede en pantalla de éxito)
+  const resetFormulario = () => {
+    setStep(1);
+    setCreatedTurnoData(null);
+    setSelectedSlot(null);
+    setEsSobreturno(false);
+    setDniSearch('');
+    setPacienteForm({
+      dni: '',
+      nombre: '',
+      apellido: '',
+      telefono_whatsapp: '',
+      obra_social_id: obrasSociales[0]?.id || '',
+      plan_id: '',
+      numero_afiliado: '',
+      observaciones: 'Turno programado'
+    });
+  };
+
+  // RESETEAR SIEMPRE AL ABRIR EL MODAL (Garantiza campos limpios para cada nuevo turno)
   useEffect(() => {
     if (isOpen) {
-      setStep(1);
-      setCreatedTurnoData(null);
-      setSelectedSlot(null);
-      setEsSobreturno(false);
+      resetFormulario();
       if (defaultFecha) setFecha(defaultFecha);
       if (defaultProfId) setSelectedProfId(defaultProfId);
       else if (profesionales.length > 0 && !selectedProfId) setSelectedProfId(profesionales[0].id);
@@ -85,9 +100,7 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
   }, [isOpen, defaultFecha, defaultProfId, profesionales]);
 
   const handleModalClose = () => {
-    setStep(1);
-    setCreatedTurnoData(null);
-    setSelectedSlot(null);
+    resetFormulario();
     onClose();
   };
 
@@ -711,6 +724,15 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Enviar Comprobante por WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={resetFormulario}
+                className="w-full sm:w-auto px-5 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black shadow-md shadow-sky-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Agendar Otro Turno</span>
               </button>
 
               <button

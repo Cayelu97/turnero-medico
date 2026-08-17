@@ -37,22 +37,22 @@ import { getDayOfWeekFromDateString, getLocalDateString, addDaysToDateString } f
 
 export const AgendaView = () => {
   const { 
-    turnos, 
-    profesionales, 
-    servicios, 
-    consultorios, 
-    pacientes, 
-    obrasSociales, 
-    planes, 
-    nomenclador,
-    allClinicas,
-    activeClinica,
-    updateTurnoEstado,
-    reprogramarTurno,
-    cancelarTurno,
-    createTurno,
-    confirmarTurnoPorPaciente
-  } = useApp();
+    turnos = [], 
+    profesionales = [], 
+    servicios = [], 
+    consultorios = [], 
+    pacientes = [], 
+    obrasSociales = [], 
+    planes = [], 
+    nomenclador = [], 
+    allClinicas = [], 
+    activeClinica = {}, 
+    updateTurnoEstado = () => {}, 
+    reprogramarTurno = () => {}, 
+    cancelarTurno = () => {}, 
+    createTurno = () => {}, 
+    confirmarTurnoPorPaciente = () => {} 
+  } = useApp() || {};
 
   // Modos de Vista: 'diaria' | 'semanal' | 'futuros'
   const [viewMode, setViewMode] = useState('diaria');
@@ -80,6 +80,7 @@ export const AgendaView = () => {
   const [turnoToCancel, setTurnoToCancel] = useState(null);
   const [selectedTurnoForVoucher, setSelectedTurnoForVoucher] = useState(null);
   const [selectedDetalleTurno, setSelectedDetalleTurno] = useState(null);
+  const [showSobreturnoModal, setShowSobreturnoModal] = useState(false);
 
   // Form states para nuevo turno / sobreturno
   const [quickForm, setQuickForm] = useState({

@@ -24,26 +24,26 @@ import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
 import { WhatsAppService } from '../../services/whatsapp';
 import { VoucherModal } from '../patient/VoucherModal';
-import { formatDateAR } from '../../utils/formatters';
+import { formatDateAR, getLocalDateString } from '../../utils/dateUtils';
 
 export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = null, defaultProfId = null }) => {
   const { 
-    profesionales, 
-    servicios, 
-    consultorios, 
-    obrasSociales, 
-    planes, 
-    nomenclador, 
-    pacientes,
-    clinica,
-    createTurno,
-    showToast 
-  } = useApp();
+    profesionales = [], 
+    servicios = [], 
+    consultorios = [], 
+    obrasSociales = [], 
+    planes = [], 
+    nomenclador = [], 
+    pacientes = [], 
+    clinica = {}, 
+    createTurno = () => {}, 
+    showToast = () => {} 
+  } = useApp() || {};
 
   const [step, setStep] = useState(1); // 1: Datos y Horario, 2: Confirmado
   
   // Fecha seleccionada
-  const [fecha, setFecha] = useState(() => defaultFecha || new Date().toISOString().split('T')[0]);
+  const [fecha, setFecha] = useState(() => defaultFecha || getLocalDateString(new Date()));
   const [selectedProfId, setSelectedProfId] = useState(() => defaultProfId || (profesionales[0]?.id || ''));
   const [selectedServicioId, setSelectedServicioId] = useState('');
   const [selectedPracticaId, setSelectedPracticaId] = useState('');

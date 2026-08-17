@@ -33,18 +33,18 @@ import { getLocalDateString, getDayDetailsFromDateString, addDaysToDateString } 
 
 export const TurneroWizard = () => {
   const { 
-    clinica, 
-    especialidades: catalogoEspecialidades,
-    servicios,
-    profesionales, 
-    obrasSociales, 
-    planes, 
-    nomenclador, 
-    consultorios, 
-    conveniosCoseguros,
-    createTurno,
-    saveConsentimiento
-  } = useApp();
+    clinica = {}, 
+    especialidades: catalogoEspecialidades = [],
+    servicios = [],
+    profesionales = [], 
+    obrasSociales = [], 
+    planes = [], 
+    nomenclador = [], 
+    consultorios = [], 
+    conveniosCoseguros = [],
+    createTurno = () => {},
+    saveConsentimiento = () => {}
+  } = useApp() || {};
 
   const wizardContainerRef = React.useRef(null);
   const [step, setStep] = useState(1);

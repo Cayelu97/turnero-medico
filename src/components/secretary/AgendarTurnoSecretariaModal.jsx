@@ -50,6 +50,7 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [esSobreturno, setEsSobreturno] = useState(false);
   const [horaSobreturno, setHoraSobreturno] = useState('12:30');
+  const [modalidadTurno, setModalidadTurno] = useState('PRESENCIAL');
 
   // Paciente
   const [dniSearch, setDniSearch] = useState('');

@@ -175,205 +175,208 @@ export const ReprogramarTurnoModal = ({ isOpen, turno, onClose, onReprogramSucce
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
+      <div className="bg-white rounded-3xl max-w-5xl xl:max-w-6xl w-full max-h-[92vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
         {step === 1 ? (
           <>
             {/* Header del Modal */}
-            <div className="px-5 sm:px-6 py-3.5 bg-white border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-sky-100 text-sky-800 rounded-2xl shadow-2xs">
+            <div className="px-6 py-4 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-medical-500 text-white rounded-2xl shadow-md shadow-sky-600/20">
                   <ArrowRightLeft className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">Reprogramar Turno Médico</h3>
-                  <p className="text-xs text-slate-500">
-                    Paciente: <strong>{currentPaciente?.nombre} {currentPaciente?.apellido}</strong> (DNI {currentPaciente?.dni})
+                  <p className="text-xs text-slate-500 font-medium">
+                    Paciente: <strong className="text-slate-800">{currentPaciente?.nombre} {currentPaciente?.apellido}</strong> (DNI {currentPaciente?.dni})
                   </p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+              <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Body Scrollable */}
-            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
-              {/* Turno Actual (Anterior) */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs">
-                <div>
-                  <span className="font-extrabold text-amber-900 block">🗓️ Turno Actual a Modificar:</span>
-                  <span className="text-amber-800 font-medium">
-                    {formatDateAR(turno.fecha)} a las {turno.hora_inicio} hs con Dr(a). {currentProf?.nombre} {currentProf?.apellido}
-                  </span>
-                </div>
-                <span className="font-mono text-xs font-black bg-white text-amber-950 px-2 py-1 rounded-lg border border-amber-300">
-                  {turno.codigo_reserva}
-                </span>
-              </div>
+            {/* Body Scrollable en 2 Columnas */}
+            <div className="p-6 overflow-y-auto flex-1 bg-white">
+              <form id="form-reprogramar-turno" onSubmit={handleConfirmReprogram} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* COLUMNA IZQUIERDA (5 Cols): Turno Actual, Profesional y Motivo */}
+                <div className="lg:col-span-5 space-y-4">
+                  {/* Turno Actual */}
+                  <div className="p-4 bg-amber-50/90 border border-amber-200 rounded-3xl space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-amber-900">🗓️ Turno a Modificar:</span>
+                      <span className="font-mono text-xs font-black bg-white text-amber-950 px-2 py-0.5 rounded-lg border border-amber-300">
+                        {turno.codigo_reserva}
+                      </span>
+                    </div>
+                    <p className="text-amber-800 font-semibold">
+                      {formatDateAR(turno.fecha)} a las {turno.hora_inicio} hs
+                    </p>
+                    <p className="text-[11px] text-amber-700">
+                      Médico: Dr(a). {currentProf?.nombre} {currentProf?.apellido}
+                    </p>
+                  </div>
 
-              <form id="form-reprogramar-turno" onSubmit={handleConfirmReprogram} className="space-y-4">
-              {/* Selección del Profesional (Mismo u Otro) */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-                <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
-                  1. Profesional Asignado
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <select
-                    value={selectedProfId}
-                    onChange={(e) => {
-                      setSelectedProfId(e.target.value);
-                      setSelectedSlot(null);
-                    }}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
-                  >
-                    {profesionales.map(p => (
-                      <option key={p.id} value={p.id}>
-                        Dr(a). {p.nombre} {p.apellido} ({p.especialidad})
-                      </option>
-                    ))}
-                  </select>
+                  {/* 1. Profesional Asignado */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl space-y-2.5">
+                    <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
+                      1. Médico Profesional
+                    </label>
+                    <select
+                      value={selectedProfId}
+                      onChange={(e) => {
+                        setSelectedProfId(e.target.value);
+                        setSelectedSlot(null);
+                      }}
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                    >
+                      {profesionales.map(p => (
+                        <option key={p.id} value={p.id}>
+                          Dr(a). {p.nombre} {p.apellido} ({p.especialidad})
+                        </option>
+                      ))}
+                    </select>
+                    <div className="p-2.5 bg-white border border-slate-200/80 rounded-xl text-[11px] text-slate-600">
+                      <span>Días de atención: <strong className="text-slate-800">{diasAtencionTexto}</strong></span>
+                    </div>
+                  </div>
 
-                  <div className="p-2 bg-white border border-slate-200 rounded-xl text-[11px] text-slate-600 flex items-center">
-                    <span>Atención: <strong>{diasAtencionTexto}</strong></span>
+                  {/* 3. Motivo Obligatorio & Observaciones */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl space-y-3">
+                    <div>
+                      <label className="block text-xs font-black text-slate-800 mb-1.5">
+                        3. Motivo Formal * (Obligatorio)
+                      </label>
+                      <select
+                        required
+                        value={motivoId}
+                        onChange={(e) => setMotivoId(e.target.value)}
+                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                      >
+                        <option value="">-- Seleccione el motivo formal --</option>
+                        {motivosReprogramacion.map(m => (
+                          <option key={m.id} value={m.id}>{m.descripcion}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Observaciones adicionales
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="ej: Paciente solicitó cambio por turno laboral"
+                        value={observaciones}
+                        onChange={(e) => setObservaciones(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-medium bg-white"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Selección de Fecha con Carrusel de Próximos Días */}
-              <div className="space-y-2">
-                <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
-                  2. Seleccione la Nueva Fecha ({proximosDiasDisponibles.length} días con turnos)
-                </label>
+                {/* COLUMNA DERECHA (7 Cols): Fecha y Horarios Disponibles */}
+                <div className="lg:col-span-7 space-y-4">
+                  {/* Selección de Fecha */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <label className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                        2. Nueva Fecha ({proximosDiasDisponibles.length} días con turnos)
+                      </label>
+                      <input
+                        type="date"
+                        min={getLocalDateString(new Date())}
+                        value={selectedFecha}
+                        onChange={(e) => {
+                          setSelectedFecha(e.target.value);
+                          setSelectedSlot(null);
+                        }}
+                        className="px-3 py-1.5 border border-slate-300 rounded-xl text-xs font-black bg-white shadow-xs"
+                      />
+                    </div>
 
-                {proximosDiasDisponibles.length === 0 ? (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-                    El profesional seleccionado no tiene turnos libres en los próximos 30 días.
+                    {proximosDiasDisponibles.length === 0 ? (
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 font-medium">
+                        El profesional seleccionado no tiene turnos libres en los próximos 30 días.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-1">
+                        {proximosDiasDisponibles.slice(0, 5).map((dia) => {
+                          const isSelected = selectedFecha === dia.fecha;
+
+                          return (
+                            <button
+                              key={dia.fecha}
+                              type="button"
+                              onClick={() => {
+                                setSelectedFecha(dia.fecha);
+                                setSelectedSlot(null);
+                              }}
+                              className={`p-2.5 rounded-2xl border transition flex flex-col items-center justify-center cursor-pointer ${
+                                isSelected
+                                  ? 'bg-medical-600 text-white border-medical-700 shadow-sm ring-2 ring-medical-500/20 scale-102'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-medical-400 hover:bg-medical-50/40'
+                              }`}
+                            >
+                              <span className={`text-[10px] uppercase font-black ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
+                                {dia.diaNombre}
+                              </span>
+                              <span className="text-sm font-black my-0.5">
+                                {dia.diaNumero} {dia.mesNombre}
+                              </span>
+                              <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full mt-0.5 ${
+                                isSelected ? 'bg-white/25 text-white' : 'bg-emerald-100 text-emerald-800'
+                              }`}>
+                                {dia.disponiblesCount} libres
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                    {proximosDiasDisponibles.map((dia) => {
-                      const isSelected = selectedFecha === dia.fecha;
 
-                      return (
-                        <button
-                          key={dia.fecha}
-                          type="button"
-                          onClick={() => {
-                            setSelectedFecha(dia.fecha);
-                            setSelectedSlot(null);
-                          }}
-                          className={`flex-shrink-0 p-2.5 rounded-2xl border-2 text-center transition flex flex-col items-center min-w-[80px] ${
-                            isSelected
-                              ? 'bg-sky-600 text-white border-sky-700 shadow-md scale-105'
-                              : 'bg-white border-slate-200 text-slate-700 hover:border-sky-300'
-                          }`}
-                        >
-                          <span className={`text-[10px] uppercase font-black ${isSelected ? 'text-sky-100' : 'text-slate-500'}`}>
-                            {dia.diaNombre}
-                          </span>
-                          <span className="text-base font-black my-0.5">
-                            {dia.diaNumero}
-                          </span>
-                          <span className={`text-[9px] font-bold ${isSelected ? 'text-sky-100' : 'text-slate-500'}`}>
-                            {dia.mesNombre}
-                          </span>
-                          <span className={`text-[8px] font-black px-1.5 py-0.2 rounded-full mt-1 ${
-                            isSelected ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
-                          }`}>
-                            {dia.disponiblesCount} libres
-                          </span>
-                        </button>
-                      );
-                    })}
+                  {/* Horarios Disponibles */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl space-y-3">
+                    <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
+                      3. Horarios Disponibles ({slotsList.filter(s => s.disponible).length} libres)
+                    </label>
+
+                    {slotsList.length === 0 ? (
+                      <p className="text-xs text-slate-400 p-6 bg-white rounded-2xl border border-dashed border-slate-200 text-center font-medium">
+                        No hay horarios disponibles para esta fecha. Seleccione otro día en el calendario.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-56 overflow-y-auto pr-1">
+                        {slotsList.map((slot, idx) => {
+                          const isSelected = selectedSlot?.hora_inicio === slot.hora_inicio;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              disabled={!slot.disponible}
+                              onClick={() => setSelectedSlot(slot)}
+                              className={`py-2.5 rounded-xl text-xs font-mono font-black transition flex items-center justify-center cursor-pointer ${
+                                isSelected
+                                  ? 'bg-medical-600 text-white shadow-md shadow-sky-600/30 scale-105'
+                                  : slot.disponible
+                                  ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
+                                  : 'bg-slate-100 text-slate-300 cursor-not-allowed opacity-60'
+                              }`}
+                            >
+                              {slot.hora_inicio}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {/* Input fecha manual */}
-                <div className="flex items-center gap-2 text-xs pt-1">
-                  <span className="text-slate-500">O ingresar otra fecha:</span>
-                  <input
-                    type="date"
-                    min={new Date().toISOString().split('T')[0]}
-                    value={selectedFecha}
-                    onChange={(e) => {
-                      setSelectedFecha(e.target.value);
-                      setSelectedSlot(null);
-                    }}
-                    className="px-2.5 py-1 border border-slate-200 rounded-lg text-xs font-bold bg-slate-50"
-                  />
-                </div>
-              </div>
-
-              {/* Horarios Disponibles */}
-              <div>
-                <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">
-                  3. Horarios Disponibles para el {new Date(selectedFecha + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </label>
-
-                {slotsList.length === 0 ? (
-                  <p className="text-xs text-slate-400 p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                    No hay horarios disponibles para esta fecha.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-40 overflow-y-auto pr-1">
-                    {slotsList.map((slot, idx) => {
-                      const isSelected = selectedSlot?.hora_inicio === slot.hora_inicio;
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          disabled={!slot.disponible}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`py-2 rounded-xl text-xs font-mono font-bold transition flex items-center justify-center ${
-                            isSelected
-                              ? 'bg-sky-600 text-white shadow-xs'
-                              : slot.disponible
-                              ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
-                              : 'bg-slate-100 text-slate-300 cursor-not-allowed opacity-60'
-                          }`}
-                        >
-                          {slot.hora_inicio}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Motivo Obligatorio & Observaciones */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                <div>
-                  <label className="block text-xs font-black text-slate-800 mb-1">
-                    4. Motivo de Reprogramación * (Obligatorio)
-                  </label>
-                  <select
-                    required
-                    value={motivoId}
-                    onChange={(e) => setMotivoId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
-                  >
-                    <option value="">-- Seleccione el motivo formal --</option>
-                    {motivosReprogramacion.map(m => (
-                      <option key={m.id} value={m.id}>{m.descripcion}</option>
-                    ))}
-                  </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Observaciones adicionales (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="ej: Paciente solicitó cambio por turno laboral"
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white"
-                  />
-                </div>
-              </div>
-            </form>
+              </form>
             </div>
 
             {/* Footer Fijo */}

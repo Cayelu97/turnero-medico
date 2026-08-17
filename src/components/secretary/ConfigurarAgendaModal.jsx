@@ -18,7 +18,11 @@ import {
   CalendarRange,
   Globe,
   Building,
-  ShieldAlert
+  ShieldAlert,
+  ArrowRight,
+  SunMedium,
+  Moon,
+  CalendarCheck
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
@@ -135,7 +139,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
   if (!isOpen) return null;
 
   const selectedProf = profesionales.find(p => p.id === selectedProfId);
-  const agendasDelProf = agendas.filter(a => a.profesional_id === selectedProfId);
+  const agendasDelProf = StorageService.getAgendas(null, selectedProfId);
 
   // Servicios aplicables a este médico
   const serviciosDelMedico = servicios.filter(s => 
@@ -145,12 +149,12 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
   );
 
   const DIAS_CATALOGO = [
-    { id: 1, label: 'Lun', full: 'Lunes' },
-    { id: 2, label: 'Mar', full: 'Martes' },
-    { id: 3, label: 'Mié', full: 'Miércoles' },
-    { id: 4, label: 'Jue', full: 'Jueves' },
-    { id: 5, label: 'Vie', full: 'Viernes' },
-    { id: 6, label: 'Sáb', full: 'Sábado' }
+    { id: 1, label: 'Lunes', corto: 'LUN' },
+    { id: 2, label: 'Martes', corto: 'MAR' },
+    { id: 3, label: 'Miércoles', corto: 'MIÉ' },
+    { id: 4, label: 'Jueves', corto: 'JUE' },
+    { id: 5, label: 'Viernes', corto: 'VIE' },
+    { id: 6, label: 'Sábado', corto: 'SÁB' }
   ];
 
   const toggleDia = (diaId) => {
@@ -165,6 +169,22 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
 
   const selectLunesASabado = () => {
     setDiasSeleccionados([1, 2, 3, 4, 5, 6]);
+  };
+
+  // Cálculo estimativo de turnos por día
+  const calcularSlotsPorDia = () => {
+    let minutosTotal = 0;
+    if (habilitarManana && mananaInicio && mananaFin) {
+      const [h1, m1] = mananaInicio.split(':').map(Number);
+      const [h2, m2] = mananaFin.split(':').map(Number);
+      minutosTotal += Math.max(0, (h2 * 60 + m2) - (h1 * 60 + m1));
+    }
+    if (habilitarTarde && tardeInicio && tardeFin) {
+      const [h1, m1] = tardeInicio.split(':').map(Number);
+      const [h2, m2] = tardeFin.split(':').map(Number);
+      minutosTotal += Math.max(0, (h2 * 60 + m2) - (h1 * 60 + m1));
+    }
+    return Math.floor(minutosTotal / (Number(duracionSlot) || 45));
   };
 
   // Validar y procesar guardado de agenda
@@ -240,7 +260,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
   const handleCerrarAgendaClick = (agenda) => {
     const afectados = StorageService.getTurnosAfectadosPorAgenda(
       agenda.profesional_id,
-      [], // Al cerrar, ningún día queda habilitado para esa agenda
+      [], // Al cerrar, ningún día queda habilitado
       agenda.fecha_desde,
       agenda.fecha_hasta
     );
@@ -259,40 +279,77 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-        <div className="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-auto animate-scaleIn">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
+        <div className="bg-white rounded-3xl w-full max-w-5xl xl:max-w-6xl max-h-[92vh] shadow-2xl border border-slate-200/80 flex flex-col overflow-hidden animate-scaleIn my-auto">
           
-          {/* Header del Configurador */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+          {/* HEADER STICKY */}
+          <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-medical-50 text-medical-600 rounded-2xl border border-medical-200 shadow-sm">
+              <div className="p-2.5 bg-medical-500 text-white rounded-2xl shadow-md shadow-sky-600/20">
                 <CalendarRange className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="font-black text-lg sm:text-xl text-slate-900 leading-tight">
                   Gestor Profesional de Agendas Médicas
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-500">
+                <p className="text-xs text-slate-500 font-medium">
                   Control de vigencias, días habilitados, modalidades y auditoría de turnos
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 rounded-xl transition cursor-pointer">
-              <X className="w-5 h-5" />
-            </button>
+
+            <div className="flex items-center gap-3">
+              {/* Pestañas de Vista */}
+              <div className="flex items-center bg-slate-200/70 p-1 rounded-xl gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('list')}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black transition cursor-pointer ${
+                    activeTab === 'list' 
+                      ? 'bg-white text-medical-800 shadow-xs' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Agendas Activas ({agendasDelProf.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenNewAgenda}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1 cursor-pointer ${
+                    activeTab === 'form' 
+                      ? 'bg-white text-medical-800 shadow-xs' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{editingAgendaId ? 'Editar Agenda' : 'Nueva Agenda'}</span>
+                </button>
+              </div>
+
+              <button 
+                onClick={onClose} 
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition cursor-pointer"
+                title="Cerrar modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Selector de Profesional y Pestañas */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-2 flex-1">
-              <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Médico:</span>
+          {/* BARRA DE FILTRO POR PROFESIONAL */}
+          <div className="px-6 py-3 bg-slate-100/60 border-b border-slate-100 flex items-center justify-between gap-4 shrink-0">
+            <div className="flex items-center gap-2.5 flex-1 max-w-md">
+              <span className="text-xs font-extrabold text-slate-700 whitespace-nowrap flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-medical-600" />
+                Médico Profesional:
+              </span>
               <select
                 value={selectedProfId}
                 onChange={(e) => {
                   setSelectedProfId(e.target.value);
                   setActiveTab('list');
                 }}
-                className="w-full sm:max-w-xs px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500 shadow-2xs"
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-black bg-white focus:ring-2 focus:ring-medical-500 shadow-2xs"
               >
                 {profesionales.map(p => (
                   <option key={p.id} value={p.id}>
@@ -302,102 +359,131 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
               </select>
             </div>
 
-            {/* Pestañas de Vista */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 self-start sm:self-auto">
-              <button
-                onClick={() => setActiveTab('list')}
-                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer ${
-                  activeTab === 'list' 
-                    ? 'bg-white text-medical-800 shadow-xs' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Agendas Activas ({agendasDelProf.length})
-              </button>
-              <button
-                onClick={handleOpenNewAgenda}
-                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1 cursor-pointer ${
-                  activeTab === 'form' 
-                    ? 'bg-white text-medical-800 shadow-xs' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{editingAgendaId ? 'Editar Agenda' : 'Nueva Agenda'}</span>
-              </button>
+            <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-500">
+              <span>Especialidad: <span className="text-slate-800 font-extrabold">{selectedProf?.especialidad}</span></span>
+              <span>•</span>
+              <span>Modalidad: <span className="text-slate-800 font-extrabold">{selectedProf?.atiende_online ? 'Presencial y Online' : 'Solo Presencial'}</span></span>
             </div>
           </div>
 
-          {/* VISTA 1: LISTADO DE AGENDAS DEL PROFESIONAL */}
-          {activeTab === 'list' && (
-            <div className="space-y-4">
-              {agendasDelProf.length === 0 ? (
-                <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-300 rounded-2xl space-y-3">
-                  <div className="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto">
-                    <Calendar className="w-6 h-6" />
+          {/* CONTENIDO DEL MODAL SCROLLABLE */}
+          <div className="p-6 overflow-y-auto flex-1 bg-white">
+            
+            {/* VISTA 1: LISTADO DE AGENDAS */}
+            {activeTab === 'list' && (
+              <div className="space-y-4">
+                {agendasDelProf.length === 0 ? (
+                  <div className="py-12 px-6 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl space-y-4">
+                    <div className="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                      <CalendarCheck className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1 max-w-md mx-auto">
+                      <h4 className="font-black text-base text-slate-900">Sin agendas registradas para {selectedProf?.apellido}</h4>
+                      <p className="text-xs text-slate-500">
+                        Crea la primera agenda para definir los días de atención, franjas horarias y duración de turnos.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleOpenNewAgenda}
+                      className="px-6 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black transition shadow-md shadow-sky-600/20 inline-flex items-center gap-2 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Crear Primera Agenda</span>
+                    </button>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-slate-800">Sin agendas activas configuradas</h4>
-                    <p className="text-xs text-slate-500">Este profesional no tiene ninguna agenda configurada en el sistema.</p>
-                  </div>
-                  <button
-                    onClick={handleOpenNewAgenda}
-                    className="px-4 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-bold transition shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Crear Primera Agenda para {selectedProf?.apellido}</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3.5 max-h-96 overflow-y-auto pr-1">
-                  {agendasDelProf.map(agenda => {
-                    const consultorio = consultorios.find(c => c.id === agenda.consultorio_id);
-                    const servicio = servicios.find(s => s.id === agenda.servicio_id);
-                    const diasMap = { 1: 'LUN', 2: 'MAR', 3: 'MIÉ', 4: 'JUE', 5: 'VIE', 6: 'SÁB' };
-                    const diasHabilitados = (agenda.dias_horarios || []).map(dh => diasMap[dh.dia_semana]).filter(Boolean);
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {agendasDelProf.map(agenda => {
+                      const consultorio = consultorios.find(c => c.id === agenda.consultorio_id);
+                      const servicio = servicios.find(s => s.id === agenda.servicio_id);
+                      const diasMap = { 1: 'LUN', 2: 'MAR', 3: 'MIÉ', 4: 'JUE', 5: 'VIE', 6: 'SÁB' };
+                      const diasHabilitados = (agenda.dias_horarios || []).map(dh => diasMap[dh.dia_semana]).filter(Boolean);
 
-                    return (
-                      <div 
-                        key={agenda.id} 
-                        className={`p-4 rounded-2xl border transition space-y-3 ${
-                          agenda.estado === 'ACTIVA' 
-                            ? 'bg-slate-50/80 border-slate-200 hover:border-medical-300 shadow-2xs' 
-                            : 'bg-slate-100/60 border-slate-200 opacity-75'
-                        }`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/70 pb-2.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-black text-sm text-slate-900">{agenda.nombre}</span>
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                              agenda.estado === 'ACTIVA' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
-                            }`}>
-                              {agenda.estado}
-                            </span>
-                            <span className="px-2 py-0.5 bg-sky-100 text-sky-800 rounded-md text-[10px] font-bold">
-                              {agenda.modalidad === 'AMBAS' ? '🏢 Presencial & 💻 Online' : agenda.modalidad === 'ONLINE' ? '💻 Online' : '🏢 Presencial'}
-                            </span>
+                      return (
+                        <div 
+                          key={agenda.id} 
+                          className={`p-5 rounded-3xl border transition flex flex-col justify-between space-y-4 ${
+                            agenda.estado === 'ACTIVA' 
+                              ? 'bg-gradient-to-br from-white to-slate-50 border-slate-200/90 shadow-sm hover:shadow-md hover:border-medical-400' 
+                              : 'bg-slate-100/60 border-slate-200 opacity-75'
+                          }`}
+                        >
+                          {/* Header de Tarjeta */}
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="font-black text-sm text-slate-900 leading-snug">{agenda.nombre}</h4>
+                                <span className="text-[11px] text-slate-500 font-bold block">
+                                  {servicio?.nombre || 'General / Consultas'}
+                                </span>
+                              </div>
+                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                                agenda.estado === 'ACTIVA' 
+                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                                  : 'bg-slate-200 text-slate-700'
+                              }`}>
+                                {agenda.estado}
+                              </span>
+                            </div>
+
+                            {/* Tags de Modalidad y Consultorio */}
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              <span className="px-2 py-0.5 bg-sky-100 text-sky-800 rounded-md text-[10px] font-bold">
+                                {agenda.modalidad === 'AMBAS' ? '🏢 Presencial y Online' : agenda.modalidad === 'ONLINE' ? '💻 Solo Online' : '🏢 Solo Presencial'}
+                              </span>
+                              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md text-[10px] font-bold">
+                                ⏱️ {agenda.duracion_slot_min || 45} min / turno
+                              </span>
+                              {consultorio && (
+                                <span className="px-2 py-0.5 bg-slate-200/80 text-slate-700 rounded-md text-[10px] font-bold">
+                                  🚪 {consultorio.nombre.split('-')[0]}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                          {/* Días y Horarios */}
+                          <div className="p-3 bg-white border border-slate-200/70 rounded-2xl space-y-2 text-xs">
+                            <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold">
+                              <span>Vigencia:</span>
+                              <span className="text-slate-800">
+                                {formatDateAR(agenda.fecha_desde)} al {agenda.fecha_hasta ? formatDateAR(agenda.fecha_hasta) : 'Indefinido'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-1 pt-1">
+                              {diasHabilitados.map(d => (
+                                <span key={d} className="px-2 py-0.5 bg-medical-50 border border-medical-200 text-medical-800 rounded-md font-mono text-[11px] font-black">
+                                  {d}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Botones de Acción */}
+                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
                             <button
+                              type="button"
                               onClick={() => handleOpenEditAgenda(agenda)}
-                              className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer"
                             >
-                              <Edit className="w-3.5 h-3.5" />
+                              <Edit className="w-3.5 h-3.5 text-medical-600" />
                               <span>Editar</span>
                             </button>
                             {agenda.estado === 'ACTIVA' ? (
                               <button
+                                type="button"
                                 onClick={() => handleCerrarAgendaClick(agenda)}
-                                className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer"
                               >
                                 <Power className="w-3.5 h-3.5" />
-                                <span>Cerrar</span>
+                                <span>Cerrar Agenda</span>
                               </button>
                             ) : (
                               <button
+                                type="button"
                                 onClick={() => deleteAgenda(agenda.id)}
-                                className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 <span>Eliminar</span>
@@ -405,325 +491,355 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
                             )}
                           </div>
                         </div>
-
-                        {/* Detalles de la Agenda */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-600">
-                          <div>
-                            <span className="text-[11px] text-slate-500 font-bold block">Vigencia:</span>
-                            <span className="font-semibold text-slate-800">
-                              {formatDateAR(agenda.fecha_desde)} al {agenda.fecha_hasta ? formatDateAR(agenda.fecha_hasta) : 'Indefinido'}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-[11px] text-slate-500 font-bold block">Consultorio:</span>
-                            <span className="font-semibold text-slate-800">
-                              {consultorio?.nombre?.split('-')[0] || 'Consultorio 1'}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-[11px] text-slate-500 font-bold block">Duración de Turno:</span>
-                            <span className="font-semibold text-slate-800">
-                              Cada {agenda.duracion_slot_min || 45} min
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-[11px] text-slate-500 font-bold block">Servicio Asociado:</span>
-                            <span className="font-semibold text-slate-800">
-                              {servicio?.nombre || 'General / Consultas'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Días y Horarios */}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          <span className="text-[11px] text-slate-500 font-bold mr-1">Días Habilitados:</span>
-                          {diasHabilitados.map(d => (
-                            <span key={d} className="px-2 py-0.5 bg-medical-50 border border-medical-200 text-medical-800 rounded-md font-mono text-[11px] font-extrabold">
-                              {d}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* VISTA 2: FORMULARIO DE CREACIÓN / EDICIÓN */}
-          {activeTab === 'form' && (
-            <form onSubmit={handleValidateAndSubmit} className="space-y-4">
-              <div className="p-3 bg-sky-50 border border-sky-200 rounded-2xl text-xs text-sky-900 flex items-center justify-between">
-                <span className="font-bold">
-                  {editingAgendaId ? `Editando: ${nombreAgenda}` : `Creando nueva agenda para Dr(a). ${selectedProf?.apellido}`}
-                </span>
-                <span className="text-[11px] text-sky-700">Días estrictos de Lun a Sáb</span>
-              </div>
-
-              {/* 1. Nombre de Agenda y Servicio */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Nombre Descriptivo de la Agenda *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nombreAgenda}
-                    onChange={(e) => setNombreAgenda(e.target.value)}
-                    placeholder="Ej. Consultas Psicológicas Matutinas"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-medical-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Servicio Médico Asociado</label>
-                  <select
-                    value={servicioId}
-                    onChange={(e) => {
-                      const sId = e.target.value;
-                      setServicioId(sId);
-                      const serv = servicios.find(s => s.id === sId);
-                      if (serv?.duracion_default_min) {
-                        setDuracionSlot(serv.duracion_default_min);
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
-                  >
-                    <option value="">Servicio General / Consultas</option>
-                    {serviciosDelMedico.map(s => (
-                      <option key={s.id} value={s.id}>
-                        {s.nombre} ({s.duracion_default_min} min)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* 2. Vigencia Desde / Hasta */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
-                <label className="block text-xs font-extrabold text-slate-800">Período de Vigencia de la Agenda</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-                  <div>
-                    <span className="text-[11px] text-slate-500 font-bold block mb-1">Fecha Desde:</span>
-                    <input
-                      type="date"
-                      required
-                      value={fechaDesde}
-                      onChange={(e) => setFechaDesde(e.target.value)}
-                      className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white"
-                    />
+                      );
+                    })}
                   </div>
-
-                  <div>
-                    <span className="text-[11px] text-slate-500 font-bold block mb-1">Fecha Hasta:</span>
-                    <input
-                      type="date"
-                      disabled={sinFechaFin}
-                      value={fechaHasta}
-                      onChange={(e) => setFechaHasta(e.target.value)}
-                      className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white disabled:bg-slate-100 disabled:text-slate-400"
-                    />
-                  </div>
-
-                  <div className="pt-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sinFechaFin}
-                        onChange={(e) => {
-                          setSinFechaFin(e.target.checked);
-                          if (e.target.checked) setFechaHasta('');
-                        }}
-                        className="w-4 h-4 text-medical-600 rounded"
-                      />
-                      <span className="text-xs font-bold text-slate-700">Vigencia Indefinida / Sin Límite</span>
-                    </label>
-                  </div>
-                </div>
+                )}
               </div>
+            )}
 
-              {/* 3. Días de Atención Semanal */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-slate-700">Días Habilitados en esta Agenda *</label>
-                  <div className="flex gap-2 text-xs">
-                    <button type="button" onClick={selectLunesAViernes} className="text-medical-600 hover:underline font-bold">
-                      Lun a Vie
-                    </button>
-                    <span className="text-slate-300">•</span>
-                    <button type="button" onClick={selectLunesASabado} className="text-medical-600 hover:underline font-bold">
-                      Lun a Sáb
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-6 gap-2">
-                  {DIAS_CATALOGO.map(dia => {
-                    const isChecked = diasSeleccionados.includes(dia.id);
-                    return (
-                      <button
-                        type="button"
-                        key={dia.id}
-                        onClick={() => toggleDia(dia.id)}
-                        className={`py-2 px-1 rounded-xl text-xs font-black transition flex flex-col items-center justify-center border cursor-pointer ${
-                          isChecked 
-                            ? 'bg-medical-600 text-white border-medical-700 shadow-xs' 
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        <span>{dia.label}</span>
-                        <span className="text-[9px] opacity-80">{isChecked ? '✓' : '—'}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 4. Franjas Horarias */}
-              <div className="space-y-2.5 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
-                <label className="block text-xs font-bold text-slate-800">Franjas Horarias de Atención</label>
+            {/* VISTA 2: FORMULARIO WIDE EN 2 COLUMNAS */}
+            {activeTab === 'form' && (
+              <form id="form-agenda" onSubmit={handleValidateAndSubmit} className="space-y-6">
                 
-                {/* Franja Mañana */}
-                <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800">
-                    <input
-                      type="checkbox"
-                      checked={habilitarManana}
-                      onChange={(e) => setHabilitarManana(e.target.checked)}
-                      className="w-4 h-4 text-medical-600 rounded"
-                    />
-                    <span>Turno Mañana</span>
-                  </label>
-                  {habilitarManana && (
-                    <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  
+                  {/* COLUMNA IZQUIERDA (6 Cols): Parámetros Generales y Vigencia */}
+                  <div className="lg:col-span-6 space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
+                      <span className="w-5 h-5 rounded-full bg-medical-600 text-white flex items-center justify-center text-[10px]">1</span>
+                      <span>Configuración General de la Agenda</span>
+                    </div>
+
+                    {/* Nombre y Servicio */}
+                    <div className="space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-3xl">
                       <div>
-                        <span className="text-[10px] text-slate-500 font-bold block mb-0.5">Desde:</span>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Nombre Descriptivo *</label>
                         <input
-                          type="time"
-                          value={mananaInicio}
-                          onChange={(e) => setMananaInicio(e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs font-bold"
+                          type="text"
+                          required
+                          value={nombreAgenda}
+                          onChange={(e) => setNombreAgenda(e.target.value)}
+                          placeholder="Ej. Consultas Clínicas Matutinas"
+                          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-black focus:ring-2 focus:ring-medical-500 bg-white"
                         />
                       </div>
+
                       <div>
-                        <span className="text-[10px] text-slate-500 font-bold block mb-0.5">Hasta:</span>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Servicio / Tipo de Turnero</label>
+                        <select
+                          value={servicioId}
+                          onChange={(e) => {
+                            const sId = e.target.value;
+                            setServicioId(sId);
+                            const serv = servicios.find(s => s.id === sId);
+                            if (serv?.duracion_default_min) {
+                              setDuracionSlot(serv.duracion_default_min);
+                            }
+                          }}
+                          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-black bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          <option value="">Servicio General / Consultas Médicas</option>
+                          {serviciosDelMedico.map(s => (
+                            <option key={s.id} value={s.id}>
+                              {s.nombre} ({s.duracion_default_min} min)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Período de Vigencia */}
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl space-y-3">
+                      <label className="block text-xs font-black text-slate-800">Período de Vigencia</label>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <span className="text-[11px] text-slate-500 font-bold block mb-1">Fecha Desde:</span>
+                          <input
+                            type="date"
+                            required
+                            value={fechaDesde}
+                            onChange={(e) => setFechaDesde(e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-black bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <span className="text-[11px] text-slate-500 font-bold block mb-1">Fecha Hasta:</span>
+                          <input
+                            type="date"
+                            disabled={sinFechaFin}
+                            value={fechaHasta}
+                            onChange={(e) => setFechaHasta(e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-black bg-white disabled:bg-slate-200 disabled:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <label className="flex items-center gap-2 cursor-pointer pt-1">
                         <input
-                          type="time"
-                          value={mananaFin}
-                          onChange={(e) => setMananaFin(e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs font-bold"
+                          type="checkbox"
+                          checked={sinFechaFin}
+                          onChange={(e) => {
+                            setSinFechaFin(e.target.checked);
+                            if (e.target.checked) setFechaHasta('');
+                          }}
+                          className="w-4 h-4 text-medical-600 rounded"
+                        />
+                        <span className="text-xs font-bold text-slate-700">Vigencia Indefinida / Sin fecha de vencimiento</span>
+                      </label>
+                    </div>
+
+                    {/* Consultorio, Modalidad y Duración */}
+                    <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-3xl">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Consultorio Asignado</label>
+                        <select
+                          value={consultorioId}
+                          onChange={(e) => setConsultorioId(e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          {consultorios.map(c => (
+                            <option key={c.id} value={c.id}>
+                              {c.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Modalidad de Atención</label>
+                        <select
+                          value={modalidad}
+                          onChange={(e) => setModalidad(e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          <option value="PRESENCIAL">🏢 Solo Presencial</option>
+                          <option value="ONLINE">💻 Solo Online (Videollamada)</option>
+                          <option value="AMBAS">🌐 Ambas (Presencial y Online)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Duración del Turno *</label>
+                        <select
+                          value={duracionSlot}
+                          onChange={(e) => setDuracionSlot(Number(e.target.value))}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          <option value={15}>Cada 15 minutos</option>
+                          <option value={20}>Cada 20 minutos</option>
+                          <option value={30}>Cada 30 minutos</option>
+                          <option value={40}>Cada 40 minutos</option>
+                          <option value={45}>Cada 45 minutos (Terapia / HC)</option>
+                          <option value={50}>Cada 50 minutos</option>
+                          <option value={60}>Cada 60 minutos</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Sobreturnos Permitidos</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={10}
+                          value={maxSobreturnos}
+                          onChange={(e) => setMaxSobreturnos(e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
                         />
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                {/* Franja Tarde */}
-                <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-800">
-                    <input
-                      type="checkbox"
-                      checked={habilitarTarde}
-                      onChange={(e) => setHabilitarTarde(e.target.checked)}
-                      className="w-4 h-4 text-medical-600 rounded"
-                    />
-                    <span>Turno Tarde / Vespertino</span>
-                  </label>
-                  {habilitarTarde && (
-                    <div className="grid grid-cols-2 gap-3 pt-1">
-                      <div>
-                        <span className="text-[10px] text-slate-500 font-bold block mb-0.5">Desde:</span>
-                        <input
-                          type="time"
-                          value={tardeInicio}
-                          onChange={(e) => setTardeInicio(e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs font-bold"
-                        />
+                  {/* COLUMNA DERECHA (6 Cols): Días Habilitados y Franjas Horarias */}
+                  <div className="lg:col-span-6 space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
+                      <span className="w-5 h-5 rounded-full bg-medical-600 text-white flex items-center justify-center text-[10px]">2</span>
+                      <span>Días y Franjas Horarias de Atención</span>
+                    </div>
+
+                    {/* Selector de Días Semanales */}
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-black text-slate-800">Días Habilitados en la Agenda *</label>
+                        <div className="flex items-center gap-2 text-xs font-black">
+                          <button type="button" onClick={selectLunesAViernes} className="text-medical-600 hover:underline cursor-pointer">
+                            Lun a Vie
+                          </button>
+                          <span className="text-slate-300">•</span>
+                          <button type="button" onClick={selectLunesASabado} className="text-medical-600 hover:underline cursor-pointer">
+                            Lun a Sáb
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 font-bold block mb-0.5">Hasta:</span>
-                        <input
-                          type="time"
-                          value={tardeFin}
-                          onChange={(e) => setTardeFin(e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs font-bold"
-                        />
+
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                        {DIAS_CATALOGO.map(dia => {
+                          const isChecked = diasSeleccionados.includes(dia.id);
+                          return (
+                            <button
+                              type="button"
+                              key={dia.id}
+                              onClick={() => toggleDia(dia.id)}
+                              className={`py-3 px-2 rounded-2xl text-xs font-black transition flex flex-col items-center justify-center border cursor-pointer ${
+                                isChecked 
+                                  ? 'bg-medical-600 text-white border-medical-700 shadow-sm scale-102' 
+                                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                              }`}
+                            >
+                              <span className="text-[11px] uppercase tracking-wider">{dia.corto}</span>
+                              <span className="text-[10px] opacity-80">{isChecked ? '✓ Activo' : '—'}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* 5. Duración, Consultorio, Modalidad */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Duración del Turno *</label>
-                  <select
-                    value={duracionSlot}
-                    onChange={(e) => setDuracionSlot(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
-                  >
-                    <option value={15}>Cada 15 minutos</option>
-                    <option value={20}>Cada 20 minutos</option>
-                    <option value={30}>Cada 30 minutos</option>
-                    <option value={40}>Cada 40 minutos</option>
-                    <option value={45}>Cada 45 minutos (Psicoterapia)</option>
-                    <option value={50}>Cada 50 minutos</option>
-                    <option value={60}>Cada 60 minutos</option>
-                  </select>
+                    {/* Franjas Horarias Mañana / Tarde */}
+                    <div className="space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-3xl">
+                      <label className="block text-xs font-black text-slate-800">Horarios de Atención</label>
+                      
+                      {/* Franja Mañana */}
+                      <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 cursor-pointer font-black text-xs text-slate-900">
+                            <input
+                              type="checkbox"
+                              checked={habilitarManana}
+                              onChange={(e) => setHabilitarManana(e.target.checked)}
+                              className="w-4 h-4 text-medical-600 rounded"
+                            />
+                            <SunMedium className="w-4 h-4 text-amber-500" />
+                            <span>Turno Mañana</span>
+                          </label>
+                        </div>
+                        
+                        {habilitarManana && (
+                          <div className="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold block mb-1">Hora Inicio:</span>
+                              <input
+                                type="time"
+                                value={mananaInicio}
+                                onChange={(e) => setMananaInicio(e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-black"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold block mb-1">Hora Fin:</span>
+                              <input
+                                type="time"
+                                value={mananaFin}
+                                onChange={(e) => setMananaFin(e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-black"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Franja Tarde */}
+                      <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 cursor-pointer font-black text-xs text-slate-900">
+                            <input
+                              type="checkbox"
+                              checked={habilitarTarde}
+                              onChange={(e) => setHabilitarTarde(e.target.checked)}
+                              className="w-4 h-4 text-medical-600 rounded"
+                            />
+                            <Moon className="w-4 h-4 text-purple-500" />
+                            <span>Turno Tarde / Vespertino</span>
+                          </label>
+                        </div>
+
+                        {habilitarTarde && (
+                          <div className="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold block mb-1">Hora Inicio:</span>
+                              <input
+                                type="time"
+                                value={tardeInicio}
+                                onChange={(e) => setTardeInicio(e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-black"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold block mb-1">Hora Fin:</span>
+                              <input
+                                type="time"
+                                value={tardeFin}
+                                onChange={(e) => setTardeFin(e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-black"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Resumen en Vivo de Capacidad de Turnos */}
+                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-emerald-950">
+                      <div>
+                        <span className="text-[11px] text-emerald-700 font-bold block">Capacidad Estimada:</span>
+                        <span className="text-sm font-black text-emerald-900">
+                          {calcularSlotsPorDia()} turnos por día habilitado
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-emerald-800">
+                        {diasSeleccionados.length} días/semana
+                      </span>
+                    </div>
+
+                  </div>
+
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Consultorio Asignado</label>
-                  <select
-                    value={consultorioId}
-                    onChange={(e) => setConsultorioId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
-                  >
-                    {consultorios.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              </form>
+            )}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Modalidad de Atención</label>
-                  <select
-                    value={modalidad}
-                    onChange={(e) => setModalidad(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
-                  >
-                    <option value="PRESENCIAL">🏢 Solo Presencial</option>
-                    <option value="ONLINE">💻 Solo Online (Videollamada)</option>
-                    <option value="AMBAS">🌐 Ambas (Presencial y Online)</option>
-                  </select>
-                </div>
-              </div>
+          </div>
 
-              {/* Botones de Acción */}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+          {/* FOOTER STICKY */}
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition cursor-pointer"
+            >
+              Cerrar
+            </button>
+
+            {activeTab === 'form' ? (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveTab('list')}
-                  className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                  className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition cursor-pointer"
                 >
-                  Cancelar
+                  Volver al Listado
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-extrabold transition shadow-md shadow-sky-600/20 flex items-center gap-1.5 cursor-pointer"
+                  form="form-agenda"
+                  className="px-6 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black transition shadow-lg shadow-sky-600/20 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{editingAgendaId ? 'Guardar Cambios de Agenda' : 'Publicar Nueva Agenda'}</span>
                 </button>
               </div>
-            </form>
-          )}
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenNewAgenda}
+                className="px-5 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black transition shadow-md shadow-sky-600/20 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Crear Nueva Agenda</span>
+              </button>
+            )}
+          </div>
 
         </div>
       </div>

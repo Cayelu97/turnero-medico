@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Calendar as CalendarIcon, 
+  Calendar, 
   ChevronLeft, 
   ChevronRight, 
   Plus, 

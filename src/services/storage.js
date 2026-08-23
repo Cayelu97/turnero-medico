@@ -378,7 +378,7 @@ export const INITIAL_DATA = {
       servicios_ids: ['serv-0a', 'serv-0b', 'serv-0c'],
       email: 'nlopez@centrosanlucas.com.ar',
       telefono: '351 445-9922',
-      duracion_turno_minutos: 45,
+      duracion_turno_minutos: 15,
       max_sobreturnos_dia: 2,
       color_agenda: '#0ea5e9',
       obras_sociales_ids: ['os-1', 'os-apross', 'os-cppc', 'os-2', 'os-3'],
@@ -412,12 +412,12 @@ export const INITIAL_DATA = {
     { id: 'h-psi-1', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
     { id: 'h-psi-2', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
     { id: 'h-psi-3', profesional_id: 'prof-psi-1', servicio_id: 'serv-0b', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'AMBAS', activo: true },
-    // Lic. Nahuel López: Lunes a Viernes (Días 1, 2, 3, 4, 5) de 08:00 a 14:00
-    { id: 'h-nl-1', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-2', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 2, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-3', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
-    { id: 'h-nl-4', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-5', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 5, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'AMBAS', activo: true },
+    // Lic. Nahuel López: Lunes a Viernes (Días 1, 2, 3, 4, 5) de 08:00 a 14:00 en bloques de 15 minutos
+    { id: 'h-nl-1', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-2', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 2, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-3', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'ONLINE', activo: true },
+    { id: 'h-nl-4', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-5', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 5, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'AMBAS', activo: true },
     // Dr. Pérez Rossi: Lunes (Presencial), Miércoles (Presencial), Viernes (Online)
     { id: 'h-1', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
     { id: 'h-2', profesional_id: 'prof-1', servicio_id: 'serv-2', consultorio_id: 'c-2', dia_semana: 3, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 30, modalidad: 'PRESENCIAL', activo: true },
@@ -599,6 +599,31 @@ export const initLocalStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.TV_CALLS)) {
     localStorage.setItem(STORAGE_KEYS.TV_CALLS, JSON.stringify([]));
+  }
+
+  // Migración y sincronización automática de profesionales a 15 min si corresponde
+  try {
+    const profs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PROFESIONALES) || '[]');
+    if (Array.isArray(profs)) {
+      let mod = false;
+      profs.forEach(p => {
+        if (p.id === 'prof-psi-3' && p.duracion_turno_minutos !== 15) {
+          p.duracion_turno_minutos = 15;
+          mod = true;
+        }
+      });
+      if (mod) {
+        localStorage.setItem(STORAGE_KEYS.PROFESIONALES, JSON.stringify(profs));
+        // Sincronizar horarios de Nahuel López
+        const horarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.HORARIOS) || '[]');
+        horarios.forEach(h => {
+          if (h.profesional_id === 'prof-psi-3') h.duracion_slot_min = 15;
+        });
+        localStorage.setItem(STORAGE_KEYS.HORARIOS, JSON.stringify(horarios));
+      }
+    }
+  } catch (e) {
+    console.warn('Migración de profesionales:', e);
   }
   if (!localStorage.getItem(STORAGE_KEYS.MOVIMIENTOS_CAJA)) {
     const today = new Date().toISOString().split('T')[0];

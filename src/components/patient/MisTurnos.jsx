@@ -6,7 +6,7 @@ import { ReprogramarTurnoModal } from '../secretary/ReprogramarTurnoModal';
 import { CancelarTurnoModal } from '../secretary/CancelarTurnoModal';
 
 export const MisTurnos = () => {
-  const { turnos, pacientes, profesionales, consultorios, obrasSociales, planes, nomenclador } = useApp();
+  const { turnos, pacientes, profesionales, consultorios, obrasSociales, planes, nomenclador, cancelarTurno } = useApp();
 
   const [dni, setDni] = useState('');
   const [authMethod, setAuthMethod] = useState('codigo'); // 'codigo' | 'celular'
@@ -70,13 +70,6 @@ export const MisTurnos = () => {
     }
 
     setIsAuthenticated(true);
-  };
-
-  const handleConfirmCancel = () => {
-    if (!turnoToCancel) return;
-    cancelarTurno(turnoToCancel.id, cancelMotivo || 'Cancelado por el paciente desde el portal online', 'PACIENTE');
-    setTurnoToCancel(null);
-    setCancelMotivo('');
   };
 
   const cleanDni = dni.replace(/\D/g, '');

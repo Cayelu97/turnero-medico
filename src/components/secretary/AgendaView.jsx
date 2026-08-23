@@ -32,7 +32,8 @@ import { ReprogramarTurnoModal } from './ReprogramarTurnoModal';
 import { CancelarTurnoModal } from './CancelarTurnoModal';
 import { DetalleTurnoModal } from './DetalleTurnoModal';
 import { VoucherModal } from '../patient/VoucherModal';
-import { getLocalDateString, addDaysToDateString } from '../../utils/dateUtils';
+import { StorageService } from '../../services/storage';
+import { getLocalDateString, addDaysToDateString, getDayOfWeekFromDateString } from '../../utils/dateUtils';
 
 export const AgendaView = () => {
   const { 

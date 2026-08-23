@@ -19,6 +19,7 @@ import {
   Sparkles,
   ArrowRightLeft,
   XCircle,
+  X,
   Brain,
   Mic,
   MicOff,

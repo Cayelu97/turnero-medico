@@ -97,11 +97,14 @@ export const QuickSearchPalette = ({ isOpen, onClose }) => {
 
   // Acciones Rápidas
   const quickActions = [
+    { label: 'Ir a Agenda de Secretaría', icon: Calendar, action: () => { setCurrentView('agenda'); onClose(); } },
     { label: 'Ir a Recepción & Turnos del Día', icon: Calendar, action: () => { setCurrentView('recepcion'); onClose(); } },
-    { label: 'Ir a Portal de Psicología y Médico', icon: Brain, action: () => { setCurrentView('doctor'); onClose(); } },
-    { label: 'Ir a Módulo de Facturación & Obras Sociales', icon: DollarSign, action: () => { setCurrentView('facturacion'); onClose(); } },
-    { label: 'Ir a Nomenclador y Aranceles CPPC', icon: BookOpen, action: () => { setCurrentView('admin'); setAdminTab('nomenclador'); onClose(); } },
-    { label: 'Ir a Pantalla TV Sala de Espera', icon: Tv, action: () => { setCurrentView('tv'); onClose(); } }
+    { label: 'Ir a Portal de Consultorio Médico', icon: Stethoscope, action: () => { setCurrentView('doctor'); onClose(); } },
+    { label: 'Ir a Caja Recaudadora & Cobros', icon: DollarSign, action: () => { setCurrentView('caja'); onClose(); } },
+    { label: 'Ir a Historia Clínica Electrónica (HCE)', icon: FileText, action: () => { setCurrentView('hce'); onClose(); } },
+    { label: 'Ir a Facturación & Obras Sociales', icon: DollarSign, action: () => { setCurrentView('facturacion'); onClose(); } },
+    { label: 'Ir a Configuración & ABMs', icon: BookOpen, action: () => { setCurrentView('admin'); setAdminTab('profesionales'); onClose(); } },
+    { label: 'Ir a Pantalla TV de Sala de Espera', icon: Tv, action: () => { setCurrentView('tv'); onClose(); } }
   ].filter(a => !q || a.label.toLowerCase().includes(q));
 
   const totalResults = matchPacientes.length + matchProfesionales.length + matchTurnos.length + matchPracticas.length + matchArca.length;

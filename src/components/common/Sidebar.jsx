@@ -12,7 +12,8 @@ import {
   Globe,
   ChevronRight,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  LayoutGrid
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getLocalDateString } from '../../utils/dateUtils';
@@ -32,12 +33,12 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const allNavItems = [
     { id: 'agenda', label: 'Agenda Secretaría', icon: Calendar, badge: turnosHoy.length > 0 ? turnosHoy.length : null, badgeColor: 'bg-medical-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'recepcion', label: 'Recepción & Espera', icon: UserCheck, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-amber-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
-    { id: 'doctor', label: 'Portal Médico (Consultorio)', icon: Stethoscope, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
+    { id: 'doctor', label: 'Portal Consultorio', icon: Stethoscope, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
     { id: 'caja', label: 'Caja Recaudadora', icon: Wallet, badge: 'Cobros', badgeColor: 'bg-emerald-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'hce', label: 'Historia Clínica (HCE)', icon: FileText, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
     { id: 'facturacion', label: 'Facturación & Obras Soc.', icon: DollarSign, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
     { id: 'admin', label: 'Configuración & ABM', icon: Settings, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
-    { id: 'paciente', label: 'Turnero Online (Afiliados)', icon: Globe, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] }
+    { id: 'paciente', label: 'Turnero Pacientes', icon: Globe, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] }
   ];
 
   const userRole = currentUser?.rol || 'ADMIN_CLINICA';
@@ -66,11 +67,11 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
               key={item.id}
               onClick={() => setCurrentView(item.id)}
               title={isCollapsed ? `${item.label}` : undefined}
-              className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-xs font-bold transition-all ${
+              className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                 isCollapsed ? 'justify-center px-0' : 'justify-between'
               } ${
                 isActive
-                  ? 'bg-medical-600 text-white font-black shadow-md shadow-medical-600/20'
+                  ? 'bg-medical-600 text-white font-black shadow-md shadow-medical-600/25'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -97,7 +98,7 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
       <div className="p-3 border-t border-slate-100 hidden sm:block">
         <button
           onClick={onToggleCollapse}
-          className={`w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition ${
+          className={`w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition cursor-pointer ${
             isCollapsed ? 'justify-center' : 'justify-start'
           }`}
           title={isCollapsed ? "Expandir menú" : "Colapsar menú lateral"}
@@ -109,3 +110,4 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
     </aside>
   );
 };
+

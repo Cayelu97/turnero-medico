@@ -1231,15 +1231,47 @@ export const StorageService = {
   },
 
   // HORARIOS / GRILLAS DE AGENDA
-  getHorarios: () => StorageService.getCollection(STORAGE_KEYS.HORARIOS),
+  getHorarios: () => StorageService.getCollection(STORAGE_KEYS.HORARIOS) || [],
   getHorariosByProfesional: (profesionalId) => {
-    return StorageService.getHorarios().filter(h => 
-      h.profesional_id === profesionalId && 
+    if (!profesionalId) return [];
+    
+    let list = StorageService.getHorarios().filter(h => 
+      String(h.profesional_id) === String(profesionalId) && 
       Number(h.dia_semana) !== 0 &&
       Number(h.dia_semana) >= 1 && 
       Number(h.dia_semana) <= 6 &&
       h.activo !== false
     );
+
+    // Si no hay horarios explícitos en tabla HORARIOS, sincronizar desde AGENDAS
+    if (list.length === 0) {
+      list = StorageService.sincronizarHorariosDesdeAgendas(profesionalId);
+    }
+
+    // Si el médico aún no tiene ningún horario configurado en el sistema, autogenerar horario estándar Lun-Vie 08:00-14:00
+    if (list.length === 0) {
+      const prof = StorageService.getProfesionales().find(p => String(p.id) === String(profesionalId));
+      if (prof) {
+        const slotMin = Number(prof.duracion_turno_minutos) || 20;
+        const autoHorarios = [1, 2, 3, 4, 5].map(diaNum => ({
+          id: `h-auto-${prof.id}-${diaNum}`,
+          profesional_id: prof.id,
+          consultorio_id: 'c-1',
+          dia_semana: diaNum,
+          hora_inicio: '08:00',
+          hora_fin: '14:00',
+          duracion_slot_min: slotMin,
+          modalidad: prof.atiende_online ? 'AMBAS' : 'PRESENCIAL',
+          activo: true
+        }));
+        
+        const allHorarios = StorageService.getHorarios();
+        StorageService.saveCollection(STORAGE_KEYS.HORARIOS, [...allHorarios, ...autoHorarios]);
+        list = autoHorarios;
+      }
+    }
+
+    return list;
   },
   saveHorario: (horario) => {
     const items = StorageService.getHorarios();

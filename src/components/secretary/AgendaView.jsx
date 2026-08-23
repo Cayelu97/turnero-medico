@@ -131,12 +131,19 @@ export const AgendaView = () => {
     return slots;
   }, [effectiveIntervalMinutes]);
 
+  const toMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':').map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+  };
+
   // Función para determinar si un profesional atiende en un día y hora específicos
   const checkDoctorWorkingAt = (profId, fechaStr, horaStr) => {
     if (!profId || !fechaStr || !horaStr) return false;
     const diaSemana = getDayOfWeekFromDateString(fechaStr);
     if (diaSemana === 0) return false; // Domingos no
 
+    const slotMin = toMinutes(horaStr);
     const horarios = StorageService.getHorariosByProfesional(profId).filter(h => {
       if (Number(h.dia_semana) !== Number(diaSemana)) return false;
       if (h.activo === false) return false;
@@ -145,7 +152,11 @@ export const AgendaView = () => {
       return true;
     });
 
-    return horarios.some(h => horaStr >= h.hora_inicio && horaStr < h.hora_fin);
+    return horarios.some(h => {
+      const startMin = toMinutes(h.hora_inicio);
+      const endMin = toMinutes(h.hora_fin);
+      return slotMin >= startMin && slotMin < endMin;
+    });
   };
 
   const turnosDelDia = useMemo(() => {
@@ -764,7 +775,7 @@ export const AgendaView = () => {
                 <span>Timeline Semanal ({semanaDays[0]} al {semanaDays[5]})</span>
               </h3>
               <p className="text-xs text-slate-500">
-                Seleccione el profesional para ver su grilla semanal de slots exactos ({effectiveIntervalMinutes} min).
+                Grilla médica de alta precisión con slots exactos de {effectiveIntervalMinutes} min.
               </p>
             </div>
 
@@ -791,6 +802,58 @@ export const AgendaView = () => {
             </div>
           </div>
 
+          {/* FICHA HERO DEL MÉDICO CON RESUMEN DE ATENCIÓN */}
+          {activeWeeklyProf && (
+            <div className="p-3.5 bg-gradient-to-r from-slate-50 to-medical-50/30 rounded-2xl border border-slate-200/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-2xs"
+                  style={{ backgroundColor: activeWeeklyProf.color_agenda || '#0284c7' }}
+                >
+                  {activeWeeklyProf.nombre[0]}{activeWeeklyProf.apellido[0]}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-black text-sm text-slate-900">Dr(a). {activeWeeklyProf.nombre} {activeWeeklyProf.apellido}</h4>
+                    <span className="px-2 py-0.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-[10px] font-black">
+                      ⏱️ {activeWeeklyProf.duracion_turno_minutos || 20} min/turno
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium flex-wrap mt-0.5">
+                    <span>{activeWeeklyProf.especialidad}</span>
+                    <span>•</span>
+                    <span className="text-medical-800 font-bold">
+                      {(() => {
+                        const profHorarios = StorageService.getHorariosByProfesional(activeWeeklyProf.id);
+                        if (profHorarios.length === 0) return 'Sin horarios cargados';
+                        const diasMap = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb' };
+                        const agrupados = profHorarios.map(h => `${diasMap[h.dia_semana] || ''} (${h.hora_inicio}-${h.hora_fin})`).filter(Boolean);
+                        return `Atención: ${agrupados.join(', ')}`;
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowConfigAgendaModal(true)}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Settings className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Configurar Horarios</span>
+                </button>
+                <button
+                  onClick={() => handleOpenNuevoTurno(activeWeeklyProf.id, null, currentDate)}
+                  className="px-3.5 py-1.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Agendar Turno</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="min-w-[880px]">
             {/* Cabecera de Días de la Semana */}
             <div className="grid gap-2 border-b border-slate-200 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
@@ -800,6 +863,10 @@ export const AgendaView = () => {
                 const isSelectedDay = diaStr === currentDate;
                 const targetProfId = selectedWeeklyProfId || visibleProfessionals[0]?.id;
                 const turnosDelDiaCount = turnos.filter(t => t.fecha === diaStr && (!targetProfId || t.profesional_id === targetProfId) && t.estado !== 'CANCELADO').length;
+
+                const diaNum = dateObj.getDay();
+                const horariosDia = StorageService.getHorariosByProfesional(targetProfId).filter(h => Number(h.dia_semana) === Number(diaNum));
+                const tieneAtencion = horariosDia.length > 0;
 
                 return (
                   <div 
@@ -815,8 +882,22 @@ export const AgendaView = () => {
                     <strong className="text-sm font-black block leading-none my-0.5">
                       {diaStr.split('-')[2]}
                     </strong>
-                    <span className={`text-[10px] font-bold block ${isSelectedDay ? 'text-white/90' : 'text-slate-500'}`}>
-                      {turnosDelDiaCount} turnos
+                    
+                    {/* Badge de Horario de Atención para este Día */}
+                    <div className="mt-1">
+                      {tieneAtencion ? (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${isSelectedDay ? 'bg-white/20 text-white' : 'bg-emerald-100/70 text-emerald-800'}`}>
+                          {horariosDia[0].hora_inicio} - {horariosDia[0].hora_fin}
+                        </span>
+                      ) : (
+                        <span className={`text-[9px] font-semibold ${isSelectedDay ? 'text-white/60' : 'text-slate-400'}`}>
+                          Sin atención
+                        </span>
+                      )}
+                    </div>
+
+                    <span className={`text-[10px] font-bold block mt-0.5 ${isSelectedDay ? 'text-white/90' : 'text-slate-500'}`}>
+                      {turnosDelDiaCount} {turnosDelDiaCount === 1 ? 'turno' : 'turnos'}
                     </span>
                   </div>
                 );

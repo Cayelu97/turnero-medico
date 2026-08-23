@@ -49,7 +49,7 @@ export const AgendaView = () => {
     showToast = () => {}
   } = useApp() || {};
 
-  const [viewMode, setViewMode] = useState('diaria');
+  const [viewMode, setViewMode] = useState('diaria'); // 'diaria' | 'timeline' | 'timeline_semanal' | 'semanal' | 'futuros'
   const [currentDate, setCurrentDate] = useState(() => getLocalDateString(new Date()));
   const [selectedCentroFilter, setSelectedCentroFilter] = useState('TODOS');
   const [selectedProfFilter, setSelectedProfFilter] = useState('');
@@ -66,6 +66,7 @@ export const AgendaView = () => {
   const [showAgendarModal, setShowAgendarModal] = useState(false);
   const [agendarProfId, setAgendarProfId] = useState(null);
   const [agendarDefaultHora, setAgendarDefaultHora] = useState(null);
+  const [agendarFecha, setAgendarFecha] = useState(null);
   const [showReprogramarModal, setShowReprogramarModal] = useState(false);
   const [turnoToReprogram, setTurnoToReprogram] = useState(null);
   const [showCancelarModal, setShowCancelarModal] = useState(false);
@@ -75,6 +76,8 @@ export const AgendaView = () => {
 
   const handlePrevDay = () => setCurrentDate(prev => addDaysToDateString(prev, -1));
   const handleNextDay = () => setCurrentDate(prev => addDaysToDateString(prev, 1));
+  const handlePrevWeek = () => setCurrentDate(prev => addDaysToDateString(prev, -7));
+  const handleNextWeek = () => setCurrentDate(prev => addDaysToDateString(prev, 7));
   const handleToday = () => setCurrentDate(getLocalDateString(new Date()));
 
   const visibleProfessionals = useMemo(() => {
@@ -175,9 +178,10 @@ export const AgendaView = () => {
     showToast('Exportación exitosa');
   };
 
-  const handleOpenNuevoTurno = (profId = null, hora = null) => {
-    setAgendarProfId(profId || selectedProfFilter || null);
+  const handleOpenNuevoTurno = (profId = null, hora = null, fecha = null) => {
+    setAgendarProfId(profId || selectedProfFilter || (visibleProfessionals[0]?.id) || null);
     setAgendarDefaultHora(hora);
+    setAgendarFecha(fecha || currentDate);
     setShowAgendarModal(true);
   };
 
@@ -193,51 +197,177 @@ export const AgendaView = () => {
 
   return (
     <div className="space-y-4">
+      {/* BARRA SUPERIOR DE HERRAMIENTAS Y VISTAS */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-2xl w-fit border border-slate-200">
-            {['diaria', 'timeline', 'semanal', 'futuros'].map(m => (
-              <button key={m} onClick={() => setViewMode(m)} className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${viewMode === m ? 'bg-white text-slate-900 shadow-xs font-black' : 'text-slate-600'}`}>
-                {m.charAt(0).toUpperCase() + m.slice(1)}
+          {/* SELECTOR DE MODOS DE VISTA */}
+          <div className="flex items-center gap-1 p-1 bg-slate-100/90 rounded-2xl w-fit border border-slate-200/80 overflow-x-auto">
+            {[
+              { id: 'diaria', label: 'Diaria Médicos' },
+              { id: 'timeline', label: 'Timeline Hoy' },
+              { id: 'timeline_semanal', label: 'Timeline Semanal' },
+              { id: 'semanal', label: 'Resumen Semanal' },
+              { id: 'futuros', label: 'Turnos Futuros' }
+            ].map(m => (
+              <button 
+                key={m.id} 
+                onClick={() => setViewMode(m.id)} 
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                  viewMode === m.id 
+                    ? 'bg-white text-slate-900 shadow-2xs font-black' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {m.label}
               </button>
             ))}
           </div>
+
+          {/* ACCIONES RÁPIDAS DE SECRETARÍA */}
           <div className="flex items-center gap-2 flex-wrap">
-            <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"><Download className="w-3.5 h-3.5" /> Exportar</button>
-            <button onClick={() => setShowRecurrenteModal(true)} className="px-3 py-2 bg-purple-50 text-purple-800 rounded-xl text-xs font-bold">Paquete</button>
-            <button onClick={() => setShowConfigAgendaModal(true)} className="p-2 bg-slate-100 rounded-xl"><Settings className="w-4 h-4" /></button>
-            <button onClick={() => handleOpenNuevoTurno()} className="px-4 py-2 bg-medical-600 text-white rounded-xl text-xs font-black shadow-md">+ Nuevo Turno</button>
+            <button 
+              onClick={handleExportCSV} 
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" /> Exportar CSV
+            </button>
+            <button 
+              onClick={() => setShowRecurrenteModal(true)} 
+              className="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              + Paquete Sesiones
+            </button>
+            <button 
+              onClick={() => setShowConfigAgendaModal(true)} 
+              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer" 
+              title="Configurar Horarios de Agenda"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => handleOpenNuevoTurno()} 
+              className="px-4 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black shadow-md shadow-medical-600/20 transition cursor-pointer flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Nuevo Turno</span>
+            </button>
           </div>
         </div>
 
+        {/* TARJETAS KPI DEL DÍA (Interactivos para filtrar en 1 clic) */}
         {viewMode !== 'futuros' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-slate-100">
-            {[{id:'ALL', l:'Total', v:kpisDia.total}, {id:'EN_ESPERA', l:'Espera', v:kpisDia.enEspera}, {id:'EN_ATENCION', l:'Consulta', v:kpisDia.enAtencion}, {id:'ATENDIDO', l:'Atendidos', v:kpisDia.atendidos}, {id:'SOBRETURNOS', l:'Sobreturnos', v:kpisDia.sobreturnos}, {id:'CANCELADOS', l:'Cancel/Aus', v:kpisDia.cancelados}].map(k => (
-              <button key={k.id} onClick={() => setActiveKpiFilter(activeKpiFilter === k.id ? 'ALL' : k.id)} className={`p-2.5 rounded-2xl border ${activeKpiFilter === k.id ? 'bg-slate-900 text-white' : 'bg-slate-50'}`}>
-                <span className="text-[10px] block uppercase font-bold">{k.l}</span>
+            {[
+              { id: 'ALL', l: 'Total Citados', v: kpisDia.total, bg: 'hover:bg-slate-100' },
+              { id: 'EN_ESPERA', l: 'En Sala Espera', v: kpisDia.enEspera, bg: 'text-amber-900', dot: 'bg-amber-500' },
+              { id: 'EN_ATENCION', l: 'En Consulta', v: kpisDia.enAtencion, bg: 'text-purple-900', dot: 'bg-purple-500' },
+              { id: 'ATENDIDO', l: 'Atendidos', v: kpisDia.atendidos, bg: 'text-emerald-900', dot: 'bg-emerald-500' },
+              { id: 'SOBRETURNOS', l: 'Sobreturnos', v: kpisDia.sobreturnos, bg: 'text-orange-900', dot: 'bg-orange-500' },
+              { id: 'CANCELADOS', l: 'Cancelados / Aus', v: kpisDia.cancelados, bg: 'text-slate-600', dot: 'bg-slate-400' }
+            ].map(k => (
+              <button 
+                key={k.id} 
+                onClick={() => setActiveKpiFilter(activeKpiFilter === k.id ? 'ALL' : k.id)} 
+                className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
+                  activeKpiFilter === k.id 
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm' 
+                    : 'bg-slate-50 border-slate-200/70 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] block uppercase font-black tracking-wider opacity-80">{k.l}</span>
+                  {k.dot && <span className={`w-1.5 h-1.5 rounded-full ${k.dot}`} />}
+                </div>
                 <span className="text-lg font-black">{k.v}</span>
               </button>
             ))}
           </div>
         )}
 
+        {/* NAVEGACIÓN DE FECHA & FILTROS RÁPIDOS */}
         <div className="flex flex-col sm:flex-row justify-between gap-3 pt-2 border-t border-slate-100">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
-              <button onClick={handlePrevDay} className="p-1.5"><ChevronLeft className="w-4 h-4" /></button>
-              <button onClick={handleToday} className="px-2 py-1 text-xs font-bold">Hoy</button>
-              <button onClick={handleNextDay} className="p-1.5"><ChevronRight className="w-4 h-4" /></button>
-            </div>
-            <input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50" />
-          </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <select value={selectedProfFilter} onChange={(e) => setSelectedProfFilter(e.target.value)} className="px-3 py-1.5 border rounded-xl text-xs font-bold bg-slate-50">
+            {/* Navegador de Fecha */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+              {viewMode === 'timeline_semanal' || viewMode === 'semanal' ? (
+                <>
+                  <button onClick={handlePrevWeek} className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-white rounded-lg transition" title="Semana anterior">◄ Sem</button>
+                  <button onClick={handleToday} className="px-2.5 py-1 text-xs font-black bg-white rounded-lg shadow-2xs">Esta Semana</button>
+                  <button onClick={handleNextWeek} className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-white rounded-lg transition" title="Semana siguiente">Sem ►</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={handlePrevDay} className="p-1.5 hover:bg-white rounded-lg transition"><ChevronLeft className="w-4 h-4" /></button>
+                  <button onClick={handleToday} className="px-2.5 py-1 text-xs font-black bg-white rounded-lg shadow-2xs">Hoy</button>
+                  <button onClick={handleNextDay} className="p-1.5 hover:bg-white rounded-lg transition"><ChevronRight className="w-4 h-4" /></button>
+                </>
+              )}
+            </div>
+
+            <input 
+              type="date" 
+              value={currentDate} 
+              onChange={(e) => setCurrentDate(e.target.value)} 
+              className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500" 
+            />
+
+            <span className="text-xs font-bold text-slate-700 hidden md:inline">
+              {new Date(currentDate + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <select 
+              value={selectedProfFilter} 
+              onChange={(e) => setSelectedProfFilter(e.target.value)} 
+              className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50"
+            >
               <option value="">Todos los Profesionales</option>
-              {profesionales.map(p => <option key={p.id} value={p.id}>{p.nombre} {p.apellido}</option>)}
+              {profesionales.map(p => <option key={p.id} value={p.id}>{p.nombre} {p.apellido} ({p.especialidad})</option>)}
             </select>
-            <input type="text" placeholder="Buscar..." value={searchPatientQuery} onChange={(e) => setSearchPatientQuery(e.target.value)} className="pl-3 pr-3 py-1.5 border rounded-xl text-xs font-bold bg-slate-50" />
+
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Buscar paciente o código..." 
+                value={searchPatientQuery} 
+                onChange={(e) => setSearchPatientQuery(e.target.value)} 
+                className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500 w-48 sm:w-60" 
+              />
+            </div>
           </div>
         </div>
+
+        {/* STRIP DE DÍAS DE LA SEMANA PARA SALTO DIRECTO EN 1 CLIC */}
+        {(viewMode === 'timeline_semanal' || viewMode === 'semanal') && (
+          <div className="grid grid-cols-6 gap-2 pt-2 border-t border-slate-100">
+            {semanaDays.map((diaStr) => {
+              const dateObj = new Date(diaStr + 'T00:00:00');
+              const isCurrent = diaStr === currentDate;
+              const countTurnos = turnos.filter(t => t.fecha === diaStr && (!selectedProfFilter || t.profesional_id === selectedProfFilter) && t.estado !== 'CANCELADO').length;
+
+              return (
+                <button
+                  key={diaStr}
+                  onClick={() => setCurrentDate(diaStr)}
+                  className={`p-2 rounded-2xl border text-center transition cursor-pointer ${
+                    isCurrent 
+                      ? 'bg-medical-600 text-white border-medical-600 shadow-sm' 
+                      : 'bg-slate-50 border-slate-200 hover:border-medical-400'
+                  }`}
+                >
+                  <span className="text-[10px] block uppercase font-black tracking-wider">
+                    {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })} {diaStr.split('-')[2]}
+                  </span>
+                  <span className={`text-[11px] font-bold block mt-0.5 ${isCurrent ? 'text-white' : 'text-medical-700'}`}>
+                    {countTurnos} {countTurnos === 1 ? 'turno' : 'turnos'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* 1. VISTA DIARIA MULTI-PROFESIONAL */}
@@ -278,7 +408,7 @@ export const AgendaView = () => {
                   </div>
 
                   <button
-                    onClick={() => handleOpenNuevoTurno(prof.id)}
+                    onClick={() => handleOpenNuevoTurno(prof.id, null, currentDate)}
                     className="p-1.5 bg-medical-50 hover:bg-medical-100 text-medical-800 rounded-xl text-[11px] font-black border border-medical-200 transition cursor-pointer"
                     title="Agendar turno o sobreturno para este profesional"
                   >
@@ -302,7 +432,7 @@ export const AgendaView = () => {
                     <div className="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-2xl space-y-2">
                       <p>Sin turnos para esta fecha.</p>
                       <button
-                        onClick={() => handleOpenNuevoTurno(prof.id)}
+                        onClick={() => handleOpenNuevoTurno(prof.id, null, currentDate)}
                         className="inline-flex items-center gap-1 text-medical-600 font-black hover:underline cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" /> Agendar turno
@@ -419,16 +549,16 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* 2. GRILLA HORARIA CONTINUA (TIMELINE DOCTOLIB STYLE) */}
+      {/* 2. TIMELINE DIARIO (HORAS vs DOCTORES) */}
       {viewMode === 'timeline' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 overflow-x-auto space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
                 <LayoutGrid className="w-4 h-4 text-tealmed-600" />
-                <span>Grilla Horaria ({new Date(currentDate + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })})</span>
+                <span>Timeline Diario ({new Date(currentDate + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })})</span>
               </h3>
-              <p className="text-xs text-slate-500">Haga clic en un slot libre para agendar inmediatamente con el médico correspondiente.</p>
+              <p className="text-xs text-slate-500">Haga clic en un casillero libre para agendar preseleccionando la hora y el médico.</p>
             </div>
           </div>
 
@@ -457,9 +587,14 @@ export const AgendaView = () => {
 
                     if (turnosEnHora.length === 0) {
                       return (
-                        <div key={prof.id} onClick={() => handleOpenNuevoTurno(prof.id, hour)} className="p-2 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 hover:text-medical-600 hover:border-medical-400 hover:bg-medical-50/40 cursor-pointer transition text-xs font-bold group">
-                          <span className="group-hover:hidden text-[11px] text-slate-300">Libre</span>
-                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-medical-700 text-xs"><Plus className="w-3 h-3" /> Agendar</span>
+                        <div 
+                          key={prof.id} 
+                          onClick={() => handleOpenNuevoTurno(prof.id, hour, currentDate)} 
+                          className="p-2 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 hover:text-medical-700 hover:border-medical-500 hover:bg-medical-50/50 cursor-pointer transition text-xs font-bold group"
+                          title={`Agendar turno libre a las ${hour} con Dr(a). ${prof.apellido}`}
+                        >
+                          <span className="group-hover:hidden text-[11px] text-slate-300">+ Libre</span>
+                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-medical-700 text-xs"><Plus className="w-3 h-3" /> Agendar {hour}</span>
                         </div>
                       );
                     }
@@ -469,13 +604,24 @@ export const AgendaView = () => {
                         {turnosEnHora.map(t => {
                           const pac = pacientes.find(p => p.id === t.paciente_id);
                           const os = obrasSociales.find(o => o.id === t.obra_social_id);
+                          const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
+
                           return (
-                            <div key={t.id} onClick={() => setSelectedDetalleTurno(t)} className="p-2 rounded-xl border text-xs cursor-pointer transition bg-white border-slate-200 hover:border-medical-400 shadow-2xs">
+                            <div 
+                              key={t.id} 
+                              onClick={() => setSelectedDetalleTurno(t)} 
+                              className={`p-2 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
+                                t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
+                                t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
+                                'bg-white border-slate-200 hover:border-medical-400'
+                              }`}
+                            >
                               <div className="flex items-center justify-between gap-1">
                                 <span className="font-mono font-black text-slate-900 text-[11px]">{t.hora_inicio}</span>
-                                <span className="text-[9px] font-bold text-slate-500 truncate max-w-[60px]">{os?.sigla || 'Part.'}</span>
+                                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${badge.bg}`}>{badge.label}</span>
                               </div>
                               <div className="font-black text-slate-800 text-[11px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
+                              <span className="text-[10px] text-slate-500 truncate block">{os?.sigla || 'Particular'}</span>
                             </div>
                           );
                         })}
@@ -489,7 +635,121 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* 3. VISTA SEMANAL */}
+      {/* 3. TIMELINE SEMANAL (HORAS 08:00-20:00 vs DÍAS LUNES A SÁBADO) */}
+      {viewMode === 'timeline_semanal' && (
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 overflow-x-auto space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-medical-600" />
+                <span>Timeline Semanal ({semanaDays[0]} al {semanaDays[5]})</span>
+              </h3>
+              <p className="text-xs text-slate-500">Visión de 6 días completos de 08:00 a 20:00 hs. Haga clic en cualquier celda libre para agendar turno preseleccionando fecha y horario.</p>
+            </div>
+            {selectedProfFilter && (
+              <span className="px-3 py-1 bg-medical-50 text-medical-800 rounded-xl text-xs font-black border border-medical-200">
+                Dr(a). {profesionales.find(p => p.id === selectedProfFilter)?.apellido}
+              </span>
+            )}
+          </div>
+
+          <div className="min-w-[850px]">
+            {/* Cabecera de Días de la Semana */}
+            <div className="grid gap-2 border-b border-slate-200 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
+              <div className="text-xs font-black text-slate-400 uppercase tracking-wider py-2 text-center">Hora</div>
+              {semanaDays.map((diaStr) => {
+                const dateObj = new Date(diaStr + 'T00:00:00');
+                const isSelectedDay = diaStr === currentDate;
+                const turnosDelDiaCount = turnos.filter(t => t.fecha === diaStr && (!selectedProfFilter || t.profesional_id === selectedProfFilter) && t.estado !== 'CANCELADO').length;
+
+                return (
+                  <div 
+                    key={diaStr} 
+                    onClick={() => setCurrentDate(diaStr)}
+                    className={`p-2.5 rounded-2xl border text-center transition cursor-pointer ${
+                      isSelectedDay ? 'bg-medical-600 text-white border-medical-600 shadow-sm' : 'bg-slate-50 border-slate-200/80 hover:bg-white hover:border-medical-300'
+                    }`}
+                  >
+                    <span className="text-[11px] block uppercase font-black tracking-wider">
+                      {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}
+                    </span>
+                    <strong className="text-sm font-black block leading-none my-0.5">
+                      {diaStr.split('-')[2]}
+                    </strong>
+                    <span className={`text-[10px] font-bold block ${isSelectedDay ? 'text-white/90' : 'text-slate-500'}`}>
+                      {turnosDelDiaCount} turnos
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Filas de Horas */}
+            <div className="divide-y divide-slate-100">
+              {timelineHours.map(hour => (
+                <div key={hour} className="grid gap-2 py-1.5 items-center" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
+                  <div className="font-mono text-xs font-black text-slate-600 bg-slate-100/80 px-2 py-1.5 rounded-lg text-center">{hour}</div>
+                  {semanaDays.map(diaStr => {
+                    const turnosEnCelda = turnos.filter(t => 
+                      t.fecha === diaStr && 
+                      t.hora_inicio.startsWith(hour.slice(0, 2)) && 
+                      (!selectedProfFilter || t.profesional_id === selectedProfFilter) && 
+                      t.estado !== 'CANCELADO'
+                    );
+
+                    if (turnosEnCelda.length === 0) {
+                      return (
+                        <div 
+                          key={diaStr} 
+                          onClick={() => handleOpenNuevoTurno(selectedProfFilter || (visibleProfessionals[0]?.id), hour, diaStr)} 
+                          className="p-2 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 hover:text-medical-700 hover:border-medical-500 hover:bg-medical-50/50 cursor-pointer transition text-xs font-bold group"
+                          title={`Agendar turno libre el ${diaStr} a las ${hour}`}
+                        >
+                          <span className="group-hover:hidden text-[11px] text-slate-300">+ Libre</span>
+                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-medical-700 text-[11px]"><Plus className="w-3 h-3" /> Agendar</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={diaStr} className="space-y-1">
+                        {turnosEnCelda.map(t => {
+                          const pac = pacientes.find(p => p.id === t.paciente_id);
+                          const prof = profesionales.find(p => p.id === t.profesional_id);
+                          const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
+
+                          return (
+                            <div 
+                              key={t.id} 
+                              onClick={() => setSelectedDetalleTurno(t)} 
+                              className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
+                                t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
+                                t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
+                                'bg-white border-slate-200 hover:border-medical-400'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-mono font-black text-slate-900 text-[10px]">{t.hora_inicio}</span>
+                                <span className={`text-[8px] font-bold px-1 rounded ${badge.bg}`}>{badge.label}</span>
+                              </div>
+                              <div className="font-black text-slate-800 text-[10px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
+                              {!selectedProfFilter && prof && (
+                                <span className="text-[9px] text-medical-800 font-bold truncate block">Dr(a). {prof.apellido}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. VISTA RESUMEN SEMANAL */}
       {viewMode === 'semanal' && (
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -535,7 +795,7 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* 4. VISTA TURNOS FUTUROS */}
+      {/* 5. VISTA TURNOS FUTUROS */}
       {viewMode === 'futuros' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden space-y-4 p-4 sm:p-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -590,14 +850,42 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* Modales */}
+      {/* MODALES DEL SISTEMA */}
       <ConfigurarAgendaModal isOpen={showConfigAgendaModal} onClose={() => setShowConfigAgendaModal(false)} />
       <TurnoRecurrenteModal isOpen={showRecurrenteModal} onClose={() => setShowRecurrenteModal(false)} />
-      <AgendarTurnoSecretariaModal isOpen={showAgendarModal} defaultFecha={currentDate} defaultProfId={agendarProfId} onClose={() => setShowAgendarModal(false)} />
+      <AgendarTurnoSecretariaModal 
+        isOpen={showAgendarModal} 
+        defaultFecha={agendarFecha || currentDate} 
+        defaultProfId={agendarProfId} 
+        defaultHora={agendarDefaultHora} 
+        onClose={() => { 
+          setShowAgendarModal(false); 
+          setAgendarFecha(null); 
+          setAgendarDefaultHora(null); 
+        }} 
+      />
       <ReprogramarTurnoModal isOpen={showReprogramarModal} turno={turnoToReprogram} onClose={() => setShowReprogramarModal(false)} />
       <CancelarTurnoModal isOpen={showCancelarModal} turno={turnoToCancel} canceladoPor="SECRETARIA" onClose={() => setShowCancelarModal(false)} />
-      <DetalleTurnoModal isOpen={!!selectedDetalleTurno} turno={selectedDetalleTurno} onClose={() => setSelectedDetalleTurno(null)} onReprogramar={t => { setTurnoToReprogram(t); setShowReprogramarModal(true); }} onCancelar={t => { setTurnoToCancel(t); setShowCancelarModal(true); }} onVerVoucher={t => setSelectedTurnoForVoucher({ turno: t, paciente: pacientes.find(p => p.id === t.paciente_id), profesional: profesionales.find(p => p.id === t.profesional_id), consultorio: consultorios.find(c => c.id === t.consultorio_id), obraSocial: obrasSociales.find(o => o.id === t.obra_social_id), plan: planes.find(p => p.id === t.plan_id), practica: nomenclador.find(n => n.id === t.practica_id) })} />
-      {selectedTurnoForVoucher && <VoucherModal turno={selectedTurnoForVoucher.turno} paciente={selectedTurnoForVoucher.paciente} profesional={selectedTurnoForVoucher.profesional} consultorio={selectedTurnoForVoucher.consultorio} obraSocial={selectedTurnoForVoucher.obraSocial} plan={selectedTurnoForVoucher.plan} practica={selectedTurnoForVoucher.practica} onClose={() => setSelectedTurnoForVoucher(null)} />}
+      <DetalleTurnoModal 
+        isOpen={!!selectedDetalleTurno} 
+        turno={selectedDetalleTurno} 
+        onClose={() => setSelectedDetalleTurno(null)} 
+        onReprogramar={t => { setTurnoToReprogram(t); setShowReprogramarModal(true); }} 
+        onCancelar={t => { setTurnoToCancel(t); setShowCancelarModal(true); }} 
+        onVerVoucher={t => setSelectedTurnoForVoucher({ turno: t, paciente: pacientes.find(p => p.id === t.paciente_id), profesional: profesionales.find(p => p.id === t.profesional_id), consultorio: consultorios.find(c => c.id === t.consultorio_id), obraSocial: obrasSociales.find(o => o.id === t.obra_social_id), plan: planes.find(p => p.id === t.plan_id), practica: nomenclador.find(n => n.id === t.practica_id) })} 
+      />
+      {selectedTurnoForVoucher && (
+        <VoucherModal 
+          turno={selectedTurnoForVoucher.turno} 
+          paciente={selectedTurnoForVoucher.paciente} 
+          profesional={selectedTurnoForVoucher.profesional} 
+          consultorio={selectedTurnoForVoucher.consultorio} 
+          obraSocial={selectedTurnoForVoucher.obraSocial} 
+          plan={selectedTurnoForVoucher.plan} 
+          practica={selectedTurnoForVoucher.practica} 
+          onClose={() => setSelectedTurnoForVoucher(null)} 
+        />
+      )}
     </div>
   );
 };

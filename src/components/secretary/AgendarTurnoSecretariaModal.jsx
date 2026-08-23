@@ -26,7 +26,13 @@ import { WhatsAppService } from '../../services/whatsapp';
 import { VoucherModal } from '../patient/VoucherModal';
 import { formatDateAR, getLocalDateString, addDaysToDateString, getDayDetailsFromDateString } from '../../utils/dateUtils';
 
-export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = null, defaultProfId = null }) => {
+export const AgendarTurnoSecretariaModal = ({ 
+  isOpen, 
+  onClose, 
+  defaultFecha = null, 
+  defaultProfId = null,
+  defaultHora = null 
+}) => {
   const { 
     profesionales = [], 
     servicios = [], 
@@ -49,8 +55,9 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
   const [selectedPracticaId, setSelectedPracticaId] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [esSobreturno, setEsSobreturno] = useState(false);
-  const [horaSobreturno, setHoraSobreturno] = useState('12:30');
+  const [horaSobreturno, setHoraSobreturno] = useState(() => defaultHora || '12:30');
   const [modalidadTurno, setModalidadTurno] = useState('PRESENCIAL');
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
 
   // Paciente
   const [dniSearch, setDniSearch] = useState('');
@@ -77,6 +84,7 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
     setSelectedSlot(null);
     setEsSobreturno(false);
     setDniSearch('');
+    setShowPatientDropdown(false);
     setPacienteForm({
       dni: '',
       nombre: '',
@@ -89,15 +97,28 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
     });
   };
 
-  // RESETEAR SIEMPRE AL ABRIR EL MODAL (Garantiza campos limpios para cada nuevo turno)
+  // RESETEAR Y PRESELECCIONAR AL ABRIR EL MODAL
   useEffect(() => {
     if (isOpen) {
       resetFormulario();
-      if (defaultFecha) setFecha(defaultFecha);
-      if (defaultProfId) setSelectedProfId(defaultProfId);
-      else if (profesionales.length > 0 && !selectedProfId) setSelectedProfId(profesionales[0].id);
+      const targetFecha = defaultFecha || getLocalDateString(new Date());
+      const targetProfId = defaultProfId || (profesionales[0]?.id || '');
+      setFecha(targetFecha);
+      setSelectedProfId(targetProfId);
+
+      if (defaultHora && targetProfId) {
+        const slots = StorageService.getSlotsDisponibles(targetProfId, targetFecha);
+        const match = slots.find(s => s.hora_inicio === defaultHora || s.hora_inicio.startsWith(defaultHora.slice(0, 2)));
+        if (match) {
+          setSelectedSlot(match);
+          setEsSobreturno(false);
+        } else {
+          setEsSobreturno(true);
+          setHoraSobreturno(defaultHora);
+        }
+      }
     }
-  }, [isOpen, defaultFecha, defaultProfId, profesionales]);
+  }, [isOpen, defaultFecha, defaultProfId, defaultHora, profesionales]);
 
   const handleModalClose = () => {
     resetFormulario();
@@ -105,6 +126,32 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
   };
 
   const selectedProf = profesionales.find(p => p.id === selectedProfId);
+
+  // Sugerencias de pacientes en vivo
+  const pacienteSuggestions = useMemo(() => {
+    const q = (pacienteForm.dni || pacienteForm.nombre || pacienteForm.apellido || '').trim().toLowerCase();
+    if (!q || q.length < 2) return [];
+    return pacientes.filter(p => 
+      (p.dni && p.dni.includes(q)) ||
+      (p.nombre && p.nombre.toLowerCase().includes(q)) ||
+      (p.apellido && p.apellido.toLowerCase().includes(q))
+    ).slice(0, 5);
+  }, [pacienteForm.dni, pacienteForm.nombre, pacienteForm.apellido, pacientes]);
+
+  const handleSelectSuggestedPatient = (p) => {
+    setPacienteForm({
+      dni: p.dni || '',
+      nombre: p.nombre || '',
+      apellido: p.apellido || '',
+      telefono_whatsapp: p.telefono_whatsapp || '',
+      obra_social_id: p.obra_social_id || obrasSociales[0]?.id || '',
+      plan_id: p.plan_id || '',
+      numero_afiliado: p.numero_afiliado || '',
+      observaciones: 'Paciente habitual'
+    });
+    setShowPatientDropdown(false);
+    showToast(`Paciente seleccionado: ${p.nombre} ${p.apellido}`);
+  };
 
   // Servicios pertenecientes al profesional seleccionado
   const serviciosDelProf = useMemo(() => {
@@ -349,37 +396,76 @@ export const AgendarTurnoSecretariaModal = ({ isOpen, onClose, defaultFecha = nu
                     </span>
                   </div>
 
-                  <div className="space-y-2.5 text-xs">
-                    <div>
-                      <label className="block text-[11px] font-extrabold text-slate-700 mb-1">DNI del Paciente *</label>
+                  <div className="space-y-2.5 text-xs relative">
+                    {/* Badge de Horario & Profesional Preseleccionado */}
+                    {(selectedSlot || esSobreturno) && (
+                      <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[11px] font-black text-emerald-900">
+                            Cita: {formatDateAR(fecha)} • {selectedSlot?.hora_inicio || horaSobreturno} hs
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                          {selectedProf?.apellido ? `Dr(a). ${selectedProf.apellido}` : 'Preseleccionado'}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="relative">
+                      <label className="block text-[11px] font-extrabold text-slate-700 mb-1">
+                        DNI del Paciente * <span className="font-normal text-slate-500">(o busque por nombre)</span>
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="ej: 38123456"
                         value={pacienteForm.dni}
+                        onFocus={() => setShowPatientDropdown(true)}
                         onChange={(e) => {
                           const val = e.target.value;
                           setPacienteForm(prev => ({ ...prev, dni: val }));
                           setDniSearch(val);
+                          setShowPatientDropdown(true);
                           if (val.replace(/\D/g, '').length >= 7) {
                             const existing = StorageService.findPacienteByDni(val);
                             if (existing) {
-                              setPacienteForm({
-                                dni: existing.dni,
-                                nombre: existing.nombre || '',
-                                apellido: existing.apellido || '',
-                                telefono_whatsapp: existing.telefono_whatsapp || '',
-                                obra_social_id: existing.obra_social_id || obrasSociales[0]?.id || '',
-                                plan_id: existing.plan_id || '',
-                                numero_afiliado: existing.numero_afiliado || '',
-                                observaciones: 'Paciente habitual'
-                              });
+                              handleSelectSuggestedPatient(existing);
                             }
                           }
                         }}
-                        onBlur={handleDniSearchBlur}
+                        onBlur={() => setTimeout(() => setShowPatientDropdown(false), 250)}
                         className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-mono font-bold bg-white focus:ring-2 focus:ring-medical-500"
                       />
+
+                      {/* Dropdown de Sugerencias de Pacientes */}
+                      {showPatientDropdown && pacienteSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden divide-y divide-slate-100">
+                          <div className="p-1.5 bg-slate-50 text-[10px] font-black uppercase text-slate-500">
+                            Pacientes Registrados Coincidentes ({pacienteSuggestions.length})
+                          </div>
+                          {pacienteSuggestions.map(s => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onMouseDown={() => handleSelectSuggestedPatient(s)}
+                              className="w-full p-2.5 text-left hover:bg-medical-50/70 transition flex items-center justify-between text-xs cursor-pointer group"
+                            >
+                              <div>
+                                <strong className="font-black text-slate-900 group-hover:text-medical-600 block">
+                                  {s.apellido}, {s.nombre}
+                                </strong>
+                                <span className="text-[11px] text-slate-500 font-mono">
+                                  DNI: {s.dni} • Cel: {s.telefono_whatsapp || 'S/D'}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+                                Seleccionar ➔
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">

@@ -275,13 +275,27 @@ export const AgendaView = () => {
     if (!targetProf) return [];
     
     const results = [];
-    const baseDate = new Date();
+    const now = new Date();
+    const todayStr = getLocalDateString(now);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
     
-    for (let i = 0; i < 14 && results.length < 6; i++) {
-      const dStr = addDaysToDateString(getLocalDateString(baseDate), i);
+    for (let i = 0; i < 30 && results.length < 8; i++) {
+      const dStr = addDaysToDateString(todayStr, i);
       const slots = StorageService.getSlotsDisponibles(targetProf, dStr);
-      for (const slot of slots) {
-        if (results.length >= 6) break;
+      
+      // Filtrar estrictamente solo slots con disponible === true (no ocupados)
+      const slotsDisponibles = slots.filter(slot => {
+        if (!slot.disponible) return false;
+        // Si es hoy, descartar franjas horarias pasadas
+        if (dStr === todayStr && slot.hora_inicio) {
+          const [h, m] = slot.hora_inicio.split(':').map(Number);
+          if ((h * 60 + m) <= nowMinutes) return false;
+        }
+        return true;
+      });
+
+      for (const slot of slotsDisponibles) {
+        if (results.length >= 8) break;
         const details = getDayDetailsFromDateString(dStr);
         results.push({
           fecha: dStr,
@@ -296,7 +310,7 @@ export const AgendaView = () => {
       }
     }
     return results;
-  }, [showProximoLibreModal, selectedWeeklyProfId, visibleProfessionals]);
+  }, [showProximoLibreModal, selectedWeeklyProfId, visibleProfessionals, turnos]);
 
   const handleOpenNuevoTurno = (profId = null, hora = null, fecha = null, esSobreturno = false) => {
     setAgendarProfId(profId || selectedWeeklyProfId || selectedProfFilter || (visibleProfessionals[0]?.id) || null);

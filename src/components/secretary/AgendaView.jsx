@@ -84,9 +84,68 @@ export const AgendaView = () => {
     return profesionales.filter(p => {
       if (selectedCentroFilter !== 'TODOS' && p.clinica_id && p.clinica_id !== selectedCentroFilter) return false;
       if (selectedProfFilter && p.id !== selectedProfFilter) return false;
+      if (selectedServicioFilter && p.servicios_ids && p.servicios_ids.length > 0 && !p.servicios_ids.includes(selectedServicioFilter)) return false;
       return p.activo !== false;
     });
-  }, [profesionales, selectedCentroFilter, selectedProfFilter]);
+  }, [profesionales, selectedCentroFilter, selectedProfFilter, selectedServicioFilter]);
+
+  const [slotResolution, setSlotResolution] = useState('auto'); // 'auto' | '15' | '20' | '30' | '60'
+  const [selectedWeeklyProfId, setSelectedWeeklyProfId] = useState('');
+
+  // Sincronizar el profesional semanal con el filtro general o el primer profesional
+  useEffect(() => {
+    if (selectedProfFilter) {
+      setSelectedWeeklyProfId(selectedProfFilter);
+    } else if (!selectedWeeklyProfId && visibleProfessionals.length > 0) {
+      setSelectedWeeklyProfId(visibleProfessionals[0].id);
+    }
+  }, [selectedProfFilter, visibleProfessionals, selectedWeeklyProfId]);
+
+  // Duración de slot efectiva
+  const activeWeeklyProf = useMemo(() => {
+    return profesionales.find(p => p.id === (selectedWeeklyProfId || selectedProfFilter || (visibleProfessionals[0]?.id)));
+  }, [profesionales, selectedWeeklyProfId, selectedProfFilter, visibleProfessionals]);
+
+  const effectiveIntervalMinutes = useMemo(() => {
+    if (slotResolution === '15') return 15;
+    if (slotResolution === '20') return 20;
+    if (slotResolution === '30') return 30;
+    if (slotResolution === '60') return 60;
+    // Auto: según el profesional seleccionado
+    return Number(activeWeeklyProf?.duracion_turno_minutos) || 20;
+  }, [slotResolution, activeWeeklyProf]);
+
+  // Generar lista de franjas horarias exactas (08:00 a 20:00 con el intervalo seleccionado)
+  const timelineSlots = useMemo(() => {
+    const slots = [];
+    const startMin = 8 * 60; // 08:00
+    const endMin = 20 * 60;  // 20:00
+    const step = effectiveIntervalMinutes || 20;
+
+    for (let m = startMin; m < endMin; m += step) {
+      const h = Math.floor(m / 60);
+      const min = m % 60;
+      slots.push(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+    }
+    return slots;
+  }, [effectiveIntervalMinutes]);
+
+  // Función para determinar si un profesional atiende en un día y hora específicos
+  const checkDoctorWorkingAt = (profId, fechaStr, horaStr) => {
+    if (!profId || !fechaStr || !horaStr) return false;
+    const diaSemana = getDayOfWeekFromDateString(fechaStr);
+    if (diaSemana === 0) return false; // Domingos no
+
+    const horarios = StorageService.getHorariosByProfesional(profId).filter(h => {
+      if (Number(h.dia_semana) !== Number(diaSemana)) return false;
+      if (h.activo === false) return false;
+      if (h.fecha_desde && fechaStr < h.fecha_desde) return false;
+      if (h.fecha_hasta && fechaStr > h.fecha_hasta) return false;
+      return true;
+    });
+
+    return horarios.some(h => horaStr >= h.hora_inicio && horaStr < h.hora_fin);
+  };
 
   const turnosDelDia = useMemo(() => {
     return turnos.filter(t => {
@@ -317,14 +376,52 @@ export const AgendaView = () => {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Filtro por Servicio / Especialidad */}
+            <select 
+              value={selectedServicioFilter} 
+              onChange={(e) => setSelectedServicioFilter(e.target.value)} 
+              className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-700"
+            >
+              <option value="">Todas las Especialidades</option>
+              {servicios.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+            </select>
+
+            {/* Filtro por Profesional */}
             <select 
               value={selectedProfFilter} 
-              onChange={(e) => setSelectedProfFilter(e.target.value)} 
-              className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50"
+              onChange={(e) => {
+                setSelectedProfFilter(e.target.value);
+                if (e.target.value) setSelectedWeeklyProfId(e.target.value);
+              }} 
+              className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-700"
             >
               <option value="">Todos los Profesionales</option>
               {profesionales.map(p => <option key={p.id} value={p.id}>{p.nombre} {p.apellido} ({p.especialidad})</option>)}
             </select>
+
+            {/* Selector de Resolución de Minutos */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60 text-xs font-bold">
+              <span className="text-[10px] text-slate-500 font-black px-1 uppercase hidden sm:inline">Paso:</span>
+              {[
+                { id: 'auto', label: 'Auto' },
+                { id: '15', label: '15m' },
+                { id: '20', label: '20m' },
+                { id: '30', label: '30m' },
+                { id: '60', label: '1h' }
+              ].map(r => (
+                <button
+                  key={r.id}
+                  onClick={() => setSlotResolution(r.id)}
+                  className={`px-2 py-0.5 rounded-lg text-xs transition cursor-pointer ${
+                    slotResolution === r.id 
+                      ? 'bg-white text-slate-900 shadow-2xs font-black' 
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
 
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -333,7 +430,7 @@ export const AgendaView = () => {
                 placeholder="Buscar paciente o código..." 
                 value={searchPatientQuery} 
                 onChange={(e) => setSearchPatientQuery(e.target.value)} 
-                className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500 w-48 sm:w-60" 
+                className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500 w-44 sm:w-56" 
               />
             </div>
           </div>
@@ -345,7 +442,8 @@ export const AgendaView = () => {
             {semanaDays.map((diaStr) => {
               const dateObj = new Date(diaStr + 'T00:00:00');
               const isCurrent = diaStr === currentDate;
-              const countTurnos = turnos.filter(t => t.fecha === diaStr && (!selectedProfFilter || t.profesional_id === selectedProfFilter) && t.estado !== 'CANCELADO').length;
+              const targetProf = activeWeeklyProf?.id;
+              const countTurnos = turnos.filter(t => t.fecha === diaStr && (!targetProf || t.profesional_id === targetProf) && t.estado !== 'CANCELADO').length;
 
               return (
                 <button
@@ -402,7 +500,7 @@ export const AgendaView = () => {
                         Dr(a). {prof.nombre} {prof.apellido}
                       </h3>
                       <span className="text-[10px] text-slate-500 font-semibold block mt-0.5">
-                        {prof.especialidad}
+                        {prof.especialidad} • {prof.duracion_turno_minutos || 20}m
                       </span>
                     </div>
                   </div>
@@ -549,7 +647,7 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* 2. TIMELINE DIARIO (HORAS vs DOCTORES) */}
+      {/* 2. TIMELINE DIARIO (HORAS CON INTERVALO EXACTO vs DOCTORES EN COLUMNAS) */}
       {viewMode === 'timeline' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 overflow-x-auto space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -558,13 +656,16 @@ export const AgendaView = () => {
                 <LayoutGrid className="w-4 h-4 text-tealmed-600" />
                 <span>Timeline Diario ({new Date(currentDate + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })})</span>
               </h3>
-              <p className="text-xs text-slate-500">Haga clic en un casillero libre para agendar preseleccionando la hora y el médico.</p>
+              <p className="text-xs text-slate-500">Grilla horaria exacta con paso de {effectiveIntervalMinutes} min. Las celdas verdes son turnos libres dentro del horario laboral del médico.</p>
             </div>
+            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-xl">
+              Intervalo: {effectiveIntervalMinutes} min
+            </span>
           </div>
 
-          <div className="min-w-[700px]">
+          <div className="min-w-[750px]">
             <div className="grid gap-2 border-b border-slate-200 pb-2" style={{ gridTemplateColumns: `80px repeat(${visibleProfessionals.length || 1}, minmax(180px, 1fr))` }}>
-              <div className="text-xs font-black text-slate-400 uppercase tracking-wider py-2">Hora</div>
+              <div className="text-xs font-black text-slate-400 uppercase tracking-wider py-2 text-center">Hora</div>
               {visibleProfessionals.map(prof => (
                 <div key={prof.id} className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-[10px]" style={{ backgroundColor: prof.color_agenda || '#0284c7' }}>
@@ -572,36 +673,51 @@ export const AgendaView = () => {
                   </div>
                   <div className="truncate">
                     <span className="font-black text-xs text-slate-900 block truncate">Dr(a). {prof.apellido}</span>
-                    <span className="text-[10px] text-slate-500 block truncate">{prof.especialidad}</span>
+                    <span className="text-[10px] text-slate-500 block truncate">{prof.especialidad} • {prof.duracion_turno_minutos || 20}m</span>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="divide-y divide-slate-100">
-              {timelineHours.map(hour => (
-                <div key={hour} className="grid gap-2 py-1.5 items-center" style={{ gridTemplateColumns: `80px repeat(${visibleProfessionals.length || 1}, minmax(180px, 1fr))` }}>
-                  <div className="font-mono text-xs font-black text-slate-600 bg-slate-100/80 px-2 py-1.5 rounded-lg text-center">{hour}</div>
+              {timelineSlots.map(slotTime => (
+                <div key={slotTime} className="grid gap-2 py-1 items-center" style={{ gridTemplateColumns: `80px repeat(${visibleProfessionals.length || 1}, minmax(180px, 1fr))` }}>
+                  <div className="font-mono text-xs font-black text-slate-600 bg-slate-100/80 px-2 py-1 rounded-lg text-center">{slotTime}</div>
                   {visibleProfessionals.map(prof => {
-                    const turnosEnHora = turnosDelDia.filter(t => t.profesional_id === prof.id && t.hora_inicio.startsWith(hour.slice(0, 2)) && t.estado !== 'CANCELADO');
+                    // Buscar turnos exactamente en este slot
+                    const turnosEnSlot = turnosDelDia.filter(t => 
+                      t.profesional_id === prof.id && 
+                      (t.hora_inicio === slotTime || (slotResolution === '60' && t.hora_inicio.startsWith(slotTime.slice(0, 2)))) &&
+                      t.estado !== 'CANCELADO'
+                    );
 
-                    if (turnosEnHora.length === 0) {
+                    const isWorking = checkDoctorWorkingAt(prof.id, currentDate, slotTime);
+
+                    if (turnosEnSlot.length === 0) {
+                      if (!isWorking) {
+                        return (
+                          <div key={prof.id} className="p-1.5 rounded-lg bg-slate-50/50 border border-slate-100 text-center text-slate-300 text-[10px] select-none">
+                            —
+                          </div>
+                        );
+                      }
+
                       return (
                         <div 
                           key={prof.id} 
-                          onClick={() => handleOpenNuevoTurno(prof.id, hour, currentDate)} 
-                          className="p-2 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 hover:text-medical-700 hover:border-medical-500 hover:bg-medical-50/50 cursor-pointer transition text-xs font-bold group"
-                          title={`Agendar turno libre a las ${hour} con Dr(a). ${prof.apellido}`}
+                          onClick={() => handleOpenNuevoTurno(prof.id, slotTime, currentDate)} 
+                          className="p-1.5 border border-dashed border-emerald-300/80 bg-emerald-50/30 rounded-xl text-center text-emerald-800 hover:text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100/60 cursor-pointer transition text-xs font-bold group"
+                          title={`Agendar turno libre a las ${slotTime} con Dr(a). ${prof.apellido}`}
                         >
-                          <span className="group-hover:hidden text-[11px] text-slate-300">+ Libre</span>
-                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-medical-700 text-xs"><Plus className="w-3 h-3" /> Agendar {hour}</span>
+                          <span className="group-hover:hidden text-[11px] text-emerald-700 font-semibold">+ Libre ({slotTime})</span>
+                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-emerald-900 text-xs"><Plus className="w-3 h-3" /> Agendar {slotTime}</span>
                         </div>
                       );
                     }
 
                     return (
                       <div key={prof.id} className="space-y-1">
-                        {turnosEnHora.map(t => {
+                        {turnosEnSlot.map(t => {
                           const pac = pacientes.find(p => p.id === t.paciente_id);
                           const os = obrasSociales.find(o => o.id === t.obra_social_id);
                           const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
@@ -610,7 +726,7 @@ export const AgendaView = () => {
                             <div 
                               key={t.id} 
                               onClick={() => setSelectedDetalleTurno(t)} 
-                              className={`p-2 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
+                              className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
                                 t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
                                 t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
                                 'bg-white border-slate-200 hover:border-medical-400'
@@ -635,32 +751,54 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* 3. TIMELINE SEMANAL (HORAS 08:00-20:00 vs DÍAS LUNES A SÁBADO) */}
+      {/* 3. TIMELINE SEMANAL (POR PROFESIONAL / SERVICIO CON SLOTS DE 15/20/30m EXACTOS) */}
       {viewMode === 'timeline_semanal' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 overflow-x-auto space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          
+          {/* BARRA DE SELECCIÓN DE PROFESIONAL PARA LA VISTA SEMANAL */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-medical-600" />
                 <span>Timeline Semanal ({semanaDays[0]} al {semanaDays[5]})</span>
               </h3>
-              <p className="text-xs text-slate-500">Visión de 6 días completos de 08:00 a 20:00 hs. Haga clic en cualquier celda libre para agendar turno preseleccionando fecha y horario.</p>
+              <p className="text-xs text-slate-500">
+                Seleccione el profesional para ver su grilla semanal de slots exactos ({effectiveIntervalMinutes} min).
+              </p>
             </div>
-            {selectedProfFilter && (
-              <span className="px-3 py-1 bg-medical-50 text-medical-800 rounded-xl text-xs font-black border border-medical-200">
-                Dr(a). {profesionales.find(p => p.id === selectedProfFilter)?.apellido}
-              </span>
-            )}
+
+            {/* Solapas Rápidas de Profesionales */}
+            <div className="flex items-center gap-1.5 overflow-x-auto p-1 bg-slate-50 rounded-2xl border border-slate-200/80 max-w-full">
+              {visibleProfessionals.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setSelectedWeeklyProfId(p.id);
+                    setSelectedProfFilter(p.id);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                    (selectedWeeklyProfId || visibleProfessionals[0]?.id) === p.id
+                      ? 'bg-white text-slate-900 shadow-2xs font-black border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color_agenda || '#0284c7' }} />
+                  <span>Dr(a). {p.apellido}</span>
+                  <span className="text-[10px] text-slate-400">({p.duracion_turno_minutos || 20}m)</span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="min-w-[850px]">
+          <div className="min-w-[880px]">
             {/* Cabecera de Días de la Semana */}
             <div className="grid gap-2 border-b border-slate-200 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
               <div className="text-xs font-black text-slate-400 uppercase tracking-wider py-2 text-center">Hora</div>
               {semanaDays.map((diaStr) => {
                 const dateObj = new Date(diaStr + 'T00:00:00');
                 const isSelectedDay = diaStr === currentDate;
-                const turnosDelDiaCount = turnos.filter(t => t.fecha === diaStr && (!selectedProfFilter || t.profesional_id === selectedProfFilter) && t.estado !== 'CANCELADO').length;
+                const targetProfId = selectedWeeklyProfId || visibleProfessionals[0]?.id;
+                const turnosDelDiaCount = turnos.filter(t => t.fecha === diaStr && (!targetProfId || t.profesional_id === targetProfId) && t.estado !== 'CANCELADO').length;
 
                 return (
                   <div 
@@ -684,66 +822,79 @@ export const AgendaView = () => {
               })}
             </div>
 
-            {/* Filas de Horas */}
+            {/* Filas con Resolución Exacta (e.g. cada 15/20/30m) */}
             <div className="divide-y divide-slate-100">
-              {timelineHours.map(hour => (
-                <div key={hour} className="grid gap-2 py-1.5 items-center" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
-                  <div className="font-mono text-xs font-black text-slate-600 bg-slate-100/80 px-2 py-1.5 rounded-lg text-center">{hour}</div>
-                  {semanaDays.map(diaStr => {
-                    const turnosEnCelda = turnos.filter(t => 
-                      t.fecha === diaStr && 
-                      t.hora_inicio.startsWith(hour.slice(0, 2)) && 
-                      (!selectedProfFilter || t.profesional_id === selectedProfFilter) && 
-                      t.estado !== 'CANCELADO'
-                    );
+              {timelineSlots.map(slotTime => {
+                const targetProfId = selectedWeeklyProfId || visibleProfessionals[0]?.id;
 
-                    if (turnosEnCelda.length === 0) {
-                      return (
-                        <div 
-                          key={diaStr} 
-                          onClick={() => handleOpenNuevoTurno(selectedProfFilter || (visibleProfessionals[0]?.id), hour, diaStr)} 
-                          className="p-2 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 hover:text-medical-700 hover:border-medical-500 hover:bg-medical-50/50 cursor-pointer transition text-xs font-bold group"
-                          title={`Agendar turno libre el ${diaStr} a las ${hour}`}
-                        >
-                          <span className="group-hover:hidden text-[11px] text-slate-300">+ Libre</span>
-                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-medical-700 text-[11px]"><Plus className="w-3 h-3" /> Agendar</span>
-                        </div>
+                return (
+                  <div key={slotTime} className="grid gap-2 py-1 items-center" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
+                    <div className="font-mono text-xs font-black text-slate-600 bg-slate-100/80 px-2 py-1 rounded-lg text-center">{slotTime}</div>
+                    {semanaDays.map(diaStr => {
+                      // Buscar turnos exactamente en este slot para este médico
+                      const turnosEnCelda = turnos.filter(t => 
+                        t.fecha === diaStr && 
+                        (t.hora_inicio === slotTime || (slotResolution === '60' && t.hora_inicio.startsWith(slotTime.slice(0, 2)))) && 
+                        (!targetProfId || t.profesional_id === targetProfId) && 
+                        t.estado !== 'CANCELADO'
                       );
-                    }
 
-                    return (
-                      <div key={diaStr} className="space-y-1">
-                        {turnosEnCelda.map(t => {
-                          const pac = pacientes.find(p => p.id === t.paciente_id);
-                          const prof = profesionales.find(p => p.id === t.profesional_id);
-                          const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
+                      const isWorking = checkDoctorWorkingAt(targetProfId, diaStr, slotTime);
 
+                      if (turnosEnCelda.length === 0) {
+                        if (!isWorking) {
                           return (
-                            <div 
-                              key={t.id} 
-                              onClick={() => setSelectedDetalleTurno(t)} 
-                              className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
-                                t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
-                                t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
-                                'bg-white border-slate-200 hover:border-medical-400'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-1">
-                                <span className="font-mono font-black text-slate-900 text-[10px]">{t.hora_inicio}</span>
-                                <span className={`text-[8px] font-bold px-1 rounded ${badge.bg}`}>{badge.label}</span>
-                              </div>
-                              <div className="font-black text-slate-800 text-[10px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
-                              {!selectedProfFilter && prof && (
-                                <span className="text-[9px] text-medical-800 font-bold truncate block">Dr(a). {prof.apellido}</span>
-                              )}
+                            <div key={diaStr} className="p-1.5 rounded-lg bg-slate-50/40 border border-slate-100 text-center text-slate-300 text-[10px] select-none">
+                              —
                             </div>
                           );
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                        }
+
+                        return (
+                          <div 
+                            key={diaStr} 
+                            onClick={() => handleOpenNuevoTurno(targetProfId, slotTime, diaStr)} 
+                            className="p-1.5 border border-dashed border-emerald-300/80 bg-emerald-50/30 rounded-xl text-center text-emerald-800 hover:text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100/60 cursor-pointer transition text-xs font-bold group"
+                            title={`Agendar turno libre el ${diaStr} a las ${slotTime}`}
+                          >
+                            <span className="group-hover:hidden text-[10px] text-emerald-700 font-semibold">+ Libre</span>
+                            <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-emerald-900 text-[10px]"><Plus className="w-3 h-3" /> Agendar {slotTime}</span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={diaStr} className="space-y-1">
+                          {turnosEnCelda.map(t => {
+                            const pac = pacientes.find(p => p.id === t.paciente_id);
+                            const os = obrasSociales.find(o => o.id === t.obra_social_id);
+                            const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
+
+                            return (
+                              <div 
+                                key={t.id} 
+                                onClick={() => setSelectedDetalleTurno(t)} 
+                                className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
+                                  t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
+                                  t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
+                                  'bg-white border-slate-200 hover:border-medical-400'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-1">
+                                  <span className="font-mono font-black text-slate-900 text-[10px]">{t.hora_inicio}</span>
+                                  <span className={`text-[8px] font-bold px-1 rounded ${badge.bg}`}>{badge.label}</span>
+                                </div>
+                                <div className="font-black text-slate-800 text-[10px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
+                                <span className="text-[9px] text-slate-500 truncate block">{os?.sigla || 'Part.'}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

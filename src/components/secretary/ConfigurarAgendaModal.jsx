@@ -52,7 +52,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
   const [fechaHasta, setFechaHasta] = useState('');
   const [sinFechaFin, setSinFechaFin] = useState(true);
   const [diasSeleccionados, setDiasSeleccionados] = useState([1, 2, 3, 4, 5]); // Lunes a Viernes
-  const [duracionSlot, setDuracionSlot] = useState(45);
+  const [duracionSlot, setDuracionSlot] = useState(15);
   const [consultorioId, setConsultorioId] = useState(() => consultorios[0]?.id || '');
   const [modalidad, setModalidad] = useState('PRESENCIAL');
   const [maxSobreturnos, setMaxSobreturnos] = useState(2);
@@ -87,7 +87,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
     setFechaDesde(agenda.fecha_desde || getLocalDateString(new Date()));
     setFechaHasta(agenda.fecha_hasta || '');
     setSinFechaFin(!agenda.fecha_hasta);
-    setDuracionSlot(agenda.duracion_slot_min || 45);
+    setDuracionSlot(agenda.duracion_slot_min || 15);
     setConsultorioId(agenda.consultorio_id || consultorios[0]?.id || '');
     setModalidad(agenda.modalidad || 'PRESENCIAL');
     setMaxSobreturnos(agenda.max_sobreturnos_dia || 2);
@@ -125,7 +125,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
     setFechaHasta('');
     setSinFechaFin(true);
     setDiasSeleccionados([1, 2, 3, 4, 5]);
-    setDuracionSlot(45);
+    setDuracionSlot(15);
     setConsultorioId(consultorios[0]?.id || '');
     setModalidad('PRESENCIAL');
     setMaxSobreturnos(2);

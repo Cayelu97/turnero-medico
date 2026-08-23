@@ -113,8 +113,23 @@ export const AgendaView = () => {
     if (slotResolution === '20') return 20;
     if (slotResolution === '30') return 30;
     if (slotResolution === '60') return 60;
-    // Auto: según el profesional seleccionado
-    return Number(activeWeeklyProf?.duracion_turno_minutos) || 20;
+    
+    // Auto: buscar primero en las agendas activas del médico, luego en sus horarios, luego en su perfil
+    const targetProfId = activeWeeklyProf?.id;
+    if (targetProfId) {
+      const activeAgendas = StorageService.getAgendas(null, targetProfId).filter(a => a.estado === 'ACTIVA');
+      if (activeAgendas.length > 0 && activeAgendas[0].duracion_slot_min) {
+        return Number(activeAgendas[0].duracion_slot_min);
+      }
+      const activeHorarios = StorageService.getHorariosByProfesional(targetProfId);
+      if (activeHorarios.length > 0 && activeHorarios[0].duracion_slot_min) {
+        return Number(activeHorarios[0].duracion_slot_min);
+      }
+      if (activeWeeklyProf.duracion_turno_minutos) {
+        return Number(activeWeeklyProf.duracion_turno_minutos);
+      }
+    }
+    return 15;
   }, [slotResolution, activeWeeklyProf]);
 
   // Generar lista de franjas horarias exactas (08:00 a 20:00 con el intervalo seleccionado)
@@ -422,6 +437,16 @@ export const AgendaView = () => {
 
           {/* GRUPO DERECHO: ACCIONES DIRECTAS DE SECRETARÍA */}
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Paquete de Sesiones */}
+            <button 
+              onClick={() => setShowRecurrenteModal(true)} 
+              className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1 shadow-2xs"
+              title="Agendar paquete de sesiones periódicas"
+            >
+              <Repeat className="w-3.5 h-3.5 text-purple-600" />
+              <span>+ Sesiones</span>
+            </button>
+
             {/* Botón Próximo Turno Libre */}
             <button 
               onClick={() => setShowProximoLibreModal(true)} 
@@ -776,97 +801,9 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* 3. TIMELINE SEMANAL (POR PROFESIONAL / SERVICIO CON SLOTS DE 15/20/30m EXACTOS) */}
+      {/* 3. TIMELINE SEMANAL (POR PROFESIONAL CON SLOTS EXACTOS) */}
       {viewMode === 'timeline_semanal' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 overflow-x-auto space-y-4">
-          
-          {/* BARRA DE SELECCIÓN DE PROFESIONAL PARA LA VISTA SEMANAL */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-medical-600" />
-                <span>Timeline Semanal ({semanaDays[0]} al {semanaDays[5]})</span>
-              </h3>
-              <p className="text-xs text-slate-500">
-                Grilla médica de alta precisión con slots exactos de {effectiveIntervalMinutes} min.
-              </p>
-            </div>
-
-            {/* Solapas Rápidas de Profesionales */}
-            <div className="flex items-center gap-1.5 overflow-x-auto p-1 bg-slate-50 rounded-2xl border border-slate-200/80 max-w-full">
-              {visibleProfessionals.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    setSelectedWeeklyProfId(p.id);
-                    setSelectedProfFilter(p.id);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                    (selectedWeeklyProfId || visibleProfessionals[0]?.id) === p.id
-                      ? 'bg-white text-slate-900 shadow-2xs font-black border border-slate-200'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color_agenda || '#0284c7' }} />
-                  <span>Dr(a). {p.apellido}</span>
-                  <span className="text-[10px] text-slate-400">({p.duracion_turno_minutos || 20}m)</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* FICHA HERO DEL MÉDICO CON RESUMEN DE ATENCIÓN */}
-          {activeWeeklyProf && (
-            <div className="p-3.5 bg-gradient-to-r from-slate-50 to-medical-50/30 rounded-2xl border border-slate-200/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-2xs"
-                  style={{ backgroundColor: activeWeeklyProf.color_agenda || '#0284c7' }}
-                >
-                  {activeWeeklyProf.nombre[0]}{activeWeeklyProf.apellido[0]}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-black text-sm text-slate-900">Dr(a). {activeWeeklyProf.nombre} {activeWeeklyProf.apellido}</h4>
-                    <span className="px-2 py-0.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-[10px] font-black">
-                      ⏱️ {activeWeeklyProf.duracion_turno_minutos || 20} min/turno
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium flex-wrap mt-0.5">
-                    <span>{activeWeeklyProf.especialidad}</span>
-                    <span>•</span>
-                    <span className="text-medical-800 font-bold">
-                      {(() => {
-                        const profHorarios = StorageService.getHorariosByProfesional(activeWeeklyProf.id);
-                        if (profHorarios.length === 0) return 'Sin horarios cargados';
-                        const diasMap = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb' };
-                        const agrupados = profHorarios.map(h => `${diasMap[h.dia_semana] || ''} (${h.hora_inicio}-${h.hora_fin})`).filter(Boolean);
-                        return `Atención: ${agrupados.join(', ')}`;
-                      })()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowConfigAgendaModal(true)}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                >
-                  <Settings className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Configurar Horarios</span>
-                </button>
-                <button
-                  onClick={() => handleOpenNuevoTurno(activeWeeklyProf.id, null, currentDate)}
-                  className="px-3.5 py-1.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Agendar Turno</span>
-                </button>
-              </div>
-            </div>
-          )}
-
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-3 sm:p-5 overflow-x-auto">
           <div className="min-w-[880px]">
             {/* Cabecera de Días de la Semana */}
             <div className="grid gap-2 border-b border-slate-200 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>

@@ -1019,7 +1019,33 @@ export const StorageService = {
 
   // PROFESIONALES
   getProfesionales: (clinicaId = null) => {
-    const all = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
+    let all = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
+    if (!all || all.length === 0) {
+      all = [...INITIAL_DATA.profesionales];
+      StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, all);
+    }
+
+    // Sincronizar dinámicamente con la duración de sus agendas activas
+    try {
+      const agendas = StorageService.getCollection(STORAGE_KEYS.AGENDAS) || [];
+      let updated = false;
+      all.forEach(p => {
+        const ag = agendas.find(a => String(a.profesional_id) === String(p.id) && a.estado === 'ACTIVA');
+        if (ag && ag.duracion_slot_min && Number(p.duracion_turno_minutos) !== Number(ag.duracion_slot_min)) {
+          p.duracion_turno_minutos = Number(ag.duracion_slot_min);
+          updated = true;
+        } else if (p.id === 'prof-psi-3' && (!p.duracion_turno_minutos || p.duracion_turno_minutos === 40 || p.duracion_turno_minutos === 45 || p.duracion_turno_minutos === 50)) {
+          p.duracion_turno_minutos = 15;
+          updated = true;
+        }
+      });
+      if (updated) {
+        StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, all);
+      }
+    } catch (e) {
+      console.warn('Sincronización getProfesionales:', e);
+    }
+
     if (!clinicaId || clinicaId === 'TODAS' || clinicaId === 'ALL') {
       return all;
     }
@@ -1220,7 +1246,7 @@ export const StorageService = {
                   dia_semana: diaNum,
                   hora_inicio: franja.hora_inicio,
                   hora_fin: franja.hora_fin,
-                  duracion_slot_min: Number(ag.duracion_slot_min || 20),
+                  duracion_slot_min: Number(ag.duracion_slot_min || 15),
                   modalidad: franja.modalidad || ag.modalidad || 'PRESENCIAL',
                   fecha_desde: ag.fecha_desde || null,
                   fecha_hasta: ag.fecha_hasta || null,
@@ -1235,6 +1261,18 @@ export const StorageService = {
 
     const updated = [...allHorarios, ...newHorarios];
     StorageService.saveCollection(STORAGE_KEYS.HORARIOS, updated);
+
+    // Sincronizar también la duración en la ficha del profesional
+    if (agendasActivas.length > 0 && agendasActivas[0].duracion_slot_min) {
+      const slotMin = Number(agendasActivas[0].duracion_slot_min);
+      const profs = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
+      const profIndex = profs.findIndex(p => String(p.id) === String(profesionalId));
+      if (profIndex >= 0 && profs[profIndex].duracion_turno_minutos !== slotMin) {
+        profs[profIndex].duracion_turno_minutos = slotMin;
+        StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, profs);
+      }
+    }
+
     return newHorarios;
   },
 

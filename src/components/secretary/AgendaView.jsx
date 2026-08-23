@@ -267,50 +267,95 @@ export const AgendaView = () => {
 
   const [showKpis, setShowKpis] = useState(false);
   const [showProximoLibreModal, setShowProximoLibreModal] = useState(false);
+  const [modalFilterProfId, setModalFilterProfId] = useState('');
+  const [modalFilterServicioId, setModalFilterServicioId] = useState('');
+  const [modalFilterModalidad, setModalFilterModalidad] = useState('ALL'); // 'ALL' | 'PRESENCIAL' | 'ONLINE'
 
-  // Buscador del turno más próximo disponible para el médico seleccionado
+  // Sincronizar el médico inicial del modal con el seleccionado en la agenda
+  const handleOpenProximoLibre = () => {
+    setModalFilterProfId(selectedWeeklyProfId || selectedProfFilter || '');
+    setModalFilterServicioId(selectedServicioFilter || '');
+    setModalFilterModalidad('ALL');
+    setShowProximoLibreModal(true);
+  };
+
+  // Buscador ultra-preciso del turno más próximo (soporta multi-médico, especialidad y modalidad)
   const proximosSlotsLibres = useMemo(() => {
     if (!showProximoLibreModal) return [];
-    const targetProf = selectedWeeklyProfId || visibleProfessionals[0]?.id;
-    if (!targetProf) return [];
+    
+    // Determinar los profesionales a escanear (uno específico o todos los habilitados)
+    const targetProfs = modalFilterProfId 
+      ? visibleProfessionals.filter(p => p.id === modalFilterProfId)
+      : visibleProfessionals;
+
+    if (targetProfs.length === 0) return [];
     
     const results = [];
     const now = new Date();
     const todayStr = getLocalDateString(now);
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     
-    for (let i = 0; i < 30 && results.length < 8; i++) {
+    // Escanear los próximos 30 días
+    for (let i = 0; i < 30 && results.length < 20; i++) {
       const dStr = addDaysToDateString(todayStr, i);
-      const slots = StorageService.getSlotsDisponibles(targetProf, dStr);
       
-      // Filtrar estrictamente solo slots con disponible === true (no ocupados)
-      const slotsDisponibles = slots.filter(slot => {
-        if (!slot.disponible) return false;
-        // Si es hoy, descartar franjas horarias pasadas
-        if (dStr === todayStr && slot.hora_inicio) {
-          const [h, m] = slot.hora_inicio.split(':').map(Number);
-          if ((h * 60 + m) <= nowMinutes) return false;
+      for (const prof of targetProfs) {
+        if (results.length >= 20) break;
+        
+        // Filtrar si se eligió un servicio/especialidad incompatible con este médico
+        if (modalFilterServicioId) {
+          const profServicios = prof.servicios_ids || [];
+          const matches = profServicios.includes(modalFilterServicioId) || 
+                          servicios.find(s => s.id === modalFilterServicioId)?.especialidad_id === prof.especialidad_id;
+          if (!matches) continue;
         }
-        return true;
-      });
 
-      for (const slot of slotsDisponibles) {
-        if (results.length >= 8) break;
-        const details = getDayDetailsFromDateString(dStr);
-        results.push({
-          fecha: dStr,
-          diaNombre: details.diaNombre,
-          diaNumero: details.diaNumero,
-          mesNombre: details.mesNombre,
-          hora: slot.hora_inicio,
-          hora_fin: slot.hora_fin,
-          consultorio_id: slot.consultorio_id,
-          profesional_id: targetProf
+        const slots = StorageService.getSlotsDisponibles(
+          prof.id, 
+          dStr, 
+          modalFilterServicioId || null, 
+          modalFilterModalidad === 'ALL' ? null : modalFilterModalidad
+        );
+        
+        // Filtrar estrictamente solo slots con disponible === true (no ocupados)
+        const slotsDisponibles = slots.filter(slot => {
+          if (!slot.disponible) return false;
+          // Si es hoy, descartar franjas horarias pasadas
+          if (dStr === todayStr && slot.hora_inicio) {
+            const [h, m] = slot.hora_inicio.split(':').map(Number);
+            if ((h * 60 + m) <= nowMinutes) return false;
+          }
+          return true;
         });
+
+        for (const slot of slotsDisponibles) {
+          const details = getDayDetailsFromDateString(dStr);
+          results.push({
+            fecha: dStr,
+            diaNombre: details.diaNombre,
+            diaNumero: details.diaNumero,
+            mesNombre: details.mesNombre,
+            hora: slot.hora_inicio,
+            hora_fin: slot.hora_fin,
+            consultorio_id: slot.consultorio_id,
+            profesional_id: prof.id,
+            profesional_nombre: `Dr(a). ${prof.apellido}`,
+            profesional_completo: `Dr(a). ${prof.nombre} ${prof.apellido}`,
+            profesional_especialidad: prof.especialidad,
+            profesional_color: prof.color_agenda || '#0284c7',
+            duracion_min: slot.duracion_min || prof.duracion_turno_minutos || 15,
+            modalidad: slot.modalidad || 'PRESENCIAL'
+          });
+        }
       }
     }
-    return results;
-  }, [showProximoLibreModal, selectedWeeklyProfId, visibleProfessionals, turnos]);
+
+    // Ordenar cronológicamente por fecha ascendente y luego por hora de inicio
+    return results.sort((a, b) => {
+      if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+      return a.hora.localeCompare(b.hora);
+    }).slice(0, 15);
+  }, [showProximoLibreModal, modalFilterProfId, modalFilterServicioId, modalFilterModalidad, visibleProfessionals, servicios, turnos]);
 
   const handleOpenNuevoTurno = (profId = null, hora = null, fecha = null, esSobreturno = false) => {
     setAgendarProfId(profId || selectedWeeklyProfId || selectedProfFilter || (visibleProfessionals[0]?.id) || null);
@@ -384,8 +429,21 @@ export const AgendaView = () => {
             />
           </div>
 
-          {/* GRUPO CENTRO: MÉDICO, ESPECIALIDAD & RESOLUCIÓN */}
+          {/* GRUPO CENTRO: SEDE, MÉDICO, ESPECIALIDAD & RESOLUCIÓN */}
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Selector de Centro / Sede */}
+            <select 
+              value={selectedCentroFilter} 
+              onChange={(e) => setSelectedCentroFilter(e.target.value)} 
+              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-800 max-w-[140px] truncate"
+              title="Filtrar por Sede o Centro de Atención"
+            >
+              <option value="TODOS">🏥 Todas las Sedes</option>
+              {allClinicas.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+
             {/* Selector de Médico */}
             <select 
               value={selectedWeeklyProfId || selectedProfFilter} 
@@ -463,9 +521,9 @@ export const AgendaView = () => {
 
             {/* Botón Próximo Turno Libre */}
             <button 
-              onClick={() => setShowProximoLibreModal(true)} 
+              onClick={handleOpenProximoLibre} 
               className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1 shadow-2xs"
-              title="Buscar el turno libre más próximo del médico"
+              title="Buscar el turno libre más próximo del médico o de cualquier profesional"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
               <span>⚡ Próximo Libre</span>
@@ -1047,21 +1105,23 @@ export const AgendaView = () => {
         </div>
       )}
 
-      {/* MODAL DE PRÓXIMOS TURNOS LIBRES */}
+      {/* MODAL DE PRÓXIMOS TURNOS LIBRES (MULTI-MÉDICO & SERVICIOS) */}
       {showProximoLibreModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden space-y-4 p-5 sm:p-6">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-3 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden space-y-3.5 p-4 sm:p-6">
+            
+            {/* CABECERA DEL MODAL */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-amber-100 text-amber-900 rounded-xl">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-amber-100 text-amber-900 rounded-xl shadow-2xs">
                   <Sparkles className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-slate-900">
-                    Turnos Libres Más Próximos
+                  <h3 className="font-black text-sm sm:text-base text-slate-900 leading-tight">
+                    Buscador de Turnos Libres Más Próximos
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    Dr(a). {activeWeeklyProf?.nombre} {activeWeeklyProf?.apellido} ({activeWeeklyProf?.duracion_turno_minutos || 20} min)
+                  <p className="text-xs text-slate-500 font-medium">
+                    Encuentre al instante las primeras disponibilidades reales del centro.
                   </p>
                 </div>
               </div>
@@ -1074,10 +1134,73 @@ export const AgendaView = () => {
               </button>
             </div>
 
-            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+            {/* BARRA DE FILTROS EN VIVO DENTRO DEL MODAL */}
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Selector de Médico en el Modal */}
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-0.5">Profesional:</label>
+                  <select
+                    value={modalFilterProfId}
+                    onChange={(e) => setModalFilterProfId(e.target.value)}
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white text-slate-900 focus:ring-2 focus:ring-medical-500"
+                  >
+                    <option value="">👨‍⚕️ Todos los Profesionales (Multi-Médico)</option>
+                    {visibleProfessionals.map(p => (
+                      <option key={p.id} value={p.id}>
+                        Dr(a). {p.apellido} ({p.especialidad} • {p.duracion_turno_minutos || 15}m)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Selector de Especialidad / Servicio */}
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-0.5">Especialidad / Servicio:</label>
+                  <select
+                    value={modalFilterServicioId}
+                    onChange={(e) => setModalFilterServicioId(e.target.value)}
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white text-slate-900 focus:ring-2 focus:ring-medical-500"
+                  >
+                    <option value="">🩺 Todas las Especialidades</option>
+                    {servicios.map(s => (
+                      <option key={s.id} value={s.id}>{s.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Selector de Modalidad */}
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                <span className="text-[10px] font-black uppercase text-slate-400">Modalidad:</span>
+                <div className="flex items-center gap-1 p-0.5 bg-white rounded-xl border border-slate-200 text-xs font-bold">
+                  {[
+                    { id: 'ALL', label: 'Todas' },
+                    { id: 'PRESENCIAL', label: '🏢 Presencial' },
+                    { id: 'ONLINE', label: '💻 Online' }
+                  ].map(m => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setModalFilterModalidad(m.id)}
+                      className={`px-2 py-0.5 rounded-lg text-[11px] transition cursor-pointer ${
+                        modalFilterModalidad === m.id 
+                          ? 'bg-slate-900 text-white font-black shadow-2xs' 
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* LISTADO DE TURNOS LIBRES REALES */}
+            <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
               {proximosSlotsLibres.length === 0 ? (
                 <div className="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-2xl">
-                  No hay turnos libres disponibles en los próximos 14 días para este médico.
+                  No hay turnos libres disponibles con estos filtros en los próximos 30 días.
                 </div>
               ) : (
                 proximosSlotsLibres.map((slot, idx) => (
@@ -1090,26 +1213,30 @@ export const AgendaView = () => {
                     className="p-3 bg-slate-50 hover:bg-medical-50/50 border border-slate-200 hover:border-medical-400 rounded-2xl transition flex items-center justify-between cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-center shadow-2xs">
+                      <div className="px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-center shadow-2xs min-w-[54px]">
                         <span className="text-[10px] block font-black uppercase text-slate-500">{slot.diaNombre}</span>
                         <strong className="text-sm font-black text-slate-900">{slot.diaNumero}</strong>
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono font-black text-sm text-medical-800 bg-white px-2 py-0.5 rounded-lg border border-medical-200 shadow-2xs">
                             {slot.hora} hs
                           </span>
-                          <span className="text-xs font-bold text-slate-700 capitalize">
-                            {slot.mesNombre}
+                          <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: slot.profesional_color }} />
+                            {slot.profesional_nombre}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-600 bg-white border border-slate-200 px-1.5 py-0.2 rounded-md">
+                            {slot.profesional_especialidad} • {slot.duracion_min}m
                           </span>
                         </div>
                         <span className="text-[11px] text-slate-500 block mt-0.5">
-                          {slot.fecha} • {consultorios.find(c => c.id === slot.consultorio_id)?.nombre || 'Consultorio'}
+                          {slot.fecha} • {consultorios.find(c => c.id === slot.consultorio_id)?.nombre || 'Consultorio'} • {slot.modalidad === 'ONLINE' ? '💻 Online' : '🏢 Presencial'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-black text-medical-700 group-hover:translate-x-1 transition">
+                    <div className="flex items-center gap-1 text-xs font-black text-medical-700 group-hover:translate-x-1 transition shrink-0">
                       <span>Agendar</span>
                       <ArrowRightLeft className="w-3.5 h-3.5" />
                     </div>
@@ -1118,7 +1245,11 @@ export const AgendaView = () => {
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex justify-end">
+            {/* PIE DEL MODAL */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-bold">
+                {proximosSlotsLibres.length} {proximosSlotsLibres.length === 1 ? 'disponibilidad encontrada' : 'disponibilidades encontradas'}
+              </span>
               <button
                 onClick={() => setShowProximoLibreModal(false)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"

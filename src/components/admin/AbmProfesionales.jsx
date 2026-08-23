@@ -443,19 +443,7 @@ export const AbmProfesionales = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Duración Turno (min)</label>
-                  <input
-                    type="number"
-                    min="5"
-                    max="120"
-                    step="5"
-                    value={profForm.duracion_turno_minutos}
-                    onChange={(e) => setProfForm({ ...profForm, duracion_turno_minutos: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 font-bold"
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Máx. Sobreturnos / día</label>
                   <input
@@ -479,6 +467,14 @@ export const AbmProfesionales = () => {
                     <span className="text-xs font-mono text-slate-600">{profForm.color_agenda}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Aviso de configuración de horarios y duración en Agendas */}
+              <div className="p-3 bg-sky-50/70 border border-sky-200 rounded-xl text-xs text-sky-900 flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-sky-600 shrink-0" />
+                <span>
+                  <strong>Configuración de Turnos y Fracciones:</strong> Los días de atención, franjas horarias y duración de consulta (ej. 15m, 20m, 30m) se configuran y administran desde el <strong>Gestor de Agendas Médicas</strong> para mantener la uniformidad del sistema.
+                </span>
               </div>
 
               {/* Servicios Médicos que presta */}

@@ -286,8 +286,10 @@ export const AppProvider = ({ children }) => {
   // Profesionales
   const saveProfesional = (profData) => {
     const saved = StorageService.saveProfesional(profData);
-    setProfesionales(StorageService.getProfesionales());
-    showToast(`Profesional Dr(a). ${saved.apellido} guardado`);
+    setProfesionales(StorageService.getProfesionales('TODAS'));
+    setAgendas(StorageService.getAgendas());
+    setHorarios(StorageService.getHorarios());
+    showToast(`Profesional Dr(a). ${saved.apellido} guardado con éxito`);
     return saved;
   };
 

@@ -1053,20 +1053,80 @@ export const StorageService = {
     return all.filter(p => !p.clinica_id || p.clinica_id === targetClinicaId);
   },
   saveProfesional: (prof) => {
-    const items = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
+    const items = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES) || [];
     const clinicaId = StorageService.getClinicaActiva().id;
     prof.clinica_id = prof.clinica_id || clinicaId;
+    prof.activo = prof.activo !== false;
+    prof.duracion_turno_minutos = Number(prof.duracion_turno_minutos) || 15;
+    prof.max_sobreturnos_dia = Number(prof.max_sobreturnos_dia) || 3;
 
+    // Auto-asignar servicios y obras sociales por defecto si vienen vacíos
+    if (!prof.servicios_ids || prof.servicios_ids.length === 0) {
+      const allServicios = StorageService.getServicios(prof.clinica_id);
+      const matchingServ = allServicios.filter(s => 
+        s.especialidad_id === prof.especialidad_id || 
+        (prof.especialidad && s.nombre.toLowerCase().includes(prof.especialidad.toLowerCase()))
+      );
+      prof.servicios_ids = matchingServ.length > 0 ? matchingServ.map(s => s.id) : (allServicios[0] ? [allServicios[0].id] : []);
+    }
+
+    if (!prof.obras_sociales_ids || prof.obras_sociales_ids.length === 0) {
+      const allOs = StorageService.getObrasSociales(prof.clinica_id);
+      prof.obras_sociales_ids = allOs.map(o => o.id);
+    }
+
+    let isNew = false;
     if (prof.id) {
       const idx = items.findIndex(p => p.id === prof.id);
       if (idx >= 0) items[idx] = { ...items[idx], ...prof };
       else items.push(prof);
     } else {
       prof.id = `prof-${Date.now()}`;
-      prof.activo = prof.activo !== false;
       items.push(prof);
+      isNew = true;
     }
     StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, items);
+
+    // Si es nuevo o no tiene agenda registrada, auto-crear una agenda médica activa y sus horarios
+    try {
+      const existingAgendas = StorageService.getAgendas(null, prof.id);
+      if (existingAgendas.length === 0) {
+        const consultoriosList = StorageService.getConsultorios(prof.clinica_id);
+        const defaultConsId = consultoriosList[0]?.id || 'c-1';
+        const todayStr = getLocalDateString(new Date());
+
+        const defaultAgenda = {
+          id: `ag-${prof.id}`,
+          clinica_id: prof.clinica_id,
+          profesional_id: prof.id,
+          servicio_id: prof.servicios_ids[0] || null,
+          consultorio_id: defaultConsId,
+          nombre: `Consultas - Dr(a). ${prof.apellido}`,
+          fecha_desde: todayStr,
+          fecha_hasta: null,
+          duracion_slot_min: prof.duracion_turno_minutos || 15,
+          modalidad: 'PRESENCIAL',
+          max_sobreturnos_dia: prof.max_sobreturnos_dia || 3,
+          dias_horarios: [1, 2, 3, 4, 5].map(d => ({
+            dia_semana: d,
+            franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }]
+          })),
+          estado: 'ACTIVA',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const agendasList = StorageService.getCollection(STORAGE_KEYS.AGENDAS) || [];
+        agendasList.push(defaultAgenda);
+        StorageService.saveCollection(STORAGE_KEYS.AGENDAS, agendasList);
+
+        // Sincronizar automáticamente en la colección de horarios
+        StorageService.sincronizarHorariosDesdeAgendas(prof.id);
+      }
+    } catch (err) {
+      console.warn('Auto-creación de agenda para nuevo profesional:', err);
+    }
+
     return prof;
   },
   deleteProfesional: (id) => {

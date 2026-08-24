@@ -404,12 +404,15 @@ export const AbmProfesionales = () => {
                     required
                     value={profForm.especialidad}
                     onChange={(e) => {
-                      const espObj = especialidades.find(esp => esp.nombre === e.target.value);
-                      setProfForm({ 
-                        ...profForm, 
-                        especialidad: e.target.value,
-                        especialidad_id: espObj?.id || null 
-                      });
+                      const espName = e.target.value;
+                      const espObj = especialidades.find(esp => esp.nombre === espName);
+                      const matchingServicios = servicios.filter(s => s.especialidad_id === espObj?.id || s.nombre.toLowerCase().includes(espName.toLowerCase())).map(s => s.id);
+                      setProfForm(prev => ({ 
+                        ...prev, 
+                        especialidad: espName,
+                        especialidad_id: espObj?.id || null,
+                        servicios_ids: matchingServicios.length > 0 ? matchingServicios : prev.servicios_ids
+                      }));
                     }}
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
                   >

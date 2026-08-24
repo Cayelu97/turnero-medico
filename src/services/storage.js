@@ -1144,56 +1144,67 @@ export const StorageService = {
       StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
     }
 
-    // Auto-inferir agendas para profesionales que tienen horarios pero aún no tenían agenda registrada
+    // Auto-inferir y asegurar agendas para cualquier profesional que aún no tenga agenda registrada
     try {
-      const todosProfesionales = StorageService.getProfesionales();
-      const todosHorarios = StorageService.getHorarios();
+      const todosProfesionales = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES) || [];
+      const todosHorarios = StorageService.getCollection(STORAGE_KEYS.HORARIOS) || [];
       let updated = false;
 
       todosProfesionales.forEach(p => {
-        const tieneAgenda = items.some(a => a.profesional_id === p.id && a.estado === 'ACTIVA');
-        const horariosProf = todosHorarios.filter(h => h.profesional_id === p.id && h.activo !== false);
+        const tieneAgenda = items.some(a => String(a.profesional_id) === String(p.id) && a.estado === 'ACTIVA');
+        const horariosProf = todosHorarios.filter(h => String(h.profesional_id) === String(p.id) && h.activo !== false);
 
-        if (!tieneAgenda && horariosProf.length > 0) {
-          const diasHorariosMap = {};
-          horariosProf.forEach(h => {
-            const diaNum = Number(h.dia_semana);
-            if (diaNum >= 1 && diaNum <= 6) {
-              if (!diasHorariosMap[diaNum]) diasHorariosMap[diaNum] = [];
-              diasHorariosMap[diaNum].push({
-                hora_inicio: h.hora_inicio,
-                hora_fin: h.hora_fin,
-                modalidad: h.modalidad || 'PRESENCIAL'
-              });
-            }
-          });
-
-          const dias_horarios = Object.keys(diasHorariosMap).map(d => ({
-            dia_semana: Number(d),
-            franjas: diasHorariosMap[d]
-          }));
-
-          if (dias_horarios.length > 0) {
-            const inferida = {
-              id: `ag-auto-${p.id}`,
-              clinica_id: p.clinica_id || StorageService.getClinicaActiva()?.id,
-              profesional_id: p.id,
-              servicio_id: horariosProf[0]?.servicio_id || null,
-              consultorio_id: horariosProf[0]?.consultorio_id || 'c-0',
-              nombre: `Agenda Principal (${horariosProf[0]?.modalidad === 'ONLINE' ? 'Virtual' : 'Presencial'})`,
-              fecha_desde: horariosProf[0]?.fecha_desde || '2026-01-01',
-              fecha_hasta: horariosProf[0]?.fecha_hasta || null,
-              duracion_slot_min: Number(horariosProf[0]?.duracion_slot_min || p.duracion_turno_minutos || 45),
-              modalidad: horariosProf[0]?.modalidad || (p.atiende_online ? 'AMBAS' : 'PRESENCIAL'),
-              max_sobreturnos_dia: Number(p.max_sobreturnos_dia || 2),
-              dias_horarios,
-              estado: 'ACTIVA',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
-            items.push(inferida);
-            updated = true;
+        if (!tieneAgenda) {
+          const consultoriosList = StorageService.getConsultorios(p.clinica_id);
+          const defaultConsId = consultoriosList[0]?.id || 'c-1';
+          const defaultServId = (p.servicios_ids && p.servicios_ids[0]) || null;
+          
+          let dias_horarios = [];
+          if (horariosProf.length > 0) {
+            const diasHorariosMap = {};
+            horariosProf.forEach(h => {
+              const diaNum = Number(h.dia_semana);
+              if (diaNum >= 1 && diaNum <= 6) {
+                if (!diasHorariosMap[diaNum]) diasHorariosMap[diaNum] = [];
+                diasHorariosMap[diaNum].push({
+                  hora_inicio: h.hora_inicio,
+                  hora_fin: h.hora_fin,
+                  modalidad: h.modalidad || 'PRESENCIAL'
+                });
+              }
+            });
+            dias_horarios = Object.keys(diasHorariosMap).map(d => ({
+              dia_semana: Number(d),
+              franjas: diasHorariosMap[d]
+            }));
           }
+
+          if (dias_horarios.length === 0) {
+            dias_horarios = [1, 2, 3, 4, 5].map(d => ({
+              dia_semana: d,
+              franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }]
+            }));
+          }
+
+          const inferida = {
+            id: `ag-auto-${p.id}`,
+            clinica_id: p.clinica_id || StorageService.getClinicaActiva()?.id,
+            profesional_id: p.id,
+            servicio_id: defaultServId,
+            consultorio_id: defaultConsId,
+            nombre: `Consultas - Dr(a). ${p.apellido}`,
+            fecha_desde: getLocalDateString(new Date()),
+            fecha_hasta: null,
+            duracion_slot_min: Number(p.duracion_turno_minutos || 15),
+            modalidad: 'PRESENCIAL',
+            max_sobreturnos_dia: Number(p.max_sobreturnos_dia || 3),
+            dias_horarios,
+            estado: 'ACTIVA',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          items.push(inferida);
+          updated = true;
         }
       });
 

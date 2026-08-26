@@ -26,7 +26,8 @@ import {
   FileSpreadsheet,
   Check,
   UserCheck,
-  UserPlus
+  UserPlus,
+  Power
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ImportarPacientesModal } from './ImportarPacientesModal';

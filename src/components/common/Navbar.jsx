@@ -15,11 +15,13 @@ import {
   PanelLeftClose,
   Menu,
   Search,
-  Command
+  Command,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LoginModal } from './LoginModal';
 import { QuickSearchPalette } from './QuickSearchPalette';
+import { ImportarPacientesModal } from '../admin/ImportarPacientesModal';
 
 export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
   const { 
@@ -34,6 +36,7 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showImportPacientesModal, setShowImportPacientesModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Atajo global Ctrl+K
@@ -142,6 +145,17 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
                 </kbd>
               </button>
 
+              {/* Botón Importar Pacientes (Forms / Excel) */}
+              <button
+                onClick={() => setShowImportPacientesModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer"
+                title="Importar pacientes masivamente desde Google Forms o Excel"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-purple-600" />
+                <span className="hidden lg:inline">Importar Pacientes</span>
+                <span className="lg:hidden">Importar</span>
+              </button>
+
               {/* Botón Sincronizar Nube */}
               <button
                 onClick={syncWithCloud}
@@ -220,6 +234,12 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
       <QuickSearchPalette
         isOpen={showQuickSearch}
         onClose={() => setShowQuickSearch(false)}
+      />
+
+      {/* Modal de Importación Masiva de Pacientes */}
+      <ImportarPacientesModal
+        isOpen={showImportPacientesModal}
+        onClose={() => setShowImportPacientesModal(false)}
       />
     </>
   );

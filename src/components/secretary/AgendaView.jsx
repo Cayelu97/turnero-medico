@@ -84,7 +84,10 @@ export const AgendaView = () => {
 
   const visibleProfessionals = useMemo(() => {
     return profesionales.filter(p => {
-      if (selectedCentroFilter !== 'TODOS' && p.clinica_id && p.clinica_id !== selectedCentroFilter) return false;
+      if (selectedCentroFilter !== 'TODOS') {
+        const profSedes = p.sedes_ids || (p.clinica_id ? [p.clinica_id] : []);
+        if (profSedes.length > 0 && !profSedes.includes(selectedCentroFilter)) return false;
+      }
       if (selectedProfFilter && p.id !== selectedProfFilter) return false;
       if (selectedServicioFilter && p.servicios_ids && p.servicios_ids.length > 0 && !p.servicios_ids.includes(selectedServicioFilter)) return false;
       return p.activo !== false;

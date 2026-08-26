@@ -99,15 +99,16 @@ export const TurneroWizard = () => {
   const [voucherData, setVoucherData] = useState(null);
 
   // Lista de especialidades desde el catálogo oficial
+  const allClinicas = StorageService.getClinicasList();
   const especialidades = catalogoEspecialidades?.length > 0 
     ? catalogoEspecialidades 
     : Array.from(new Set(profesionales.map(p => p.especialidad))).map((e, idx) => ({ id: `esp-${idx}`, nombre: e }));
 
-  // Días y horarios de atención del profesional
+  // Días y horarios de atención del profesional (filtrados por sede si fue seleccionada)
   const horariosDelMedico = React.useMemo(() => {
     if (!selectedProfesionalId) return [];
-    return StorageService.getHorariosByProfesional(selectedProfesionalId);
-  }, [selectedProfesionalId]);
+    return StorageService.getHorariosByProfesional(selectedProfesionalId, selectedInstitucion || null);
+  }, [selectedProfesionalId, selectedInstitucion]);
 
   const DIAS_NOMBRES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const diasAtencionTexto = React.useMemo(() => {
@@ -134,7 +135,7 @@ export const TurneroWizard = () => {
 
       // Solo procesar si el día está habilitado y NO es domingo (0)
       if (diasSemanaAtencion.has(dayDetails.diaSemana) && dayDetails.diaSemana !== 0) {
-        const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfesionalId, dateStr, selectedServicioId || null, modalidadTurno);
+        const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfesionalId, dateStr, selectedServicioId || null, modalidadTurno, selectedInstitucion || null);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {
           result.push({
@@ -148,7 +149,7 @@ export const TurneroWizard = () => {
       }
     }
     return result;
-  }, [selectedProfesionalId, selectedServicioId, horariosDelMedico, modalidadTurno]);
+  }, [selectedProfesionalId, selectedServicioId, horariosDelMedico, modalidadTurno, selectedInstitucion]);
 
   // Autoseleccionar la primera fecha disponible cuando cambia el médico o entramos al paso 3
   useEffect(() => {
@@ -164,7 +165,7 @@ export const TurneroWizard = () => {
   useEffect(() => {
     if (selectedProfesionalId && selectedFecha) {
       setLoadingSlots(true);
-      const available = StorageService.getSlotsDisponibles(selectedProfesionalId, selectedFecha, selectedServicioId || null, modalidadTurno);
+      const available = StorageService.getSlotsDisponibles(selectedProfesionalId, selectedFecha, selectedServicioId || null, modalidadTurno, selectedInstitucion || null);
       setSlots(available);
       setSelectedSlot(null);
       setLoadingSlots(false);
@@ -172,9 +173,7 @@ export const TurneroWizard = () => {
       setSlots([]);
       setSelectedSlot(null);
     }
-  }, [selectedProfesionalId, selectedFecha, selectedServicioId, modalidadTurno]);
-
-
+  }, [selectedProfesionalId, selectedFecha, selectedServicioId, modalidadTurno, selectedInstitucion]);
 
   const selectedServicio = servicios.find(s => s.id === selectedServicioId);
 
@@ -229,9 +228,17 @@ export const TurneroWizard = () => {
   // Planes filtrados por obra social
   const availablePlanes = planes.filter(p => p.obra_social_id === selectedObraSocialId);
 
-  // Filtrado inteligente de profesionales según pestañas y búsqueda
+  // Filtrado inteligente de profesionales según pestañas, sede y búsqueda
   const filteredProfesionales = profesionales.filter(p => {
     if (p.activo === false) return false;
+
+    // Filtro por Sede
+    if (selectedInstitucion) {
+      const profSedes = p.sedes_ids || (p.clinica_id ? [p.clinica_id] : []);
+      if (profSedes.length > 0 && !profSedes.includes(selectedInstitucion)) {
+        return false;
+      }
+    }
 
     if (searchMode === 'especialidad') {
       if (selectedEspecialidad && p.especialidad.toLowerCase() !== selectedEspecialidad.toLowerCase()) {
@@ -353,6 +360,7 @@ export const TurneroWizard = () => {
       },
       turnoData: {
         profesional_id: selectedProfesionalId,
+        clinica_id: selectedSlot.clinica_id || selectedInstitucion || clinica?.id || 'clinica-1',
         servicio_id: selectedServicioId || null,
         consultorio_id: selectedSlot.consultorio_id,
         practica_id: selectedPracticaId,
@@ -685,14 +693,21 @@ export const TurneroWizard = () => {
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Sede / Institución:</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1 flex items-center gap-1">
+                    <Building className="w-3 h-3 text-medical-600" />
+                    Sede / Clínica de Atención:
+                  </label>
                   <select
                     value={selectedInstitucion}
                     onChange={(e) => setSelectedInstitucion(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
                   >
-                    <option value="">{clinica.nombre} (Principal)</option>
-                    <option value="anexo">Sede Consultorios Externos Belgrano</option>
+                    <option value="">Todas las Sedes ({allClinicas.length} sedes)</option>
+                    {allClinicas.map(c => (
+                      <option key={c.id} value={c.id}>
+                        🏥 {c.nombre} ({c.direccion})
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -717,7 +732,7 @@ export const TurneroWizard = () => {
               {searchMode === 'especialidad' && !selectedEspecialidad && (
                 <div className="pt-2 border-t border-slate-200/70 flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-extrabold uppercase text-slate-400 mr-1">Frecuentes:</span>
-                  {['Cardiología', 'Pediatría', 'Clínica Médica', 'Traumatología', 'Dermatología', 'Ginecología'].map(espName => (
+                  {['Cardiología', 'Psicología y Salud Mental', 'Clínica Médica', 'Pediatría', 'Traumatología', 'Dermatología'].map(espName => (
                     <button
                       key={espName}
                       type="button"
@@ -756,6 +771,7 @@ export const TurneroWizard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {filteredProfesionales.map((p) => {
                     const isSelected = selectedProfesionalId === p.id;
+                    const doctorSedes = allClinicas.filter(c => (p.sedes_ids || []).includes(c.id));
 
                     return (
                       <div
@@ -788,6 +804,15 @@ export const TurneroWizard = () => {
                               {p.matricula_nacional && <span>{p.matricula_nacional}</span>}
                               <span>•</span>
                               <span>⏱️ {p.duracion_turno_minutos || 20} min</span>
+                            </div>
+
+                            {/* Sedes de Atención */}
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {doctorSedes.map(s => (
+                                <span key={s.id} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/60 rounded text-[9px] font-bold">
+                                  {s.nombre.replace('Centro Médico San Lucas - ', '')}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         </div>

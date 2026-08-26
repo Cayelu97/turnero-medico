@@ -35,6 +35,15 @@ const SYNC_KEYS = [
   'mediturnos_aranceles_convenios'
 ];
 
+let syncTimeout = null;
+
+export const triggerAutoCloudSync = () => {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    CloudSyncService.pushToCloud();
+  }, 1000);
+};
+
 export const CloudSyncService = {
   // Exportar todo el estado actual a un objeto JSON
   getLocalBackupPayload: () => {
@@ -67,6 +76,7 @@ export const CloudSyncService = {
   pushToCloud: async () => {
     try {
       const payload = CloudSyncService.getLocalBackupPayload();
+      const nowIso = new Date().toISOString();
       
       // Guardar en tabla 'app_sync' de Supabase
       const { data, error } = await supabase
@@ -74,30 +84,24 @@ export const CloudSyncService = {
         .upsert({ 
           id: 'global_state', 
           payload, 
-          updated_at: new Date().toISOString() 
+          updated_at: nowIso 
         });
 
       if (error) {
         console.warn('Supabase app_sync upsert warning:', error.message);
-        if (error.message.includes('app_sync') || error.message.includes('schema cache') || error.message.includes('relation')) {
-          return { 
-            success: false, 
-            message: "Falta crear la tabla 'app_sync' en Supabase. Ve a Configuración > Supabase y ejecuta el script SQL de 1 minuto." 
-          };
-        }
         return { success: false, message: error.message };
       }
 
-      localStorage.setItem('mediturnos_last_cloud_sync', new Date().toISOString());
-      return { success: true, timestamp: new Date().toISOString() };
+      localStorage.setItem('mediturnos_last_cloud_sync', nowIso);
+      return { success: true, timestamp: nowIso };
     } catch (err) {
       console.error('Error al sincronizar con Supabase Cloud:', err);
       return { success: false, message: err.message };
     }
   },
 
-  // Descargar estado más reciente de Supabase
-  pullFromCloud: async () => {
+  // Descargar estado más reciente de Supabase (con protección de sobreescritura)
+  pullFromCloud: async (force = false) => {
     try {
       const { data, error } = await supabase
         .from('app_sync')
@@ -111,6 +115,21 @@ export const CloudSyncService = {
       }
 
       if (data && data.payload) {
+        const lastSync = localStorage.getItem('mediturnos_last_cloud_sync');
+        
+        // Si no es forzado y local ya tiene datos más recientes o iguales, no pisar
+        if (!force && lastSync && data.updated_at && data.updated_at <= lastSync) {
+          return { success: false, message: 'Los datos locales ya están actualizados.' };
+        }
+
+        // Si local tiene consultorios o agendas cargadas y cloud es viejo, no pisar
+        const localConsultorios = localStorage.getItem('mediturnos_consultorios');
+        if (!force && localConsultorios && (!data.updated_at || data.updated_at < '2026-08-26')) {
+          // Push local to cloud instead
+          CloudSyncService.pushToCloud();
+          return { success: false, message: 'Se preservó el estado local más reciente.' };
+        }
+
         CloudSyncService.applyRemotePayload(data.payload);
         localStorage.setItem('mediturnos_last_cloud_sync', data.updated_at || new Date().toISOString());
         return { success: true, timestamp: data.updated_at };

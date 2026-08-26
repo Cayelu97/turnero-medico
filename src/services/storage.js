@@ -3,6 +3,7 @@
 // ==============================================================================
 import { createClient } from '@supabase/supabase-js';
 import { getDayOfWeekFromDateString, getLocalDateString } from '../utils/dateUtils';
+import { triggerAutoCloudSync } from './cloudSync';
 
 const STORAGE_KEYS = {
   CLINICA: 'mediturnos_clinica',
@@ -214,17 +215,17 @@ export const INITIAL_SERVICIOS = [
   }
 ];
 
-// Clínicas iniciales (Multi-Tenant)
+// Clínicas / Sedes iniciales (Multi-Sede / Multi-Tenant)
 export const INITIAL_CLINICAS = [
   {
     id: 'clinica-1',
-    nombre: 'Centro de Salud y Psicología San Lucas',
+    nombre: 'Centro San Lucas - Sede Central',
     cuit: '30-71234567-9',
-    direccion: 'Av. Colón 1250, Córdoba Capital, Córdoba',
+    direccion: 'Av. Colón 1250, Córdoba Capital',
     telefono: '+54 351 428-9000',
     whatsapp: '+54 9 351 428-9000',
-    email: 'turnos@centrosanlucas.com.ar',
-    mensaje_bienvenida: 'Bienvenido al turnero online de Centro San Lucas. Atención psicológica y especialidades médicas.',
+    email: 'central@centrosanlucas.com.ar',
+    mensaje_bienvenida: 'Bienvenido a Sede Central. Atención integral y especialidades.',
     color_primario: '#6366f1',
     condicion_iva: 'MONO',
     punto_venta: 1,
@@ -234,18 +235,50 @@ export const INITIAL_CLINICAS = [
   },
   {
     id: 'clinica-2',
-    nombre: 'Consultorios de Salud Mental Belgrano',
+    nombre: 'Consultorios San Lucas - Sede Norte',
     cuit: '30-79812345-1',
-    direccion: 'Av. Cabildo 1850, Belgrano, CABA',
-    telefono: '+54 11 4781-4400',
-    whatsapp: '+54 9 11 4781-4400',
-    email: 'contacto@consultoriosbelgrano.com.ar',
-    mensaje_bienvenida: 'Policonsultorios Belgrano - Psicología, Psiquiatría y Especialidades Médicas.',
+    direccion: 'Av. Rafael Núñez 4200, Cerro de las Rosas',
+    telefono: '+54 351 481-4400',
+    whatsapp: '+54 9 351 481-4400',
+    email: 'norte@centrosanlucas.com.ar',
+    mensaje_bienvenida: 'Sede Norte Cerro de las Rosas - Consultas Médicas y Especialidades.',
     color_primario: '#0d9488',
     condicion_iva: 'RI',
     punto_venta: 2,
     iibb: '90128490-1',
     inicio_actividades: '2020-01-15',
+    activa: true
+  },
+  {
+    id: 'clinica-3',
+    nombre: 'Consultorios San Lucas - Sede Nueva Córdoba',
+    cuit: '30-72458901-3',
+    direccion: 'Av. Hipólito Yrigoyen 350, Nueva Córdoba',
+    telefono: '+54 351 468-2200',
+    whatsapp: '+54 9 351 468-2200',
+    email: 'nuevacordoba@centrosanlucas.com.ar',
+    mensaje_bienvenida: 'Sede Nueva Córdoba - Atención Médica Ambulatoria y Salud Mental.',
+    color_primario: '#8b5cf6',
+    condicion_iva: 'RI',
+    punto_venta: 3,
+    iibb: '30491028-4',
+    inicio_actividades: '2022-06-01',
+    activa: true
+  },
+  {
+    id: 'clinica-4',
+    nombre: 'Consultorios San Lucas - Sede Villa Belgrano',
+    cuit: '30-75619283-7',
+    direccion: 'Av. Recta Martinolli 5600, Villa Belgrano',
+    telefono: '+54 351 493-1100',
+    whatsapp: '+54 9 351 493-1100',
+    email: 'villabelgrano@centrosanlucas.com.ar',
+    mensaje_bienvenida: 'Sede Villa Belgrano - Centro Médico de Especialidades y Diagnóstico.',
+    color_primario: '#0284c7',
+    condicion_iva: 'RI',
+    punto_venta: 4,
+    iibb: '40192831-2',
+    inicio_actividades: '2023-02-10',
     activa: true
   }
 ];
@@ -263,11 +296,20 @@ export const INITIAL_DATA = {
   especialidades: INITIAL_ESPECIALIDADES,
   servicios: INITIAL_SERVICIOS,
   consultorios: [
-    { id: 'c-0', clinica_id: 'clinica-1', nombre: 'Consultorio 1 - Psicología & Terapia Individual', piso_ubicacion: 'Planta Alta - Sala 1', equipamiento: 'Sillones de lectura, escritorio, insonorización', activo: true },
-    { id: 'c-0b', clinica_id: 'clinica-1', nombre: 'Consultorio 2 - Psicología Infanto-Juvenil & Pareja', piso_ubicacion: 'Planta Alta - Sala 2', equipamiento: 'Caja de juegos diagnósticos, mesa infantil, sillones', activo: true },
-    { id: 'c-1', clinica_id: 'clinica-1', nombre: 'Consultorio 3 - Cardiología & Clínica', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Tensiómetro, Camilla', activo: true },
-    { id: 'c-2', clinica_id: 'clinica-1', nombre: 'Consultorio 4 - Diagnóstico por Imágenes & Ecografía', piso_ubicacion: 'Piso 1 - Sala A', equipamiento: 'Ecógrafo Doppler Color', activo: true },
-    { id: 'c-3', clinica_id: 'clinica-1', nombre: 'Consultorio 5 - Pediatría', piso_ubicacion: 'Planta Baja', equipamiento: 'Balanza pediátrica, Tallímetro, Otoscopio', activo: true }
+    // Sede 1: Central
+    { id: 'c-1-1', clinica_id: 'clinica-1', nombre: 'Consultorio 1 - Psicología & Terapia', piso_ubicacion: 'Planta Alta - Sala 1', equipamiento: 'Sillones individuales, insonorización', activo: true },
+    { id: 'c-1-2', clinica_id: 'clinica-1', nombre: 'Consultorio 2 - Cardiología & Clínica', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Tensiómetro, Camilla', activo: true },
+    { id: 'c-1-3', clinica_id: 'clinica-1', nombre: 'Consultorio 3 - Pediatría', piso_ubicacion: 'Planta Baja', equipamiento: 'Balanza pediátrica, Tallímetro', activo: true },
+    { id: 'c-1-4', clinica_id: 'clinica-1', nombre: 'Consultorio 4 - Diagnóstico por Imágenes', piso_ubicacion: 'Piso 1 - Sala A', equipamiento: 'Ecógrafo Doppler Color', activo: true },
+    // Sede 2: Norte
+    { id: 'c-2-1', clinica_id: 'clinica-2', nombre: 'Consultorio Norte 1 - Terapia & Salud Mental', piso_ubicacion: 'Planta Baja', equipamiento: 'Sillones de consulta, Escritorio', activo: true },
+    { id: 'c-2-2', clinica_id: 'clinica-2', nombre: 'Consultorio Norte 2 - Cardiología & Especialidades', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Camilla', activo: true },
+    // Sede 3: Nueva Córdoba
+    { id: 'c-3-1', clinica_id: 'clinica-3', nombre: 'Consultorio Nva Cba 1 - Salud Mental & Consultas', piso_ubicacion: 'Piso 2 - Sala 201', equipamiento: 'Sillones confortables, escritorio', activo: true },
+    { id: 'c-3-2', clinica_id: 'clinica-3', nombre: 'Consultorio Nva Cba 2 - Cardiología & Adultos', piso_ubicacion: 'Piso 2 - Sala 202', equipamiento: 'Camilla clínica, Tensiómetro', activo: true },
+    // Sede 4: Villa Belgrano
+    { id: 'c-4-1', clinica_id: 'clinica-4', nombre: 'Consultorio Villa Belgrano 1 - Especialidades Médicas', piso_ubicacion: 'Planta Baja', equipamiento: 'Camilla de examen, Electrocardiógrafo', activo: true },
+    { id: 'c-4-2', clinica_id: 'clinica-4', nombre: 'Consultorio Villa Belgrano 2 - Psicología & Infanto-Juvenil', piso_ubicacion: 'Planta Baja', equipamiento: 'Caja diagnóstica, sillones', activo: true }
   ],
   obras_sociales: [
     { id: 'os-1', clinica_id: 'clinica-1', nombre: 'Particular / Privado', sigla: 'PART', cuit: '', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Abono por sesión o pack mensual en recepción/transferencia.', activo: true },
@@ -329,6 +371,7 @@ export const INITIAL_DATA = {
     {
       id: 'prof-psi-1',
       clinica_id: 'clinica-1',
+      sedes_ids: ['clinica-1', 'clinica-2', 'clinica-3', 'clinica-4'],
       nombre: 'Sofía',
       apellido: 'Albarracín',
       matricula_provincial: 'M.P. 10.492 CPPC',
@@ -349,6 +392,7 @@ export const INITIAL_DATA = {
     {
       id: 'prof-psi-2',
       clinica_id: 'clinica-1',
+      sedes_ids: ['clinica-1', 'clinica-2'],
       nombre: 'Gonzalo',
       apellido: 'Maidana',
       matricula_provincial: 'M.P. 8.921 CPPC',
@@ -369,6 +413,7 @@ export const INITIAL_DATA = {
     {
       id: 'prof-psi-3',
       clinica_id: 'clinica-1',
+      sedes_ids: ['clinica-1', 'clinica-2', 'clinica-3', 'clinica-4'],
       nombre: 'Nahuel',
       apellido: 'López',
       matricula_provincial: 'M.P. 9.871 CPPC',
@@ -378,7 +423,7 @@ export const INITIAL_DATA = {
       servicios_ids: ['serv-0a', 'serv-0b', 'serv-0c'],
       email: 'nlopez@centrosanlucas.com.ar',
       telefono: '351 445-9922',
-      duracion_turno_minutos: 15,
+      duracion_turno_minutos: 45,
       max_sobreturnos_dia: 2,
       color_agenda: '#0ea5e9',
       obras_sociales_ids: ['os-1', 'os-apross', 'os-cppc', 'os-2', 'os-3'],
@@ -389,6 +434,7 @@ export const INITIAL_DATA = {
     {
       id: 'prof-1',
       clinica_id: 'clinica-1',
+      sedes_ids: ['clinica-1', 'clinica-2', 'clinica-3', 'clinica-4'],
       nombre: 'Martín',
       apellido: 'Pérez Rossi',
       matricula_nacional: 'MN 114.829',
@@ -403,25 +449,29 @@ export const INITIAL_DATA = {
       color_agenda: '#0284c7',
       obras_sociales_ids: ['os-1', 'os-apross', 'os-2', 'os-3', 'os-4', 'os-5', 'os-8'],
       atiende_particular: true,
-      atiende_online: false,
+      atiende_online: true,
       activo: true
     }
   ],
   horarios: [
-    // Lic. Sofía Albarracín: Lunes (Presencial), Miércoles (Online/Telepsicología), Jueves (Ambas)
-    { id: 'h-psi-1', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-psi-2', profesional_id: 'prof-psi-1', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
-    { id: 'h-psi-3', profesional_id: 'prof-psi-1', servicio_id: 'serv-0b', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'AMBAS', activo: true },
-    // Lic. Nahuel López: Lunes a Viernes (Días 1, 2, 3, 4, 5) de 08:00 a 14:00 en bloques de 15 minutos
-    { id: 'h-nl-1', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 1, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-2', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 2, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-3', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 3, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'ONLINE', activo: true },
-    { id: 'h-nl-4', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 4, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-5', profesional_id: 'prof-psi-3', servicio_id: 'serv-0a', consultorio_id: 'c-0', dia_semana: 5, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 15, modalidad: 'AMBAS', activo: true },
-    // Dr. Pérez Rossi: Lunes (Presencial), Miércoles (Presencial), Viernes (Online)
-    { id: 'h-1', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-2', profesional_id: 'prof-1', servicio_id: 'serv-2', consultorio_id: 'c-2', dia_semana: 3, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 30, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-3', profesional_id: 'prof-1', servicio_id: 'serv-1', consultorio_id: 'c-1', dia_semana: 5, hora_inicio: '14:00', hora_fin: '18:00', duracion_slot_min: 20, modalidad: 'ONLINE', activo: true }
+    // Dr. Martín Pérez Rossi: Distribuido en las 4 Sedes
+    { id: 'h-1', profesional_id: 'prof-1', clinica_id: 'clinica-1', servicio_id: 'serv-1', consultorio_id: 'c-1-2', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-2', profesional_id: 'prof-1', clinica_id: 'clinica-2', servicio_id: 'serv-1', consultorio_id: 'c-2-2', dia_semana: 2, hora_inicio: '09:00', hora_fin: '14:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-3', profesional_id: 'prof-1', clinica_id: 'clinica-3', servicio_id: 'serv-1', consultorio_id: 'c-3-2', dia_semana: 3, hora_inicio: '14:00', hora_fin: '19:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-4', profesional_id: 'prof-1', clinica_id: 'clinica-4', servicio_id: 'serv-1', consultorio_id: 'c-4-1', dia_semana: 4, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-5', profesional_id: 'prof-1', clinica_id: 'clinica-1', servicio_id: 'serv-1', consultorio_id: 'c-1-2', dia_semana: 5, hora_inicio: '14:00', hora_fin: '18:00', duracion_slot_min: 20, modalidad: 'ONLINE', activo: true },
+
+    // Lic. Nahuel López: Distribuido en las 4 Sedes
+    { id: 'h-nl-1', profesional_id: 'prof-psi-3', clinica_id: 'clinica-1', servicio_id: 'serv-0a', consultorio_id: 'c-1-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-2', profesional_id: 'prof-psi-3', clinica_id: 'clinica-2', servicio_id: 'serv-0a', consultorio_id: 'c-2-1', dia_semana: 2, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-3', profesional_id: 'prof-psi-3', clinica_id: 'clinica-3', servicio_id: 'serv-0a', consultorio_id: 'c-3-1', dia_semana: 3, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
+    { id: 'h-nl-4', profesional_id: 'prof-psi-3', clinica_id: 'clinica-4', servicio_id: 'serv-0a', consultorio_id: 'c-4-2', dia_semana: 4, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-nl-5', profesional_id: 'prof-psi-3', clinica_id: 'clinica-1', servicio_id: 'serv-0a', consultorio_id: 'c-1-1', dia_semana: 5, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'AMBAS', activo: true },
+
+    // Lic. Sofía Albarracín: Lunes Sede Central, Miércoles Sede Norte, Jueves Sede Nva Cba
+    { id: 'h-psi-1', profesional_id: 'prof-psi-1', clinica_id: 'clinica-1', servicio_id: 'serv-0a', consultorio_id: 'c-1-1', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-psi-2', profesional_id: 'prof-psi-1', clinica_id: 'clinica-2', servicio_id: 'serv-0a', consultorio_id: 'c-2-1', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
+    { id: 'h-psi-3', profesional_id: 'prof-psi-1', clinica_id: 'clinica-3', servicio_id: 'serv-0b', consultorio_id: 'c-3-1', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'AMBAS', activo: true }
   ],
   bloqueos: [
     { id: 'b-1', clinica_id: 'clinica-1', profesional_id: null, consultorio_id: null, tipo: 'FERIADO_NACIONAL', fecha_inicio: '2026-01-01', fecha_fin: '2026-01-01', motivo: 'Año Nuevo' },
@@ -437,11 +487,21 @@ export const INITIAL_DATA = {
       dni: '35890123',
       nombre: 'Lucas',
       apellido: 'Fernández',
+      edad: 34,
       telefono_whatsapp: '+54 9 351 550-1122',
       email: 'lucas.fernandez@gmail.com',
+      domicilio: 'Bv. San Juan 650, Nueva Córdoba',
+      con_quien_vive: 'Con su pareja y su hijo de 4 años',
+      contactos_familiares: [
+        { id: 'fam-1-1', nombre: 'Carla Morales', relacion: 'Pareja', telefono: '+54 9 351 440-9988', es_principal: true, notas: 'Conviviente' },
+        { id: 'fam-1-2', nombre: 'Marta Rossi', relacion: 'Madre', telefono: '+54 9 351 771-2233', es_principal: false, notas: 'Vive en Alta Gracia' }
+      ],
+      servicio_emergencia: { posee: true, nombre: 'ECCO Emergencias Médicas' },
       obra_social_id: 'os-apross',
       plan_id: 'pl-apross-1',
       numero_afiliado: '1098492019/01',
+      consentimiento_informado: { aceptado: true, fecha_firma: '2026-01-15T10:00:00Z' },
+      marca_temporal_registro: '2026-01-15 10:00:00',
       alergias: 'Ninguna conocida',
       antecedentes: 'Trastorno de ansiedad generalizada y crisis de angustia',
       medicacion_habitual: 'Clonazepam 0.5mg según indicación psiquiátrica'
@@ -452,11 +512,20 @@ export const INITIAL_DATA = {
       dni: '29749777',
       nombre: 'Mariana',
       apellido: 'Gómez',
+      edad: 42,
       telefono_whatsapp: '+54 9 351 680-4455',
       email: 'mariana.gomez@hotmail.com',
+      domicilio: 'Av. Rafael Núñez 3800, Cerro de las Rosas',
+      con_quien_vive: 'Con sus dos hijos adolescentes',
+      contactos_familiares: [
+        { id: 'fam-2-1', nombre: 'Roberto Gómez', relacion: 'Hermano', telefono: '+54 9 351 332-1144', es_principal: true, notas: 'Contacto de urgencia' }
+      ],
+      servicio_emergencia: { posee: true, nombre: 'Vittal Asistencia Médica' },
       obra_social_id: 'os-2',
       plan_id: 'pl-2',
       numero_afiliado: '482019482/02',
+      consentimiento_informado: { aceptado: true, fecha_firma: '2026-02-01T14:30:00Z' },
+      marca_temporal_registro: '2026-02-01 14:30:00',
       alergias: 'Penicilina',
       antecedentes: 'Psicoterapia por duelo reciente y estrés laboral',
       medicacion_habitual: 'Ninguna'
@@ -465,59 +534,16 @@ export const INITIAL_DATA = {
   turnos: []
 };
 
-// Agendas Iniciales Profesionales (Con Vigencia y Días Deterministas)
+// Agendas Iniciales Profesionales (Con Vigencia y Días Deterministas por Sede)
 export const INITIAL_AGENDAS = [
-  {
-    id: 'ag-nl-1',
-    clinica_id: 'clinica-1',
-    profesional_id: 'prof-psi-3', // Lic. Nahuel López
-    servicio_id: 'serv-0a',
-    consultorio_id: 'c-0',
-    nombre: 'Consultas Psicológicas Lunes a Viernes',
-    fecha_desde: '2026-01-01',
-    fecha_hasta: null,
-    duracion_slot_min: 45,
-    modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 2,
-    dias_horarios: [
-      { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 2, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 3, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'ONLINE' }] },
-      { dia_semana: 4, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 5, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'AMBAS' }] }
-    ],
-    estado: 'ACTIVA',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  },
-  {
-    id: 'ag-psi-1',
-    clinica_id: 'clinica-1',
-    profesional_id: 'prof-psi-1', // Lic. Sofía Albarracín
-    servicio_id: 'serv-0a',
-    consultorio_id: 'c-0',
-    nombre: 'Psicoterapia Individual & Telepsicología',
-    fecha_desde: '2026-01-01',
-    fecha_hasta: null,
-    duracion_slot_min: 45,
-    modalidad: 'AMBAS',
-    max_sobreturnos_dia: 2,
-    dias_horarios: [
-      { dia_semana: 1, franjas: [{ hora_inicio: '14:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 3, franjas: [{ hora_inicio: '09:00', hora_fin: '15:00', modalidad: 'ONLINE' }] },
-      { dia_semana: 4, franjas: [{ hora_inicio: '15:00', hora_fin: '20:00', modalidad: 'AMBAS' }] }
-    ],
-    estado: 'ACTIVA',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  },
+  // Dr. Martín Pérez Rossi: 4 agendas (una por sede)
   {
     id: 'ag-med-1',
     clinica_id: 'clinica-1',
-    profesional_id: 'prof-1', // Dr. Martín Pérez Rossi
+    profesional_id: 'prof-1',
     servicio_id: 'serv-1',
-    consultorio_id: 'c-1',
-    nombre: 'Cardiología Clínica y Prácticas',
+    consultorio_id: 'c-1-2',
+    nombre: 'Sede Central - Lunes y Viernes',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
     duracion_slot_min: 20,
@@ -525,8 +551,202 @@ export const INITIAL_AGENDAS = [
     max_sobreturnos_dia: 4,
     dias_horarios: [
       { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 3, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] },
       { dia_semana: 5, franjas: [{ hora_inicio: '14:00', hora_fin: '18:00', modalidad: 'ONLINE' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-med-2',
+    clinica_id: 'clinica-2',
+    profesional_id: 'prof-1',
+    servicio_id: 'serv-1',
+    consultorio_id: 'c-2-2',
+    nombre: 'Sede Norte - Martes',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 20,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 3,
+    dias_horarios: [
+      { dia_semana: 2, franjas: [{ hora_inicio: '09:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-med-3',
+    clinica_id: 'clinica-3',
+    profesional_id: 'prof-1',
+    servicio_id: 'serv-1',
+    consultorio_id: 'c-3-2',
+    nombre: 'Sede Nueva Córdoba - Miércoles',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 20,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 3,
+    dias_horarios: [
+      { dia_semana: 3, franjas: [{ hora_inicio: '14:00', hora_fin: '19:00', modalidad: 'PRESENCIAL' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-med-4',
+    clinica_id: 'clinica-4',
+    profesional_id: 'prof-1',
+    servicio_id: 'serv-1',
+    consultorio_id: 'c-4-1',
+    nombre: 'Sede Villa Belgrano - Jueves',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 20,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 3,
+    dias_horarios: [
+      { dia_semana: 4, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+
+  // Lic. Nahuel López: 4 agendas
+  {
+    id: 'ag-nl-1',
+    clinica_id: 'clinica-1',
+    profesional_id: 'prof-psi-3',
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-1-1',
+    nombre: 'Sede Central - Lunes y Viernes',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 5, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'AMBAS' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-nl-2',
+    clinica_id: 'clinica-2',
+    profesional_id: 'prof-psi-3',
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-2-1',
+    nombre: 'Sede Norte - Martes',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 2, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-nl-3',
+    clinica_id: 'clinica-3',
+    profesional_id: 'prof-psi-3',
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-3-1',
+    nombre: 'Sede Nueva Córdoba - Miércoles (Online)',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'ONLINE',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 3, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'ONLINE' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-nl-4',
+    clinica_id: 'clinica-4',
+    profesional_id: 'prof-psi-3',
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-4-2',
+    nombre: 'Sede Villa Belgrano - Jueves',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 4, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+
+  // Lic. Sofía Albarracín: 3 agendas
+  {
+    id: 'ag-psi-1',
+    clinica_id: 'clinica-1',
+    profesional_id: 'prof-psi-1',
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-1-1',
+    nombre: 'Sede Central - Lunes Presencial',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 1, franjas: [{ hora_inicio: '14:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-psi-2',
+    clinica_id: 'clinica-2',
+    profesional_id: 'prof-psi-1',
+    servicio_id: 'serv-0a',
+    consultorio_id: 'c-2-1',
+    nombre: 'Sede Norte - Miércoles Online',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 45,
+    modalidad: 'ONLINE',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 3, franjas: [{ hora_inicio: '09:00', hora_fin: '15:00', modalidad: 'ONLINE' }] }
+    ],
+    estado: 'ACTIVA',
+    created_at: '2026-01-01T08:00:00Z',
+    updated_at: '2026-01-01T08:00:00Z'
+  },
+  {
+    id: 'ag-psi-3',
+    clinica_id: 'clinica-3',
+    profesional_id: 'prof-psi-1',
+    servicio_id: 'serv-0b',
+    consultorio_id: 'c-3-1',
+    nombre: 'Sede Nueva Córdoba - Jueves Híbrido',
+    fecha_desde: '2026-01-01',
+    fecha_hasta: null,
+    duracion_slot_min: 60,
+    modalidad: 'AMBAS',
+    max_sobreturnos_dia: 2,
+    dias_horarios: [
+      { dia_semana: 4, franjas: [{ hora_inicio: '15:00', hora_fin: '20:00', modalidad: 'AMBAS' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
@@ -601,67 +821,65 @@ export const initLocalStorage = () => {
     localStorage.setItem(STORAGE_KEYS.TV_CALLS, JSON.stringify([]));
   }
 
-  // Migración y sincronización automática de profesionales a 15 min si corresponde
+  // Verificación no destructiva de las 4 sedes y profesionales multi-sede
   try {
+    const clinicasList = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLINICAS_LIST) || '[]');
+    if (!Array.isArray(clinicasList) || clinicasList.length < 4) {
+      localStorage.setItem(STORAGE_KEYS.CLINICAS_LIST, JSON.stringify(INITIAL_CLINICAS));
+      if (!localStorage.getItem(STORAGE_KEYS.CLINICA)) {
+        localStorage.setItem(STORAGE_KEYS.CLINICA, JSON.stringify(INITIAL_CLINICAS[0]));
+      }
+    }
+    // Asegurar sedes_ids en profesionales existentes sin pisar sus horarios
     const profs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PROFESIONALES) || '[]');
     if (Array.isArray(profs)) {
-      let mod = false;
+      let updated = false;
       profs.forEach(p => {
-        if (p.id === 'prof-psi-3' && p.duracion_turno_minutos !== 15) {
-          p.duracion_turno_minutos = 15;
-          mod = true;
+        if (!p.sedes_ids || !Array.isArray(p.sedes_ids) || p.sedes_ids.length === 0) {
+          p.sedes_ids = ['clinica-1', 'clinica-2', 'clinica-3', 'clinica-4'];
+          updated = true;
         }
       });
-      if (mod) {
+      if (updated) {
         localStorage.setItem(STORAGE_KEYS.PROFESIONALES, JSON.stringify(profs));
-        // Sincronizar horarios de Nahuel López
-        const horarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.HORARIOS) || '[]');
-        horarios.forEach(h => {
-          if (h.profesional_id === 'prof-psi-3') h.duracion_slot_min = 15;
-        });
-        localStorage.setItem(STORAGE_KEYS.HORARIOS, JSON.stringify(horarios));
       }
     }
   } catch (e) {
-    console.warn('Migración de profesionales:', e);
+    console.warn('Verificación multi-sede:', e);
   }
+
+  // Facturación: inicializar en blanco y limpiar mocks viejos
   if (!localStorage.getItem(STORAGE_KEYS.MOVIMIENTOS_CAJA)) {
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem(STORAGE_KEYS.MOVIMIENTOS_CAJA, JSON.stringify([
-      {
-        id: 'caj-1',
-        tipo: 'INGRESO',
-        concepto: 'Coseguro Consulta Médica (TRN-94041)',
-        paciente_nombre: 'Aye Lopez',
-        paciente_dni: '29749777',
-        profesional_nombre: 'Dr(a). Nahuel Lopez',
-        obra_social_nombre: 'OSDE',
-        forma_pago: 'EFECTIVO',
-        monto: 3500,
-        usuario_nombre: 'Secretaría Recepción',
-        fecha: today,
-        hora: '09:15',
-        comprobante: 'REC-00102',
-        observaciones: 'Pago en efectivo en mostrador'
-      },
-      {
-        id: 'caj-2',
-        tipo: 'INGRESO',
-        concepto: 'Consulta Particular Psicología',
-        paciente_nombre: 'Carlos Benítez',
-        paciente_dni: '32100450',
-        profesional_nombre: 'Dr(a). Nahuel Lopez',
-        obra_social_nombre: 'Particular',
-        forma_pago: 'MERCADOPAGO',
-        monto: 12000,
-        usuario_nombre: 'Secretaría Recepción',
-        fecha: today,
-        hora: '10:30',
-        comprobante: 'MP-892182',
-        observaciones: 'QR Mercado Pago'
-      }
-    ]));
+    localStorage.setItem(STORAGE_KEYS.MOVIMIENTOS_CAJA, JSON.stringify([]));
   }
+  if (!localStorage.getItem(STORAGE_KEYS.COMPROBANTES_ARCA)) {
+    localStorage.setItem(STORAGE_KEYS.COMPROBANTES_ARCA, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.LOTES_FACTURACION)) {
+    localStorage.setItem(STORAGE_KEYS.LOTES_FACTURACION, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CUENTAS_CORRIENTES_PACIENTES)) {
+    localStorage.setItem(STORAGE_KEYS.CUENTAS_CORRIENTES_PACIENTES, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_PACIENTES)) {
+    localStorage.setItem(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_PACIENTES, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CUENTAS_CORRIENTES_OS)) {
+    localStorage.setItem(STORAGE_KEYS.CUENTAS_CORRIENTES_OS, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_OS)) {
+    localStorage.setItem(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_OS, JSON.stringify([]));
+  }
+
+  // Purgar mocks residuales de caja/facturación para pruebas limpias
+  try {
+    const movs = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVIMIENTOS_CAJA) || '[]');
+    if (movs.some(m => m.id === 'caj-1' || m.id === 'caj-2')) {
+      localStorage.setItem(STORAGE_KEYS.MOVIMIENTOS_CAJA, JSON.stringify([]));
+      localStorage.setItem(STORAGE_KEYS.COMPROBANTES_ARCA, JSON.stringify([]));
+      localStorage.setItem(STORAGE_KEYS.LOTES_FACTURACION, JSON.stringify([]));
+    }
+  } catch (e) {}
 
   // Sanitización de horarios huérfanos y domingos residuales
   try {
@@ -715,6 +933,7 @@ export const StorageService = {
   },
   saveCollection: (key, items) => {
     localStorage.setItem(key, JSON.stringify(items));
+    triggerAutoCloudSync();
   },
 
   // GESTIÓN DE SESIÓN Y USUARIOS / ROLES
@@ -850,9 +1069,16 @@ export const StorageService = {
     StorageService.saveCollection(STORAGE_KEYS.SERVICIOS, items);
   },
 
-  // CONSULTORIOS FÍSICOS (Filtrados por clínica)
+  // CONSULTORIOS FÍSICOS (Filtrados por clínica o todas)
   getConsultorios: (clinicaId = null) => {
-    const all = StorageService.getCollection(STORAGE_KEYS.CONSULTORIOS);
+    let all = StorageService.getCollection(STORAGE_KEYS.CONSULTORIOS);
+    if (!all || all.length === 0) {
+      all = [...INITIAL_DATA.consultorios];
+      StorageService.saveCollection(STORAGE_KEYS.CONSULTORIOS, all);
+    }
+    if (!clinicaId || clinicaId === 'TODAS' || clinicaId === 'ALL') {
+      return all;
+    }
     const targetClinicaId = clinicaId || StorageService.getClinicaActiva().id;
     return all.filter(c => !c.clinica_id || c.clinica_id === targetClinicaId);
   },
@@ -1017,7 +1243,7 @@ export const StorageService = {
     return Number(practica.coseguro_defecto || 0);
   },
 
-  // PROFESIONALES
+  // PROFESIONALES (Multi-Sede)
   getProfesionales: (clinicaId = null) => {
     let all = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
     if (!all || all.length === 0) {
@@ -1034,9 +1260,6 @@ export const StorageService = {
         if (ag && ag.duracion_slot_min && Number(p.duracion_turno_minutos) !== Number(ag.duracion_slot_min)) {
           p.duracion_turno_minutos = Number(ag.duracion_slot_min);
           updated = true;
-        } else if (p.id === 'prof-psi-3' && (!p.duracion_turno_minutos || p.duracion_turno_minutos === 40 || p.duracion_turno_minutos === 45 || p.duracion_turno_minutos === 50)) {
-          p.duracion_turno_minutos = 15;
-          updated = true;
         }
       });
       if (updated) {
@@ -1050,14 +1273,25 @@ export const StorageService = {
       return all;
     }
     const targetClinicaId = clinicaId || StorageService.getClinicaActiva().id;
-    return all.filter(p => !p.clinica_id || p.clinica_id === targetClinicaId);
+    return all.filter(p => {
+      if (p.sedes_ids && Array.isArray(p.sedes_ids) && p.sedes_ids.length > 0) {
+        return p.sedes_ids.includes(targetClinicaId);
+      }
+      if (p.clinicas_ids && Array.isArray(p.clinicas_ids) && p.clinicas_ids.length > 0) {
+        return p.clinicas_ids.includes(targetClinicaId);
+      }
+      return !p.clinica_id || p.clinica_id === targetClinicaId;
+    });
   },
   saveProfesional: (prof) => {
     const items = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES) || [];
     const clinicaId = StorageService.getClinicaActiva().id;
     prof.clinica_id = prof.clinica_id || clinicaId;
+    if (!prof.sedes_ids || !Array.isArray(prof.sedes_ids) || prof.sedes_ids.length === 0) {
+      prof.sedes_ids = [prof.clinica_id];
+    }
     prof.activo = prof.activo !== false;
-    prof.duracion_turno_minutos = Number(prof.duracion_turno_minutos) || 15;
+    prof.duracion_turno_minutos = Number(prof.duracion_turno_minutos) || 20;
     prof.max_sobreturnos_dia = Number(prof.max_sobreturnos_dia) || 3;
 
     // Auto-asignar servicios y obras sociales por defecto si vienen vacíos
@@ -1087,132 +1321,31 @@ export const StorageService = {
     }
     StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, items);
 
-    // Si es nuevo o no tiene agenda registrada, auto-crear una agenda médica activa y sus horarios
-    try {
-      const existingAgendas = StorageService.getAgendas(null, prof.id);
-      if (existingAgendas.length === 0) {
-        const consultoriosList = StorageService.getConsultorios(prof.clinica_id);
-        const defaultConsId = consultoriosList[0]?.id || 'c-1';
-        const todayStr = getLocalDateString(new Date());
-
-        const defaultAgenda = {
-          id: `ag-${prof.id}`,
-          clinica_id: prof.clinica_id,
-          profesional_id: prof.id,
-          servicio_id: prof.servicios_ids[0] || null,
-          consultorio_id: defaultConsId,
-          nombre: `Consultas - Dr(a). ${prof.apellido}`,
-          fecha_desde: todayStr,
-          fecha_hasta: null,
-          duracion_slot_min: prof.duracion_turno_minutos || 15,
-          modalidad: 'PRESENCIAL',
-          max_sobreturnos_dia: prof.max_sobreturnos_dia || 3,
-          dias_horarios: [1, 2, 3, 4, 5].map(d => ({
-            dia_semana: d,
-            franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }]
-          })),
-          estado: 'ACTIVA',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
-        const agendasList = StorageService.getCollection(STORAGE_KEYS.AGENDAS) || [];
-        agendasList.push(defaultAgenda);
-        StorageService.saveCollection(STORAGE_KEYS.AGENDAS, agendasList);
-
-        // Sincronizar automáticamente en la colección de horarios
-        StorageService.sincronizarHorariosDesdeAgendas(prof.id);
-      }
-    } catch (err) {
-      console.warn('Auto-creación de agenda para nuevo profesional:', err);
-    }
-
     return prof;
   },
   deleteProfesional: (id) => {
-    const items = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES).filter(p => p.id !== id);
-    StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, items);
+    const items = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
+    const prof = items.find(p => p.id === id);
+    if (!prof) return { success: false, error: 'Profesional no encontrado.' };
+
+    const turnos = StorageService.getTurnos().filter(t => t.profesional_id === id);
+    if (turnos.length > 0) {
+      throw new Error(`No es posible eliminar al profesional Dr(a). ${prof.apellido} porque tiene ${turnos.length} turno(s) registrados en su historial. Para deshabilitarlo, desactive su estado a INACTIVO.`);
+    }
+
+    const updated = items.filter(p => p.id !== id);
+    StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, updated);
+    return { success: true };
   },
 
   // ==============================================================================
   // AGENDAS MÉDICAS PROFESIONALES (Con Vigencia, Ciclo de Vida y Detección de Turnos)
   // ==============================================================================
-  getAgendas: (clinicaId = null, profesionalId = null) => {
+  getAgendas: (clinicaId = null, profesionalId = null, incluirInactivas = false) => {
     let items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
     if (!items || !Array.isArray(items)) {
       items = [...INITIAL_AGENDAS];
       StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
-    }
-
-    // Auto-inferir y asegurar agendas para cualquier profesional que aún no tenga agenda registrada
-    try {
-      const todosProfesionales = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES) || [];
-      const todosHorarios = StorageService.getCollection(STORAGE_KEYS.HORARIOS) || [];
-      let updated = false;
-
-      todosProfesionales.forEach(p => {
-        const tieneAgenda = items.some(a => String(a.profesional_id) === String(p.id) && a.estado === 'ACTIVA');
-        const horariosProf = todosHorarios.filter(h => String(h.profesional_id) === String(p.id) && h.activo !== false);
-
-        if (!tieneAgenda) {
-          const consultoriosList = StorageService.getConsultorios(p.clinica_id);
-          const defaultConsId = consultoriosList[0]?.id || 'c-1';
-          const defaultServId = (p.servicios_ids && p.servicios_ids[0]) || null;
-          
-          let dias_horarios = [];
-          if (horariosProf.length > 0) {
-            const diasHorariosMap = {};
-            horariosProf.forEach(h => {
-              const diaNum = Number(h.dia_semana);
-              if (diaNum >= 1 && diaNum <= 6) {
-                if (!diasHorariosMap[diaNum]) diasHorariosMap[diaNum] = [];
-                diasHorariosMap[diaNum].push({
-                  hora_inicio: h.hora_inicio,
-                  hora_fin: h.hora_fin,
-                  modalidad: h.modalidad || 'PRESENCIAL'
-                });
-              }
-            });
-            dias_horarios = Object.keys(diasHorariosMap).map(d => ({
-              dia_semana: Number(d),
-              franjas: diasHorariosMap[d]
-            }));
-          }
-
-          if (dias_horarios.length === 0) {
-            dias_horarios = [1, 2, 3, 4, 5].map(d => ({
-              dia_semana: d,
-              franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }]
-            }));
-          }
-
-          const inferida = {
-            id: `ag-auto-${p.id}`,
-            clinica_id: p.clinica_id || StorageService.getClinicaActiva()?.id,
-            profesional_id: p.id,
-            servicio_id: defaultServId,
-            consultorio_id: defaultConsId,
-            nombre: `Consultas - Dr(a). ${p.apellido}`,
-            fecha_desde: getLocalDateString(new Date()),
-            fecha_hasta: null,
-            duracion_slot_min: Number(p.duracion_turno_minutos || 15),
-            modalidad: 'PRESENCIAL',
-            max_sobreturnos_dia: Number(p.max_sobreturnos_dia || 3),
-            dias_horarios,
-            estado: 'ACTIVA',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          items.push(inferida);
-          updated = true;
-        }
-      });
-
-      if (updated) {
-        StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
-      }
-    } catch (e) {
-      console.warn('Error auto-infiriendo agendas:', e);
     }
 
     const targetClinicaId = clinicaId || StorageService.getClinicaActiva()?.id;
@@ -1221,6 +1354,9 @@ export const StorageService = {
     }
     if (profesionalId) {
       items = items.filter(a => a.profesional_id === profesionalId);
+    }
+    if (!incluirInactivas) {
+      items = items.filter(a => a.estado === 'ACTIVA');
     }
     return items;
   },
@@ -1262,14 +1398,47 @@ export const StorageService = {
     return agenda;
   },
 
+  reactivarAgenda: (agendaId) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
+    const agenda = items.find(a => a.id === agendaId);
+    if (agenda) {
+      agenda.estado = 'ACTIVA';
+      agenda.motivo_cierre = null;
+      agenda.updated_at = new Date().toISOString();
+      StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
+      StorageService.sincronizarHorariosDesdeAgendas(agenda.profesional_id);
+    }
+    return agenda;
+  },
+
   deleteAgenda: (agendaId) => {
     const items = StorageService.getCollection(STORAGE_KEYS.AGENDAS);
     const target = items.find(a => a.id === agendaId);
+    if (!target) return { success: false, error: 'Agenda no encontrada.' };
+
+    // Validar si la agenda contiene turnos otorgados en el historial
+    const allTurnos = StorageService.getTurnos();
+    const turnosAsociados = allTurnos.filter(t => {
+      if (t.agenda_id === agendaId) return true;
+      if (t.profesional_id === target.profesional_id && 
+          (!target.servicio_id || t.servicio_id === target.servicio_id) &&
+          (!target.fecha_desde || t.fecha >= target.fecha_desde) &&
+          (!target.fecha_hasta || t.fecha <= target.fecha_hasta)) {
+        return true;
+      }
+      return false;
+    });
+
+    if (turnosAsociados.length > 0) {
+      throw new Error(`No es posible eliminar la agenda "${target.nombre}" porque contiene ${turnosAsociados.length} turno(s) en su historial. Para preservar la integridad del historial clínico, debe utilizar la opción "Cerrar Vigencia".`);
+    }
+
     const updated = items.filter(a => a.id !== agendaId);
     StorageService.saveCollection(STORAGE_KEYS.AGENDAS, updated);
     if (target) {
       StorageService.sincronizarHorariosDesdeAgendas(target.profesional_id);
     }
+    return { success: true };
   },
 
   // Busca turnos futuros que quedarían afectados al modificar o cerrar una agenda
@@ -1297,7 +1466,7 @@ export const StorageService = {
 
   // Sincroniza la tabla horarios a partir de todas las agendas activas del médico
   sincronizarHorariosDesdeAgendas: (profesionalId) => {
-    const agendasActivas = StorageService.getAgendas(null, profesionalId).filter(a => a.estado === 'ACTIVA');
+    const agendasActivas = StorageService.getAgendas(null, profesionalId, false);
     const allHorarios = StorageService.getHorarios().filter(h => h.profesional_id !== profesionalId);
 
     const newHorarios = [];
@@ -1311,6 +1480,7 @@ export const StorageService = {
                 newHorarios.push({
                   id: `h-${ag.id}-${diaNum}-${fIdx}`,
                   agenda_id: ag.id,
+                  clinica_id: ag.clinica_id,
                   profesional_id: ag.profesional_id,
                   servicio_id: ag.servicio_id || null,
                   consultorio_id: ag.consultorio_id,
@@ -1333,7 +1503,7 @@ export const StorageService = {
     const updated = [...allHorarios, ...newHorarios];
     StorageService.saveCollection(STORAGE_KEYS.HORARIOS, updated);
 
-    // Sincronizar también la duración en la ficha del profesional
+    // Sincronizar también la duración en la ficha del profesional si tiene agenda activa
     if (agendasActivas.length > 0 && agendasActivas[0].duracion_slot_min) {
       const slotMin = Number(agendasActivas[0].duracion_slot_min);
       const profs = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
@@ -1366,7 +1536,7 @@ export const StorageService = {
 
   // HORARIOS / GRILLAS DE AGENDA
   getHorarios: () => StorageService.getCollection(STORAGE_KEYS.HORARIOS) || [],
-  getHorariosByProfesional: (profesionalId) => {
+  getHorariosByProfesional: (profesionalId, clinicaId = null) => {
     if (!profesionalId) return [];
     
     let list = StorageService.getHorarios().filter(h => 
@@ -1382,27 +1552,8 @@ export const StorageService = {
       list = StorageService.sincronizarHorariosDesdeAgendas(profesionalId);
     }
 
-    // Si el médico aún no tiene ningún horario configurado en el sistema, autogenerar horario estándar Lun-Vie 08:00-14:00
-    if (list.length === 0) {
-      const prof = StorageService.getProfesionales().find(p => String(p.id) === String(profesionalId));
-      if (prof) {
-        const slotMin = Number(prof.duracion_turno_minutos) || 20;
-        const autoHorarios = [1, 2, 3, 4, 5].map(diaNum => ({
-          id: `h-auto-${prof.id}-${diaNum}`,
-          profesional_id: prof.id,
-          consultorio_id: 'c-1',
-          dia_semana: diaNum,
-          hora_inicio: '08:00',
-          hora_fin: '14:00',
-          duracion_slot_min: slotMin,
-          modalidad: prof.atiende_online ? 'AMBAS' : 'PRESENCIAL',
-          activo: true
-        }));
-        
-        const allHorarios = StorageService.getHorarios();
-        StorageService.saveCollection(STORAGE_KEYS.HORARIOS, [...allHorarios, ...autoHorarios]);
-        list = autoHorarios;
-      }
+    if (clinicaId && clinicaId !== 'TODAS' && clinicaId !== 'ALL') {
+      list = list.filter(h => !h.clinica_id || h.clinica_id === clinicaId);
     }
 
     return list;
@@ -1427,12 +1578,14 @@ export const StorageService = {
     StorageService.saveCollection(STORAGE_KEYS.HORARIOS, items);
   },
   // CONFIGURADOR EN LOTE DE AGENDA SEMANAL
-  configurarAgendaSemanal: ({ profesional_id, servicio_id, dias_semana, turnos_horarios, consultorio_id, duracion_slot_min, modalidad = 'PRESENCIAL', fecha_desde = null, fecha_hasta = null, nombre = 'Agenda de Consultas' }) => {
+  configurarAgendaSemanal: ({ profesional_id, clinica_id = null, servicio_id, dias_semana, turnos_horarios, consultorio_id, duracion_slot_min, modalidad = 'PRESENCIAL', fecha_desde = null, fecha_hasta = null, nombre = 'Agenda de Consultas' }) => {
     const diasNum = dias_semana.map(Number).filter(d => d >= 1 && d <= 6);
+    const targetClinicaId = clinica_id || StorageService.getClinicaActiva()?.id;
     
     // Crear o actualizar la entidad Agenda formal
     const agendaObj = {
       profesional_id,
+      clinica_id: targetClinicaId,
       servicio_id: servicio_id || null,
       consultorio_id,
       nombre,
@@ -1517,8 +1670,377 @@ export const StorageService = {
     return paciente;
   },
   deletePaciente: (id) => {
-    const items = StorageService.getCollection(STORAGE_KEYS.PACIENTES).filter(p => p.id !== id);
+    const items = StorageService.getCollection(STORAGE_KEYS.PACIENTES);
+    const paciente = items.find(p => p.id === id);
+    if (!paciente) return { success: false, error: 'Paciente no encontrado.' };
+
+    const cleanDni = String(paciente.dni || '').replace(/\D/g, '');
+
+    // 1. Validar si tiene turnos
+    const allTurnos = StorageService.getTurnos();
+    const turnosDelPaciente = allTurnos.filter(t => 
+      t.paciente_id === id || 
+      (cleanDni && String(t.dni || t.paciente_dni || '').replace(/\D/g, '') === cleanDni)
+    );
+
+    // 2. Validar si tiene atenciones / Historia Clínica (HCE)
+    const atencionesHce = StorageService.getCollection(STORAGE_KEYS.ATENCIONES_HCE) || [];
+    const atencionesDelPaciente = atencionesHce.filter(a => 
+      a.paciente_id === id || 
+      (cleanDni && String(a.dni || a.paciente_dni || '').replace(/\D/g, '') === cleanDni)
+    );
+
+    // 3. Validar si tiene comprobantes de facturación (ARCA)
+    const comprobantes = StorageService.getCollection(STORAGE_KEYS.COMPROBANTES_ARCA) || [];
+    const facturasDelPaciente = comprobantes.filter(c => 
+      c.paciente_id === id || 
+      (cleanDni && String(c.receptor?.doc_nro || '').replace(/\D/g, '') === cleanDni)
+    );
+
+    // 4. Validar si tiene movimientos de caja
+    const movsCaja = StorageService.getCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA) || [];
+    const movsCajaPaciente = movsCaja.filter(m => 
+      (cleanDni && String(m.paciente_dni || '').replace(/\D/g, '') === cleanDni)
+    );
+
+    const motivos = [];
+    if (turnosDelPaciente.length > 0) motivos.push(`${turnosDelPaciente.length} turno(s) en su historial`);
+    if (atencionesDelPaciente.length > 0) motivos.push(`${atencionesDelPaciente.length} atención(es) en Historia Clínica`);
+    if (facturasDelPaciente.length > 0) motivos.push(`${facturasDelPaciente.length} comprobante(s) de facturación ARCA`);
+    if (movsCajaPaciente.length > 0) motivos.push(`${movsCajaPaciente.length} movimiento(s) de caja`);
+
+    if (motivos.length > 0) {
+      throw new Error(`No es posible eliminar al paciente "${paciente.nombre} ${paciente.apellido}" porque posee registros asociados (${motivos.join(', ')}). Para preservar la trazabilidad médico-legal y contable, debe mantener su ficha o marcarlo como INACTIVO.`);
+    }
+
+    const updated = items.filter(p => p.id !== id);
+    StorageService.saveCollection(STORAGE_KEYS.PACIENTES, updated);
+    return { success: true };
+  },
+
+  // Limpieza integral de facturación y turnos para pruebas limpias
+  limpiarFacturacion: () => {
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CAJA, []);
+    StorageService.saveCollection(STORAGE_KEYS.COMPROBANTES_ARCA, []);
+    StorageService.saveCollection(STORAGE_KEYS.LOTES_FACTURACION, []);
+    StorageService.saveCollection(STORAGE_KEYS.CUENTAS_CORRIENTES_PACIENTES, []);
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_PACIENTES, []);
+    StorageService.saveCollection(STORAGE_KEYS.CUENTAS_CORRIENTES_OS, []);
+    StorageService.saveCollection(STORAGE_KEYS.MOVIMIENTOS_CTA_CTE_OS, []);
+  },
+
+  resetTurnosYFacturacion: () => {
+    StorageService.saveCollection(STORAGE_KEYS.TURNOS, []);
+    StorageService.saveCollection(STORAGE_KEYS.ATENCIONES_HCE, []);
+    StorageService.limpiarFacturacion();
+  },
+
+  // PARSER INTELIGENTE DE PACIENTES PARA PSICOLOGÍA Y FORMULARIOS GOOGLE FORMS / EXCEL
+  parseGoogleSheetsText: (rawText) => {
+    if (!rawText || !rawText.trim()) return [];
+    
+    const lines = rawText.split(/\r?\n/).filter(line => line.trim().length > 0);
+    if (lines.length === 0) return [];
+
+    const firstLine = lines[0];
+    const isTSV = firstLine.includes('\t');
+    const separator = isTSV ? '\t' : (firstLine.includes(';') ? ';' : ',');
+
+    const splitRow = (rowStr) => {
+      if (separator === '\t') {
+        return rowStr.split('\t').map(c => c.trim().replace(/^["']|["']$/g, ''));
+      }
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < rowStr.length; i++) {
+        const char = rowStr[i];
+        if (char === '"' || char === "'") {
+          inQuotes = !inQuotes;
+        } else if (char === separator && !inQuotes) {
+          result.push(current.trim().replace(/^["']|["']$/g, ''));
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim().replace(/^["']|["']$/g, ''));
+      return result;
+    };
+
+    const headerCells = splitRow(firstLine).map(h => h.toLowerCase().trim());
+    
+    let colMap = {
+      marca_temporal: -1,
+      email: -1,
+      nombre_completo: -1,
+      dni: -1,
+      celular: -1,
+      domicilio: -1,
+      contacto_emergencia: -1,
+      servicio_emergencia: -1,
+      edad: -1,
+      obra_social: -1,
+      con_quien_vive: -1,
+      consentimiento: -1
+    };
+
+    const hasHeader = headerCells.some(h => 
+      h.includes('marca') || h.includes('correo') || h.includes('email') || 
+      h.includes('nombre') || h.includes('dni') || h.includes('celular') || 
+      h.includes('domicilio') || h.includes('emergencia') || h.includes('edad') ||
+      h.includes('social') || h.includes('vive') || h.includes('consentimiento')
+    );
+
+    if (hasHeader) {
+      headerCells.forEach((h, idx) => {
+        if (h.includes('marca') || h.includes('timestamp') || h.includes('hora')) colMap.marca_temporal = idx;
+        else if (h.includes('correo') || h.includes('email') || h.includes('electr')) colMap.email = idx;
+        else if (h.includes('nombre') || h.includes('apellido') || h.includes('paciente')) colMap.nombre_completo = idx;
+        else if (h.includes('dni') || h.includes('documento') || h.includes('cédula')) colMap.dni = idx;
+        else if (h.includes('celular') || h.includes('whatsapp') || (h.includes('tel') && !h.includes('llamar'))) colMap.celular = idx;
+        else if (h.includes('domicilio') || h.includes('reside') || h.includes('direcci') || h.includes('calle')) colMap.domicilio = idx;
+        else if (h.includes('llamar') || h.includes('familiar') || h.includes('contacto') || h.includes('necesario')) colMap.contacto_emergencia = idx;
+        else if (h.includes('servicio de emergencia') || h.includes('posee servicio') || h.includes('emergencia')) colMap.servicio_emergencia = idx;
+        else if (h.includes('edad') || h.includes('años')) colMap.edad = idx;
+        else if (h.includes('obra social') || h.includes('prepaga') || h.includes('cobertura') || h.includes('social')) colMap.obra_social = idx;
+        else if (h.includes('vive') || h.includes('convive') || h.includes('conviviente') || h.includes('hogar')) colMap.con_quien_vive = idx;
+        else if (h.includes('consentimiento') || h.includes('términos') || h.includes('trminos') || h.includes('acepto')) colMap.consentimiento = idx;
+      });
+    } else {
+      // Mapeo por defecto según las columnas exactas del formulario
+      colMap = {
+        marca_temporal: 0,
+        email: 1,
+        nombre_completo: 2,
+        dni: 3,
+        celular: 4,
+        domicilio: 5,
+        contacto_emergencia: 6,
+        servicio_emergencia: 7,
+        edad: 8,
+        obra_social: 9,
+        con_quien_vive: 10,
+        consentimiento: 11
+      };
+    }
+
+    const dataRows = hasHeader ? lines.slice(1) : lines;
+    const parsedPatients = [];
+
+    dataRows.forEach((rowStr, rowIndex) => {
+      const cells = splitRow(rowStr);
+      if (cells.length < 2 || !cells.some(c => c.length > 0)) return;
+
+      const getVal = (colIdx) => (colIdx >= 0 && colIdx < cells.length) ? cells[colIdx].trim() : '';
+
+      const rawMarcaTemporal = getVal(colMap.marca_temporal);
+      const rawEmail = getVal(colMap.email);
+      const rawNombreCompleto = getVal(colMap.nombre_completo);
+      const rawDni = getVal(colMap.dni);
+      const rawCelular = getVal(colMap.celular);
+      const rawDomicilio = getVal(colMap.domicilio);
+      const rawContactoEmergencia = getVal(colMap.contacto_emergencia);
+      const rawServicioEmergencia = getVal(colMap.servicio_emergencia);
+      const rawEdad = getVal(colMap.edad);
+      const rawObraSocial = getVal(colMap.obra_social);
+      const rawConQuienVive = getVal(colMap.con_quien_vive);
+      const rawConsentimiento = getVal(colMap.consentimiento);
+
+      // 1. Separación de Nombre y Apellido
+      let nombre = '';
+      let apellido = '';
+      if (rawNombreCompleto.includes(',')) {
+        const parts = rawNombreCompleto.split(',');
+        apellido = parts[0].trim();
+        nombre = parts.slice(1).join(' ').trim();
+      } else if (rawNombreCompleto) {
+        const words = rawNombreCompleto.split(/\s+/);
+        if (words.length === 1) {
+          nombre = words[0];
+          apellido = '';
+        } else if (words.length === 2) {
+          nombre = words[0];
+          apellido = words[1];
+        } else {
+          nombre = words.slice(0, Math.ceil(words.length / 2)).join(' ');
+          apellido = words.slice(Math.ceil(words.length / 2)).join(' ');
+        }
+      }
+
+      // 2. DNI
+      const cleanDni = rawDni.replace(/\D/g, '');
+
+      // 3. Celular normalizado
+      let cleanCelular = rawCelular;
+      if (cleanCelular && !cleanCelular.startsWith('+')) {
+        const digits = cleanCelular.replace(/\D/g, '');
+        if (digits.length >= 8) {
+          cleanCelular = digits.startsWith('54') ? `+${digits}` : (digits.startsWith('9') ? `+54 ${digits}` : `+54 9 ${digits}`);
+        }
+      }
+
+      // 4. Contactos Familiares Múltiples
+      const contactosFamiliares = [];
+      if (rawContactoEmergencia) {
+        const rawSegments = rawContactoEmergencia.split(/\s*(?:\/|;|\n|\be\b|\by\b)\s*/i);
+        
+        rawSegments.forEach((seg, sIdx) => {
+          const segTrim = seg.trim();
+          if (!segTrim) return;
+
+          const phoneMatch = segTrim.match(/(?:\+?54\s*9?)?\s*(?:\(?\d{2,4}\)?[-.\s]?)?\d{3,4}[-.\s]?\d{3,4}/);
+          const tel = phoneMatch ? phoneMatch[0].trim() : '';
+
+          let nameAndRel = segTrim.replace(tel, '').replace(/cel(?:ular)?|tel(?:éfono)?|llam(?:ar)?|a(?:l)?|contacto:?/gi, '').trim();
+          nameAndRel = nameAndRel.replace(/^[:\-–,]+|[:\-–,]+$/g, '').trim();
+
+          let relacion = 'Familiar / Referente';
+          const relMatch = nameAndRel.match(/\b(mam[aá]|madre|pap[aá]|padre|pareja|espos[oa]|novi[oa]|c[oó]nyuge|hij[oa]|tutor(?:a)?|herman[oa]|t[ií][oa]|prim[oa]|abuel[oa]|amig[oa]|psiquiatra|m[eé]dico)\b/i);
+          if (relMatch) {
+            const rWord = relMatch[1].toLowerCase();
+            if (rWord.includes('mam') || rWord.includes('madr')) relacion = 'Madre';
+            else if (rWord.includes('pap') || rWord.includes('padr')) relacion = 'Padre';
+            else if (rWord.includes('pareja') || rWord.includes('espos') || rWord.includes('novi') || rWord.includes('cóny')) relacion = 'Pareja';
+            else if (rWord.includes('hij')) relacion = 'Hijo/a';
+            else if (rWord.includes('tutor')) relacion = 'Tutor/a';
+            else if (rWord.includes('herman')) relacion = 'Hermano/a';
+            else if (rWord.includes('ti') || rWord.includes('tí')) relacion = 'Tío/a';
+            else if (rWord.includes('abuel')) relacion = 'Abuelo/a';
+            else if (rWord.includes('amig')) relacion = 'Amigo/a de confianza';
+            else if (rWord.includes('psiq') || rWord.includes('méd') || rWord.includes('med')) relacion = 'Profesional tratante';
+
+            nameAndRel = nameAndRel.replace(new RegExp(`\\(?\\b${relMatch[1]}\\b\\)?`, 'gi'), '').trim();
+            nameAndRel = nameAndRel.replace(/^[:\-–,]+|[:\-–,]+$/g, '').trim();
+          }
+
+          contactosFamiliares.push({
+            id: `fam-imp-${rowIndex}-${sIdx}`,
+            nombre: nameAndRel || `Contacto Familiar ${sIdx + 1}`,
+            relacion: relacion,
+            telefono: tel || segTrim,
+            es_principal: sIdx === 0,
+            notas: ''
+          });
+        });
+      }
+
+      // 5. Servicio de Emergencia
+      const servLow = (rawServicioEmergencia || '').toLowerCase();
+      const poseeEmergencia = Boolean(
+        rawServicioEmergencia && 
+        !servLow.includes('no') && 
+        !servLow.includes('ningun') && 
+        servLow !== '-' && 
+        servLow !== '.'
+      );
+      const servicioEmergenciaObj = {
+        posee: poseeEmergencia,
+        nombre: poseeEmergencia ? (rawServicioEmergencia.replace(/^s[ií][,:\s]*/i, '').trim() || 'Servicio de Emergencia') : 'No posee'
+      };
+
+      // 6. Consentimiento
+      const consLow = (rawConsentimiento || '').toLowerCase();
+      const aceptoConsentimiento = Boolean(
+        consLow.includes('s') || 
+        consLow.includes('acepto') || 
+        consLow.includes('true') || 
+        consLow.includes('ok') || 
+        consLow.includes('1') || 
+        consLow === 'x'
+      );
+
+      parsedPatients.push({
+        _rawIndex: rowIndex + 1,
+        id: `pac-imp-${Date.now()}-${rowIndex}`,
+        nombre: nombre || 'Sin Nombre',
+        apellido: apellido || 'Sin Apellido',
+        nombre_completo: rawNombreCompleto || `${nombre} ${apellido}`,
+        dni: cleanDni || `S-DNI-${rowIndex + 1}`,
+        telefono_whatsapp: cleanCelular || '',
+        email: rawEmail || '',
+        domicilio: rawDomicilio || '',
+        edad: rawEdad ? (parseInt(rawEdad.replace(/\D/g, '')) || rawEdad) : '',
+        con_quien_vive: rawConQuienVive || '',
+        contactos_familiares: contactosFamiliares,
+        servicio_emergencia: servicioEmergenciaObj,
+        obra_social_nombre: rawObraSocial || 'Particular',
+        obra_social_id: '',
+        consentimiento_informado: {
+          aceptado: aceptoConsentimiento,
+          fecha_firma: rawMarcaTemporal || new Date().toISOString()
+        },
+        marca_temporal_registro: rawMarcaTemporal || new Date().toISOString(),
+        alergias: '',
+        antecedentes: rawConQuienVive ? `Admisión psicológica: Convivencia (${rawConQuienVive})` : '',
+        activo: true
+      });
+    });
+
+    return parsedPatients;
+  },
+
+  importarPacientesMasivo: (pacientesArray, options = { onDuplicate: 'update' }) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.PACIENTES);
+    const obrasSociales = StorageService.getCollection(STORAGE_KEYS.OBRAS_SOCIALES);
+    const clinicaId = StorageService.getClinicaActiva().id;
+
+    let creados = 0;
+    let actualizados = 0;
+    const errores = [];
+
+    pacientesArray.forEach((p, idx) => {
+      try {
+        const cleanDni = String(p.dni || '').replace(/\D/g, '');
+        if (!cleanDni && !p.nombre) {
+          errores.push({ fila: idx + 1, error: 'Paciente sin DNI ni Nombre' });
+          return;
+        }
+
+        // Mapear Obra Social por coincidencia de nombre o sigla
+        let osId = p.obra_social_id;
+        if (!osId && p.obra_social_nombre) {
+          const osLow = p.obra_social_nombre.toLowerCase();
+          const matchOS = obrasSociales.find(os => 
+            os.nombre.toLowerCase().includes(osLow) || 
+            (os.sigla && os.sigla.toLowerCase() === osLow) ||
+            osLow.includes(os.nombre.toLowerCase())
+          );
+          osId = matchOS ? matchOS.id : 'os-1';
+        }
+        if (!osId) osId = 'os-1';
+
+        const pacienteToSave = {
+          ...p,
+          dni: cleanDni,
+          obra_social_id: osId,
+          clinica_id: p.clinica_id || clinicaId,
+          activo: true
+        };
+
+        const existingIdx = cleanDni ? items.findIndex(item => String(item.dni).replace(/\D/g, '') === cleanDni) : -1;
+
+        if (existingIdx >= 0) {
+          if (options.onDuplicate === 'update') {
+            items[existingIdx] = {
+              ...items[existingIdx],
+              ...pacienteToSave,
+              id: items[existingIdx].id
+            };
+            actualizados++;
+          }
+        } else {
+          pacienteToSave.id = `pac-${Date.now()}-${idx}-${Math.floor(Math.random()*1000)}`;
+          items.push(pacienteToSave);
+          creados++;
+        }
+      } catch (err) {
+        errores.push({ fila: idx + 1, error: err.message });
+      }
+    });
+
     StorageService.saveCollection(STORAGE_KEYS.PACIENTES, items);
+    return { creados, actualizados, total: creados + actualizados, errores };
   },
 
   // TURNOS
@@ -1549,8 +2071,8 @@ export const StorageService = {
     return turno;
   },
 
-  // SLOTS DISPONIBLES (Filtrado por profesional, fecha, servicio opcional y modalidad opcional)
-  getSlotsDisponibles: (profesionalId, fechaStr, servicioId = null, modalidad = null) => {
+  // SLOTS DISPONIBLES (Filtrado por profesional, fecha, servicio, modalidad y sede opcionales)
+  getSlotsDisponibles: (profesionalId, fechaStr, servicioId = null, modalidad = null, clinicaId = null) => {
     if (!profesionalId || !fechaStr) return [];
 
     const diaSemana = getDayOfWeekFromDateString(fechaStr);
@@ -1569,9 +2091,15 @@ export const StorageService = {
     if (esFeriadoOBloqueado) return [];
 
     // Obtener horarios que coincidan con el día de la semana y vigencia activa
-    let horarios = StorageService.getHorariosByProfesional(profesionalId).filter(h => {
+    const allAgendas = StorageService.getAgendas(null, profesionalId, true);
+    let horarios = StorageService.getHorariosByProfesional(profesionalId, clinicaId).filter(h => {
       if (Number(h.dia_semana) !== Number(diaSemana)) return false;
       if (h.activo === false) return false;
+      // Validar que la agenda padre esté ACTIVA
+      if (h.agenda_id) {
+        const ag = allAgendas.find(a => a.id === h.agenda_id);
+        if (ag && ag.estado !== 'ACTIVA') return false;
+      }
       // Validar vigencia de fecha de la agenda
       if (h.fecha_desde && fechaStr < h.fecha_desde) return false;
       if (h.fecha_hasta && fechaStr > h.fecha_hasta) return false;
@@ -1593,6 +2121,7 @@ export const StorageService = {
       t.estado !== 'CANCELADO'
     );
 
+    const consultoriosList = StorageService.getConsultorios('TODAS');
     const slots = [];
 
     horarios.forEach(h => {
@@ -1602,6 +2131,9 @@ export const StorageService = {
 
       let currentMinutes = hIni * 60 + mIni;
       const endMinutes = hFin * 60 + mFin;
+
+      const consObj = consultoriosList.find(c => c.id === h.consultorio_id);
+      const slotClinicaId = h.clinica_id || consObj?.clinica_id || StorageService.getClinicaActiva().id;
 
       while (currentMinutes + slotDuration <= endMinutes) {
         const slotHour = Math.floor(currentMinutes / 60);
@@ -1633,6 +2165,7 @@ export const StorageService = {
           hora_fin: horaFinStr,
           disponible: !isOccupied,
           consultorio_id: h.consultorio_id,
+          clinica_id: slotClinicaId,
           servicio_id: h.servicio_id,
           modalidad: h.modalidad || 'PRESENCIAL',
           duracion_min: slotDuration

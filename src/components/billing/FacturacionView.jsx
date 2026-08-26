@@ -22,7 +22,8 @@ import {
   Plus,
   Eye,
   QrCode,
-  Brain
+  Brain,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDateAR } from '../../utils/formatters';
@@ -41,7 +42,8 @@ export const FacturacionView = () => {
     allClinicas, 
     activeClinica,
     lotesFacturacion,
-    comprobantesArca
+    comprobantesArca,
+    resetTurnosYFacturacion
   } = useApp();
 
   // Sub-módulos principales
@@ -233,7 +235,21 @@ export const FacturacionView = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('¿Vaciar y poner a CERO toda la facturación y turnos de prueba?\n\nEsto dejará la tabla en 0 registros limpios para comenzar pruebas reales.')) {
+                resetTurnosYFacturacion();
+              }
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer"
+            title="Poner a cero todos los turnos y facturación de prueba"
+          >
+            <Trash2 className="w-4 h-4 text-rose-600" />
+            <span>Vaciar / Iniciar de Cero</span>
+          </button>
+
           <button
             onClick={() => setShowLoteModal(true)}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition cursor-pointer"

@@ -12,15 +12,24 @@ import {
   X, 
   Share2, 
   AlertTriangle,
-  MessageCircle
+  MessageCircle,
+  Building
 } from 'lucide-react';
 import { WhatsAppService } from '../../services/whatsapp';
 import { useApp } from '../../context/AppContext';
+import { StorageService } from '../../services/storage';
 import { formatDateAR } from '../../utils/formatters';
 
 export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSocial, plan, practica, onClose }) => {
   const { clinica } = useApp();
   if (!turno) return null;
+
+  const allClinicas = StorageService.getClinicasList();
+  const sedeTurno = allClinicas.find(c => c.id === (turno.clinica_id || consultorio?.clinica_id)) || clinica || {
+    nombre: 'Centro Médico San Lucas',
+    direccion: 'Av. Santa Fe 2450',
+    telefono: '(011) 4801-9920'
+  };
 
   const handleSendWhatsApp = () => {
     WhatsAppService.enviarMensaje({
@@ -28,7 +37,7 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
       paciente,
       profesional,
       consultorio,
-      clinica,
+      clinica: sedeTurno,
       tipo: 'NUEVO'
     });
   };
@@ -43,29 +52,34 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
     const startIso = `${turno.fecha.replace(/-/g, '')}T${turno.hora_inicio.replace(/:/g, '')}00`;
     const endIso = `${turno.fecha.replace(/-/g, '')}T${turno.hora_fin.replace(/:/g, '')}00`;
     const title = encodeURIComponent(`Turno Médico: ${profesional?.especialidad || 'Consulta'} - Dr(a). ${profesional?.apellido || ''}`);
-    const details = encodeURIComponent(`Turno en ${consultorio?.nombre || 'Consultorio'}. Código de reserva: ${turno.codigo_reserva}. Paciente: ${paciente?.nombre} ${paciente?.apellido}`);
-    const location = encodeURIComponent('Centro Médico San Lucas, Av. Santa Fe 2450');
+    const details = encodeURIComponent(`Turno en ${sedeTurno.nombre} - ${consultorio?.nombre || 'Consultorio'}. Código: ${turno.codigo_reserva}. Paciente: ${paciente?.nombre} ${paciente?.apellido}`);
+    const location = encodeURIComponent(`${sedeTurno.nombre}, ${sedeTurno.direccion}`);
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
+      <div className="bg-white rounded-3xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scaleIn relative">
+        
         {/* Botón Cerrar */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition no-print"
+          className="absolute top-4 right-4 z-10 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition no-print cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div id="printable-area" className="print:p-2 print:text-black">
+        <div id="printable-area" className="p-6 sm:p-7 overflow-y-auto flex-1 print:p-2 print:text-black">
           {/* Header del Voucher */}
           <div className="text-center pb-4 border-b border-dashed border-slate-300 print:pb-2">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-left">
-                <h3 className="font-black text-sm text-slate-900 uppercase tracking-wide">Centro Médico San Lucas</h3>
-                <p className="text-[11px] text-slate-500 font-medium">Av. Santa Fe 2450 • Tel: (011) 4801-9920</p>
+              <div className="text-left pr-8">
+                <h3 className="font-black text-sm text-slate-900 uppercase tracking-wide">
+                  {sedeTurno.nombre}
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  {sedeTurno.direccion} {sedeTurno.telefono ? `• Tel: ${sedeTurno.telefono}` : ''}
+                </p>
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-bold text-slate-400 block">CÓDIGO DE RESERVA</span>
@@ -115,6 +129,7 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-slate-500 font-bold uppercase">Lugar de Atención</span>
+                  <p className="text-xs font-extrabold text-blue-900">🏥 {sedeTurno.nombre}</p>
                   <p className="text-xs font-bold text-slate-900">{consultorio?.nombre || 'Consultorio'}</p>
                   <p className="text-[10px] text-slate-500 font-medium">{consultorio?.piso_ubicacion || 'Planta Baja'}</p>
                 </div>
@@ -166,13 +181,13 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
           </div>
         </div>
 
-        {/* Acciones de descarga / compartir */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 no-print">
+        {/* Acciones de descarga / compartir (Footer sticky) */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:px-7 border-t border-slate-200 bg-slate-50/90 shrink-0 no-print">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={handleSendWhatsApp}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-600/20 transition"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer"
               title="Enviar resumen del turno por WhatsApp al paciente"
             >
               <MessageCircle className="w-4 h-4" />
@@ -183,7 +198,7 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
               href={getGoogleCalendarUrl()}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-bold text-xs transition cursor-pointer"
             >
               <Calendar className="w-4 h-4 text-medical-600" />
               <span className="hidden sm:inline">Google Calendar</span>
@@ -194,7 +209,7 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
             <button
               type="button"
               onClick={handlePrint}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold text-xs shadow-md shadow-medical-600/20 transition"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold text-xs shadow-md shadow-medical-600/20 transition cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir A4</span>
@@ -202,7 +217,7 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-initial px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition"
+              className="flex-1 sm:flex-initial px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition cursor-pointer"
             >
               Cerrar
             </button>
@@ -212,3 +227,4 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
     </div>
   );
 };
+

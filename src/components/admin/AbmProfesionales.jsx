@@ -11,9 +11,11 @@ import {
   X,
   Stethoscope,
   Shield,
-  Activity
+  Activity,
+  Building
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { StorageService } from '../../services/storage';
 
 export const AbmProfesionales = () => {
   const { 
@@ -30,6 +32,7 @@ export const AbmProfesionales = () => {
     deleteHorario 
   } = useApp();
 
+  const allClinicas = StorageService.getClinicasList();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProfForHorarios, setSelectedProfForHorarios] = useState(null);
 
@@ -53,6 +56,8 @@ export const AbmProfesionales = () => {
     max_sobreturnos_dia: 3,
     color_agenda: '#0284c7',
     atiende_particular: true,
+    atiende_online: true,
+    sedes_ids: allClinicas.map(c => c.id),
     obras_sociales_ids: [],
     practicas_habilitadas_ids: [],
     activo: true
@@ -60,6 +65,7 @@ export const AbmProfesionales = () => {
 
   // Form states Horario
   const [horarioForm, setHorarioForm] = useState({
+    clinica_id: 'clinica-1',
     dia_semana: 1, // 1=Lunes
     hora_inicio: '08:00',
     hora_fin: '13:00',
@@ -84,6 +90,7 @@ export const AbmProfesionales = () => {
       setEditingProf(prof);
       setProfForm({
         ...prof,
+        sedes_ids: prof.sedes_ids && prof.sedes_ids.length > 0 ? prof.sedes_ids : (prof.clinica_id ? [prof.clinica_id] : allClinicas.map(c => c.id)),
         obras_sociales_ids: prof.obras_sociales_ids || [],
         servicios_ids: prof.servicios_ids || [],
         practicas_habilitadas_ids: prof.practicas_habilitadas_ids || []
@@ -105,6 +112,8 @@ export const AbmProfesionales = () => {
         max_sobreturnos_dia: 3,
         color_agenda: '#0284c7',
         atiende_particular: true,
+        atiende_online: true,
+        sedes_ids: allClinicas.map(c => c.id),
         obras_sociales_ids: obrasSociales.map(os => os.id),
         servicios_ids: servicios.filter(s => s.especialidad_id === defaultEspObj?.id).map(s => s.id),
         practicas_habilitadas_ids: nomenclador.map(nom => nom.id),
@@ -136,20 +145,25 @@ export const AbmProfesionales = () => {
       s.nombre.toLowerCase().includes(prof.especialidad.toLowerCase())
     );
 
+    const defaultClinica = (prof.sedes_ids && prof.sedes_ids[0]) || 'clinica-1';
+
     if (horario) {
       setEditingHorario(horario);
       setHorarioForm({
         ...horario,
+        clinica_id: horario.clinica_id || defaultClinica,
         modalidad: horario.modalidad || 'PRESENCIAL'
       });
     } else {
       setEditingHorario(null);
+      const consClinica = consultorios.filter(c => !c.clinica_id || c.clinica_id === defaultClinica);
       setHorarioForm({
+        clinica_id: defaultClinica,
         dia_semana: 1,
         hora_inicio: '08:00',
         hora_fin: '13:00',
         servicio_id: profServicios[0]?.id || '',
-        consultorio_id: consultorios[0]?.id || '',
+        consultorio_id: consClinica[0]?.id || consultorios[0]?.id || '',
         duracion_slot_min: prof.duracion_turno_minutos || 20,
         modalidad: 'PRESENCIAL',
         activo: true
@@ -170,6 +184,14 @@ export const AbmProfesionales = () => {
       duracion_slot_min: Number(horarioForm.duracion_slot_min)
     });
     setShowHorarioModal(false);
+  };
+
+  const toggleSede = (sedeId) => {
+    setProfForm(prev => {
+      const current = prev.sedes_ids || [];
+      const updated = current.includes(sedeId) ? current.filter(x => x !== sedeId) : [...current, sedeId];
+      return { ...prev, sedes_ids: updated };
+    });
   };
 
   const toggleServicio = (id) => {
@@ -213,7 +235,7 @@ export const AbmProfesionales = () => {
 
         <button
           onClick={() => handleOpenProfModal()}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold text-sm shadow-md shadow-medical-600/20 transition"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold text-sm shadow-md shadow-medical-600/20 transition cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Nuevo Profesional Médico</span>
@@ -224,6 +246,7 @@ export const AbmProfesionales = () => {
       <div className="space-y-4">
         {filteredProfesionales.map((prof) => {
           const profHorarios = horarios.filter(h => h.profesional_id === prof.id);
+          const profSedes = allClinicas.filter(c => (prof.sedes_ids || []).includes(c.id));
 
           return (
             <div key={prof.id} className="bg-slate-50/70 border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition shadow-sm">
@@ -236,7 +259,7 @@ export const AbmProfesionales = () => {
                     {prof.nombre[0]}{prof.apellido[0]}
                   </div>
 
-                  <div>
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-extrabold text-base text-slate-900">
                         Dr(a). {prof.nombre} {prof.apellido}
@@ -246,7 +269,7 @@ export const AbmProfesionales = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap font-medium">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap font-medium">
                       {prof.matricula_nacional && <span>{prof.matricula_nacional}</span>}
                       {prof.matricula_provincial && <span>{prof.matricula_provincial}</span>}
                       <span>•</span>
@@ -254,20 +277,36 @@ export const AbmProfesionales = () => {
                       <span>•</span>
                       <span>Máx. sobreturnos/día: {prof.max_sobreturnos_dia || 3}</span>
                     </div>
+
+                    {/* Badges de Sedes Vinculadas */}
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[11px] font-black text-slate-500 flex items-center gap-1">
+                        <Building className="w-3.5 h-3.5 text-medical-600" />
+                        Sedes vinculadas ({profSedes.length}):
+                      </span>
+                      {profSedes.map(s => (
+                        <span key={s.id} className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/70 rounded-md text-[10px] font-bold">
+                          {s.nombre}
+                        </span>
+                      ))}
+                      {profSedes.length === 0 && (
+                        <span className="text-[11px] text-slate-400 italic">Todas las sedes</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 justify-end">
                   <button
                     onClick={() => handleOpenHorarioModal(prof)}
-                    className="px-3 py-1.5 bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 rounded-lg text-xs font-bold flex items-center gap-1 transition"
+                    className="px-3 py-1.5 bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 rounded-lg text-xs font-bold flex items-center gap-1 transition cursor-pointer"
                   >
                     <Clock className="w-3.5 h-3.5" />
-                    <span>Asignar Horario / Consultorio</span>
+                    <span>Asignar Horario / Sede</span>
                   </button>
                   <button
                     onClick={() => handleOpenProfModal(prof)}
-                    className="p-1.5 text-slate-600 hover:text-medical-600 hover:bg-white rounded-lg transition"
+                    className="p-1.5 text-slate-600 hover:text-medical-600 hover:bg-white rounded-lg transition cursor-pointer"
                     title="Editar Profesional"
                   >
                     <Edit className="w-4 h-4" />
@@ -278,7 +317,7 @@ export const AbmProfesionales = () => {
                         deleteProfesional(prof.id);
                       }
                     }}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition cursor-pointer"
                     title="Eliminar Profesional"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -290,30 +329,31 @@ export const AbmProfesionales = () => {
               <div className="mt-4">
                 <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  Días y Horarios de Atención Semanal ({profHorarios.length} franjas)
+                  Días y Horarios de Atención Semanal por Sede ({profHorarios.length} franjas)
                 </span>
 
                 {profHorarios.length === 0 ? (
                   <div className="bg-white/80 border border-dashed border-slate-200 rounded-xl p-3 text-center text-xs text-slate-500">
-                    Este profesional aún no tiene horarios asignados. Haz clic en "Asignar Horario" para configurar los días y consultorio físico.
+                    Este profesional no tiene horarios activos asignados. Puedes configurarlos con "Asignar Horario" o desde el Gestor de Agendas.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                     {profHorarios.map((h) => {
                       const diaObj = diasSemana.find(d => d.id === h.dia_semana);
                       const consObj = consultorios.find(c => c.id === h.consultorio_id);
+                      const sedeObj = allClinicas.find(c => c.id === (h.clinica_id || consObj?.clinica_id));
 
                       return (
                         <div key={h.id} className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-bold text-xs text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
                                 {diaObj?.label || 'Día'}
                               </span>
                               <span className="font-extrabold text-xs text-medical-700">
                                 {h.hora_inicio} a {h.hora_fin}
                               </span>
-                              <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-black uppercase ${
                                 h.modalidad === 'ONLINE' 
                                   ? 'bg-purple-100 text-purple-900 border border-purple-200' 
                                   : h.modalidad === 'AMBAS' 
@@ -323,16 +363,25 @@ export const AbmProfesionales = () => {
                                 {h.modalidad === 'ONLINE' ? '💻 Online' : h.modalidad === 'AMBAS' ? '🔄 Híbrido' : '🏢 Presencial'}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
-                              <DoorClosed className="w-3 h-3 text-slate-400" />
-                              <span>{consObj ? consObj.nombre : 'Consultorio no asignado'}</span>
+                            
+                            <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
+                              {sedeObj && (
+                                <span className="font-bold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
+                                  🏥 {sedeObj.nombre}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-0.5">
+                                <DoorClosed className="w-3 h-3 text-slate-400" />
+                                {consObj ? consObj.nombre : 'Consultorio'}
+                              </span>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleOpenHorarioModal(prof, h)}
-                              className="p-1 text-slate-400 hover:text-sky-600 rounded"
+                              className="p-1 text-slate-400 hover:text-sky-600 rounded cursor-pointer"
+                              title="Editar Franja"
                             >
                               <Edit className="w-3 h-3" />
                             </button>
@@ -342,7 +391,8 @@ export const AbmProfesionales = () => {
                                   deleteHorario(h.id);
                                 }
                               }}
-                              className="p-1 text-slate-300 hover:text-rose-600 rounded"
+                              className="p-1 text-slate-300 hover:text-rose-600 rounded cursor-pointer"
+                              title="Eliminar Franja"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -358,21 +408,24 @@ export const AbmProfesionales = () => {
         })}
       </div>
 
-      {/* MODAL PROFESIONAL */}
+      {/* MODAL PROFESIONAL (Optimizado para notebook 17'') */}
       {showProfModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="font-extrabold text-lg text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scaleIn">
+            
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900">
                 {editingProf ? 'Editar Profesional Médico' : 'Nuevo Profesional Médico'}
               </h3>
-              <button onClick={() => setShowProfModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowProfModal(false)} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveProf} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            {/* Body Scrollable */}
+            <form id="form-profesional" onSubmit={handleSaveProf} className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Nombre *</label>
                   <input
@@ -381,7 +434,7 @@ export const AbmProfesionales = () => {
                     placeholder="ej: Martín"
                     value={profForm.nombre}
                     onChange={(e) => setProfForm({ ...profForm, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500"
+                    className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-black focus:ring-2 focus:ring-medical-500"
                   />
                 </div>
                 <div>
@@ -392,12 +445,12 @@ export const AbmProfesionales = () => {
                     placeholder="ej: Pérez Rossi"
                     value={profForm.apellido}
                     onChange={(e) => setProfForm({ ...profForm, apellido: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500"
+                    className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-black focus:ring-2 focus:ring-medical-500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2.5">
                 <div className="col-span-3 sm:col-span-1">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Especialidad Médica *</label>
                   <select
@@ -414,7 +467,7 @@ export const AbmProfesionales = () => {
                         servicios_ids: matchingServicios.length > 0 ? matchingServicios : prev.servicios_ids
                       }));
                     }}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
                   >
                     <option value="">-- Seleccionar Especialidad --</option>
                     {especialidades.map(esp => (
@@ -431,7 +484,7 @@ export const AbmProfesionales = () => {
                     placeholder="ej: MN 114.829"
                     value={profForm.matricula_nacional}
                     onChange={(e) => setProfForm({ ...profForm, matricula_nacional: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500"
                   />
                 </div>
                 <div className="col-span-3 sm:col-span-1">
@@ -441,8 +494,39 @@ export const AbmProfesionales = () => {
                     placeholder="ej: MP 45.291"
                     value={profForm.matricula_provincial}
                     onChange={(e) => setProfForm({ ...profForm, matricula_provincial: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500"
                   />
+                </div>
+              </div>
+
+              {/* Selector de Multi-Sedes de Trabajo */}
+              <div className="p-3 bg-blue-50/60 border border-blue-200/80 rounded-xl space-y-2">
+                <label className="block text-xs font-extrabold text-blue-900 flex items-center gap-1.5">
+                  <Building className="w-4 h-4 text-blue-600" />
+                  Sedes donde atiende este profesional (Multi-Sede):
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {allClinicas.map(clinica => {
+                    const isChecked = (profForm.sedes_ids || []).includes(clinica.id);
+                    return (
+                      <label 
+                        key={clinica.id} 
+                        className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition ${
+                          isChecked 
+                            ? 'bg-blue-600 text-white font-bold border-blue-700 shadow-2xs' 
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleSede(clinica.id)}
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="truncate">{clinica.nombre}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -455,7 +539,7 @@ export const AbmProfesionales = () => {
                     max="20"
                     value={profForm.max_sobreturnos_dia}
                     onChange={(e) => setProfForm({ ...profForm, max_sobreturnos_dia: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 font-bold"
+                    className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 font-bold"
                   />
                 </div>
                 <div>
@@ -465,27 +549,19 @@ export const AbmProfesionales = () => {
                       type="color"
                       value={profForm.color_agenda}
                       onChange={(e) => setProfForm({ ...profForm, color_agenda: e.target.value })}
-                      className="w-10 h-9 p-1 border border-slate-200 rounded-lg cursor-pointer"
+                      className="w-9 h-8 p-0.5 border border-slate-200 rounded-lg cursor-pointer"
                     />
                     <span className="text-xs font-mono text-slate-600">{profForm.color_agenda}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Aviso de configuración de horarios y duración en Agendas */}
-              <div className="p-3 bg-sky-50/70 border border-sky-200 rounded-xl text-xs text-sky-900 flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-sky-600 shrink-0" />
-                <span>
-                  <strong>Configuración de Turnos y Fracciones:</strong> Los días de atención, franjas horarias y duración de consulta (ej. 15m, 20m, 30m) se configuran y administran desde el <strong>Gestor de Agendas Médicas</strong> para mantener la uniformidad del sistema.
-                </span>
-              </div>
-
               {/* Servicios Médicos que presta */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Servicios Médicos / Líneas de Atención que realiza este profesional:
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Servicios Médicos / Líneas de Atención:
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-28 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
                   {servicios.map(serv => {
                     const isChecked = (profForm.servicios_ids || []).includes(serv.id);
                     return (
@@ -505,10 +581,10 @@ export const AbmProfesionales = () => {
 
               {/* Obras Sociales habilitadas */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Obras Sociales / Prepagas que atiende este profesional:
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Obras Sociales / Prepagas que atiende:
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-36 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-28 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
                   {obrasSociales.map(os => {
                     const isChecked = (profForm.obras_sociales_ids || []).includes(os.id);
                     return (
@@ -519,59 +595,92 @@ export const AbmProfesionales = () => {
                           onChange={() => toggleObraSocial(os.id)}
                           className="rounded text-medical-600 focus:ring-medical-500"
                         />
-                        <span className="truncate">{os.nombre}</span>
+                        <span className="truncate text-[11px]">{os.nombre}</span>
                       </label>
                     );
                   })}
                 </div>
               </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowProfModal(false)}
-                  className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold shadow-md shadow-medical-600/20"
-                >
-                  Guardar Profesional
-                </button>
-              </div>
             </form>
+
+            {/* Footer Sticky */}
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/90 flex justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowProfModal(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                form="form-profesional"
+                className="px-4 py-2 text-xs bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold shadow-md shadow-medical-600/20 cursor-pointer"
+              >
+                Guardar Profesional
+              </button>
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* MODAL HORARIO */}
+      {/* MODAL HORARIO (Optimizado para notebook 17'') */}
       {showHorarioModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[88vh] flex flex-col shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scaleIn">
+            
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
               <div>
-                <h3 className="font-extrabold text-lg text-slate-900">
+                <h3 className="font-extrabold text-base text-slate-900">
                   {editingHorario ? 'Editar Horario' : 'Asignar Horario de Atención'}
                 </h3>
                 <p className="text-xs text-medical-600 font-bold">
                   Dr(a). {selectedProfForHorarios?.nombre} {selectedProfForHorarios?.apellido}
                 </p>
               </div>
-              <button onClick={() => setShowHorarioModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowHorarioModal(false)} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveHorario} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            {/* Body Scrollable */}
+            <form id="form-horario" onSubmit={handleSaveHorario} className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5">
+              {/* Sede / Clínica */}
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 mb-1 flex items-center gap-1">
+                  <Building className="w-3.5 h-3.5 text-medical-600" />
+                  Sede de Atención *
+                </label>
+                <select
+                  value={horarioForm.clinica_id || 'clinica-1'}
+                  onChange={(e) => {
+                    const cId = e.target.value;
+                    const consSede = consultorios.filter(c => !c.clinica_id || c.clinica_id === cId);
+                    setHorarioForm({
+                      ...horarioForm,
+                      clinica_id: cId,
+                      consultorio_id: consSede[0]?.id || consultorios[0]?.id || ''
+                    });
+                  }}
+                  className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-black bg-white focus:ring-2 focus:ring-medical-500 shadow-2xs"
+                >
+                  {allClinicas.map(c => (
+                    <option key={c.id} value={c.id}>
+                      🏥 {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Día de la Semana *</label>
                   <select
                     value={horarioForm.dia_semana}
                     onChange={(e) => setHorarioForm({ ...horarioForm, dia_semana: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white"
                   >
                     {diasSemana.map(d => (
                       <option key={d.id} value={d.id}>{d.label}</option>
@@ -584,7 +693,7 @@ export const AbmProfesionales = () => {
                   <select
                     value={horarioForm.servicio_id}
                     onChange={(e) => setHorarioForm({ ...horarioForm, servicio_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white"
                   >
                     <option value="">Servicio General</option>
                     {servicios.map(s => (
@@ -594,7 +703,7 @@ export const AbmProfesionales = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Hora Inicio *</label>
                   <input
@@ -602,7 +711,7 @@ export const AbmProfesionales = () => {
                     required
                     value={horarioForm.hora_inicio}
                     onChange={(e) => setHorarioForm({ ...horarioForm, hora_inicio: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold"
                   />
                 </div>
                 <div>
@@ -612,21 +721,21 @@ export const AbmProfesionales = () => {
                     required
                     value={horarioForm.hora_fin}
                     onChange={(e) => setHorarioForm({ ...horarioForm, hora_fin: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold"
+                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Modalidad de Atención de la Franja *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Modalidad de Atención *</label>
                 <select
                   value={horarioForm.modalidad || 'PRESENCIAL'}
                   onChange={(e) => setHorarioForm({ ...horarioForm, modalidad: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                  className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
                 >
-                  <option value="PRESENCIAL">🏢 Solo Presencial (En Consultorio Físico)</option>
-                  <option value="ONLINE">💻 Solo Online / Teleconsulta (Videollamada)</option>
-                  <option value="AMBAS">🔄 Ambas Modalidades (Híbrido - El paciente puede elegir)</option>
+                  <option value="PRESENCIAL">🏢 Solo Presencial (Consultorio Físico)</option>
+                  <option value="ONLINE">💻 Solo Online / Telemedicina</option>
+                  <option value="AMBAS">🔄 Ambas Modalidades (Híbrido)</option>
                 </select>
               </div>
 
@@ -635,11 +744,13 @@ export const AbmProfesionales = () => {
                 <select
                   value={horarioForm.consultorio_id}
                   onChange={(e) => setHorarioForm({ ...horarioForm, consultorio_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
+                  className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white"
                 >
-                  {consultorios.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                  ))}
+                  {consultorios
+                    .filter(c => !c.clinica_id || c.clinica_id === horarioForm.clinica_id)
+                    .map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
                 </select>
               </div>
 
@@ -652,26 +763,29 @@ export const AbmProfesionales = () => {
                   step="5"
                   value={horarioForm.duracion_slot_min}
                   onChange={(e) => setHorarioForm({ ...horarioForm, duracion_slot_min: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 font-bold"
+                  className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 font-bold"
                 />
               </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowHorarioModal(false)}
-                  className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold shadow-md shadow-medical-600/20"
-                >
-                  Guardar Horario
-                </button>
-              </div>
             </form>
+
+            {/* Footer Sticky */}
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/90 flex justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowHorarioModal(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                form="form-horario"
+                className="px-4 py-2 text-xs bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold shadow-md shadow-medical-600/20 cursor-pointer"
+              >
+                Guardar Horario
+              </button>
+            </div>
+
           </div>
         </div>
       )}

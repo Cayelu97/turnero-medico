@@ -18,7 +18,8 @@ import {
   Layers,
   AlertCircle,
   Lock,
-  Check
+  Check,
+  Building
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
@@ -46,11 +47,13 @@ export const AgendarTurnoSecretariaModal = ({
     showToast = () => {} 
   } = useApp() || {};
 
+  const allClinicas = StorageService.getClinicasList();
   const [step, setStep] = useState(1); // 1: Datos y Horario, 2: Confirmado
   
   // Fecha seleccionada
   const [fecha, setFecha] = useState(() => defaultFecha || getLocalDateString(new Date()));
   const [selectedProfId, setSelectedProfId] = useState(() => defaultProfId || (profesionales[0]?.id || ''));
+  const [selectedSedeId, setSelectedSedeId] = useState('');
   const [selectedServicioId, setSelectedServicioId] = useState('');
   const [selectedPracticaId, setSelectedPracticaId] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -127,14 +130,16 @@ export const AgendarTurnoSecretariaModal = ({
 
   const selectedProf = profesionales.find(p => p.id === selectedProfId);
 
-  // Sugerencias de pacientes en vivo
+  // Sugerencias de pacientes en vivo (solo pacientes activos)
   const pacienteSuggestions = useMemo(() => {
     const q = (pacienteForm.dni || pacienteForm.nombre || pacienteForm.apellido || '').trim().toLowerCase();
     if (!q || q.length < 2) return [];
     return pacientes.filter(p => 
-      (p.dni && p.dni.includes(q)) ||
-      (p.nombre && p.nombre.toLowerCase().includes(q)) ||
-      (p.apellido && p.apellido.toLowerCase().includes(q))
+      p.activo !== false && (
+        (p.dni && p.dni.includes(q)) ||
+        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
+        (p.apellido && p.apellido.toLowerCase().includes(q))
+      )
     ).slice(0, 5);
   }, [pacienteForm.dni, pacienteForm.nombre, pacienteForm.apellido, pacientes]);
 
@@ -191,8 +196,8 @@ export const AgendarTurnoSecretariaModal = ({
   // Horarios configurados del médico
   const horariosDelMedico = useMemo(() => {
     if (!selectedProfId) return [];
-    return StorageService.getHorariosByProfesional(selectedProfId);
-  }, [selectedProfId]);
+    return StorageService.getHorariosByProfesional(selectedProfId, selectedSedeId || null);
+  }, [selectedProfId, selectedSedeId]);
 
   // Próximos días de atención real con turnos disponibles calculados de forma determinista
   const proximosDiasDisponibles = useMemo(() => {
@@ -209,7 +214,7 @@ export const AgendarTurnoSecretariaModal = ({
 
       // Solo procesar si el día está en la agenda activa y NO es domingo (0)
       if (diasSemanaAtencion.has(dayDetails.diaSemana) && dayDetails.diaSemana !== 0) {
-        const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfId, dateStr, selectedServicioId || null, modalidadTurno);
+        const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfId, dateStr, selectedServicioId || null, modalidadTurno, selectedSedeId || null);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {
           result.push({
@@ -223,7 +228,7 @@ export const AgendarTurnoSecretariaModal = ({
       }
     }
     return result;
-  }, [selectedProfId, horariosDelMedico, selectedServicioId, modalidadTurno]);
+  }, [selectedProfId, horariosDelMedico, selectedServicioId, modalidadTurno, selectedSedeId]);
 
   if (!isOpen) return null;
 
@@ -253,7 +258,7 @@ export const AgendarTurnoSecretariaModal = ({
 
   // Slots del médico seleccionado para la fecha
   const slotsDelMedico = selectedProfId 
-    ? StorageService.getSlotsDisponibles(selectedProfId, fecha, selectedServicioId || null)
+    ? StorageService.getSlotsDisponibles(selectedProfId, fecha, selectedServicioId || null, modalidadTurno, selectedSedeId || null)
     : [];
 
   const handleConfirmarTurno = (e) => {
@@ -281,9 +286,10 @@ export const AgendarTurnoSecretariaModal = ({
       return;
     }
 
-    const horariosProf = StorageService.getHorariosByProfesional(selectedProfId);
+    const horariosProf = StorageService.getHorariosByProfesional(selectedProfId, selectedSedeId || null);
     const horario = horariosProf.find(h => h.dia_semana === diaSemana);
     const consultorioId = selectedSlot?.consultorio_id || horario?.consultorio_id || consultorios[0]?.id;
+    const targetClinicaId = selectedSlot?.clinica_id || selectedSedeId || horario?.clinica_id || clinica?.id || 'clinica-1';
 
     const result = createTurno({
       pacienteData: {
@@ -297,6 +303,7 @@ export const AgendarTurnoSecretariaModal = ({
       },
       turnoData: {
         profesional_id: selectedProfId,
+        clinica_id: targetClinicaId,
         servicio_id: selectedServicioId || null,
         consultorio_id: consultorioId,
         practica_id: selectedPracticaId,
@@ -593,7 +600,7 @@ export const AgendarTurnoSecretariaModal = ({
                       </span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                       <div>
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">Médico Profesional *</label>
                         <select
@@ -602,7 +609,7 @@ export const AgendarTurnoSecretariaModal = ({
                             setSelectedProfId(e.target.value);
                             setSelectedSlot(null);
                           }}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white"
+                          className="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white"
                         >
                           <option value="">Seleccione Profesional...</option>
                           {profesionales.filter(p => p.activo).map(p => (
@@ -612,12 +619,32 @@ export const AgendarTurnoSecretariaModal = ({
                       </div>
 
                       <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
+                          <Building className="w-3 h-3 text-medical-600" />
+                          Sede de Atención
+                        </label>
+                        <select
+                          value={selectedSedeId}
+                          onChange={(e) => {
+                            setSelectedSedeId(e.target.value);
+                            setSelectedSlot(null);
+                          }}
+                          className="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white"
+                        >
+                          <option value="">Todas las Sedes</option>
+                          {allClinicas.map(c => (
+                            <option key={c.id} value={c.id}>🏥 {c.nombre}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">Modalidad</label>
-                        <div className="flex items-center gap-1.5 pt-0.5">
+                        <div className="flex items-center gap-1 pt-0.5">
                           <button
                             type="button"
                             onClick={() => setModalidadTurno('PRESENCIAL')}
-                            className={`flex-1 py-1.5 rounded-xl font-bold text-xs border transition cursor-pointer ${
+                            className={`flex-1 py-1.5 rounded-xl font-bold text-[11px] border transition cursor-pointer ${
                               modalidadTurno === 'PRESENCIAL'
                                 ? 'bg-medical-600 text-white border-medical-600 shadow-2xs'
                                 : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
@@ -628,7 +655,7 @@ export const AgendarTurnoSecretariaModal = ({
                           <button
                             type="button"
                             onClick={() => setModalidadTurno('ONLINE')}
-                            className={`flex-1 py-1.5 rounded-xl font-bold text-xs border transition cursor-pointer ${
+                            className={`flex-1 py-1.5 rounded-xl font-bold text-[11px] border transition cursor-pointer ${
                               modalidadTurno === 'ONLINE'
                                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                                 : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'

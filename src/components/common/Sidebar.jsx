@@ -22,7 +22,10 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const { 
     currentView, 
     setCurrentView, 
+    adminTab,
+    setAdminTab,
     turnos = [], 
+    pacientes = [],
     currentUser 
   } = useApp();
 
@@ -32,6 +35,7 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
   const allNavItems = [
     { id: 'agenda', label: 'Agenda Secretaría', icon: Calendar, badge: turnosHoy.length > 0 ? turnosHoy.length : null, badgeColor: 'bg-medical-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
+    { id: 'pacientes_abm', label: 'Padrón & Importador', icon: Users, badge: pacientes?.length > 0 ? `${pacientes.length}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'recepcion', label: 'Recepción & Espera', icon: UserCheck, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-amber-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'doctor', label: 'Portal Consultorio', icon: Stethoscope, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
     { id: 'caja', label: 'Caja Recaudadora', icon: Wallet, badge: 'Cobros', badgeColor: 'bg-emerald-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
@@ -43,6 +47,15 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
   const userRole = currentUser?.rol || 'ADMIN_CLINICA';
   const navItems = allNavItems.filter(item => item.roles.includes(userRole));
+
+  const handleNavClick = (itemId) => {
+    if (itemId === 'pacientes_abm') {
+      if (setAdminTab) setAdminTab('pacientes');
+      setCurrentView('admin');
+    } else {
+      setCurrentView(itemId);
+    }
+  };
 
   return (
     <aside
@@ -60,12 +73,14 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentView === item.id;
+          const isActive = item.id === 'pacientes_abm' 
+            ? (currentView === 'admin' && adminTab === 'pacientes')
+            : (currentView === item.id);
 
           return (
             <button
               key={item.id}
-              onClick={() => setCurrentView(item.id)}
+              onClick={() => handleNavClick(item.id)}
               title={isCollapsed ? `${item.label}` : undefined}
               className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                 isCollapsed ? 'justify-center px-0' : 'justify-between'

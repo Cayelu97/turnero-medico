@@ -115,20 +115,20 @@ export const ReprogramarAgendaModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-amber-200 my-auto animate-scaleIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
+      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col p-5 sm:p-6 shadow-2xl border border-amber-200 my-auto overflow-hidden animate-scaleIn">
         
         {/* Header de Advertencia Clínica */}
-        <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-5">
+        <div className="flex items-start justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
           <div className="flex items-center gap-3 text-amber-600">
-            <div className="p-3 bg-amber-100 rounded-2xl border border-amber-200 shadow-sm">
-              <ShieldAlert className="w-6 h-6 text-amber-700" />
+            <div className="p-2.5 bg-amber-100 rounded-2xl border border-amber-200 shadow-sm">
+              <ShieldAlert className="w-5 h-5 text-amber-700" />
             </div>
             <div>
-              <h3 className="font-black text-lg sm:text-xl text-slate-900 leading-tight">
+              <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">
                 Advertencia: Turnos Futuros Afectados
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs text-slate-600">
                 La modificación o cierre de agenda para <span className="font-bold text-slate-800">Dr(a). {profesional?.nombre} {profesional?.apellido}</span> afecta a <span className="font-extrabold text-amber-700">{turnosAfectados.length} turno(s) ya otorgado(s)</span>.
               </p>
             </div>
@@ -139,7 +139,7 @@ export const ReprogramarAgendaModal = ({
         </div>
 
         {/* Acciones Globales Rápidas */}
-        <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 mb-5">
+        <div className="p-3.5 bg-amber-50/80 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 mb-3 shrink-0">
           <div className="text-xs text-amber-900">
             <p className="font-bold">¿Cómo deseas proceder con los turnos?</p>
             <p className="text-[11px] text-amber-700">Puedes reprogramar automáticamente a los pacientes o avisarles por WhatsApp.</p>
@@ -156,8 +156,8 @@ export const ReprogramarAgendaModal = ({
           </div>
         </div>
 
-        {/* Lista de Turnos Afectados */}
-        <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 mb-6">
+        {/* Lista de Turnos Afectados (Scrollable) */}
+        <div className="space-y-2.5 overflow-y-auto flex-1 pr-1 mb-4">
           {turnosAfectados.map(turno => {
             const proc = processedTurnos[turno.id];
             return (

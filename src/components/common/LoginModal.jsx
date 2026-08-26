@@ -36,9 +36,9 @@ export const LoginModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
+      <div className="bg-white rounded-3xl max-w-lg w-full max-h-[88vh] flex flex-col p-5 sm:p-6 shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scaleIn">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2.5 bg-medical-50 text-medical-700 rounded-2xl border border-medical-200">
               <KeyRound className="w-5 h-5" />
@@ -48,13 +48,13 @@ export const LoginModal = ({ isOpen, onClose }) => {
               <p className="text-xs text-slate-500">Seleccione su perfil de trabajo o inicie sesión</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Perfiles de Acceso Rápido */}
-        <div className="space-y-4">
+        {/* Perfiles de Acceso Rápido (Scrollable) */}
+        <div className="space-y-4 overflow-y-auto flex-1 pr-1">
           <div>
             <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block mb-2">
               Ingreso Rápido según tu Rol de Trabajo:

@@ -71,8 +71,8 @@ export const CobroCoseguroModal = ({ turno, paciente, obraSocial, plan, practica
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
+      <div className="bg-white rounded-3xl max-w-md w-full max-h-[88vh] flex flex-col p-5 sm:p-6 shadow-2xl border border-slate-200 overflow-y-auto my-auto animate-scaleIn">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 no-print">

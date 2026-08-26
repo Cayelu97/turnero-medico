@@ -325,17 +325,31 @@ export const AppProvider = ({ children }) => {
 
   const cerrarAgenda = (agendaId, motivo) => {
     const closed = StorageService.cerrarAgenda(agendaId, motivo);
-    setAgendas(StorageService.getAgendas());
+    setAgendas(StorageService.getAgendas(null, null, true));
     setHorarios(StorageService.getHorarios());
     showToast('Agenda cerrada con éxito', 'info');
     return closed;
   };
 
-  const deleteAgenda = (agendaId) => {
-    StorageService.deleteAgenda(agendaId);
-    setAgendas(StorageService.getAgendas());
+  const reactivarAgenda = (agendaId) => {
+    const reactivated = StorageService.reactivarAgenda(agendaId);
+    setAgendas(StorageService.getAgendas(null, null, true));
     setHorarios(StorageService.getHorarios());
-    showToast('Agenda eliminada', 'info');
+    showToast('Agenda reactivada con éxito');
+    return reactivated;
+  };
+
+  const deleteAgenda = (agendaId) => {
+    try {
+      StorageService.deleteAgenda(agendaId);
+      setAgendas(StorageService.getAgendas(null, null, true));
+      setHorarios(StorageService.getHorarios());
+      showToast('Agenda eliminada definitivamente', 'info');
+      return { success: true };
+    } catch (err) {
+      showToast(err.message, 'error');
+      return { success: false, error: err.message };
+    }
   };
 
   const configurarAgendaSemanal = (agendaParams) => {
@@ -369,9 +383,33 @@ export const AppProvider = ({ children }) => {
   };
 
   const deletePaciente = (id) => {
-    StorageService.deletePaciente(id);
-    setPacientes(StorageService.getPacientes());
-    showToast('Paciente eliminado del padrón', 'info');
+    try {
+      StorageService.deletePaciente(id);
+      setPacientes(StorageService.getPacientes());
+      showToast('Paciente eliminado del padrón', 'info');
+      return { success: true };
+    } catch (err) {
+      showToast(err.message, 'error');
+      return { success: false, error: err.message };
+    }
+  };
+
+  const limpiarFacturacion = () => {
+    StorageService.limpiarFacturacion();
+    setMovimientosCaja([]);
+    setComprobantesArca([]);
+    setLotesFacturacion([]);
+    showToast('Facturación y comprobantes reseteados a cero.', 'info');
+  };
+
+  const resetTurnosYFacturacion = () => {
+    StorageService.resetTurnosYFacturacion();
+    setTurnos([]);
+    setAtencionesHce([]);
+    setMovimientosCaja([]);
+    setComprobantesArca([]);
+    setLotesFacturacion([]);
+    showToast('Turnos y facturación reseteados a CERO para pruebas limpias.', 'info');
   };
 
   // Turnos
@@ -713,6 +751,7 @@ export const AppProvider = ({ children }) => {
         agendas,
         saveAgenda,
         cerrarAgenda,
+        reactivarAgenda,
         deleteAgenda,
         horarios,
         bloqueos,
@@ -761,6 +800,8 @@ export const AppProvider = ({ children }) => {
         // Factura Electrónica ARCA
         comprobantesArca,
         emitirComprobanteArca,
+        limpiarFacturacion,
+        resetTurnosYFacturacion,
         // Consentimientos Informados
         consentimientos,
         saveConsentimiento,

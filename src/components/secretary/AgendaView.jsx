@@ -370,11 +370,49 @@ export const AgendaView = () => {
 
   const getEstadoBadge = (estado, confirmadoWhatsApp) => {
     switch (estado) {
-      case 'PROGRAMADO': return { label: confirmadoWhatsApp ? 'Conf. WhatsApp' : 'Programado', bg: confirmadoWhatsApp ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-sky-50 text-sky-700 border-sky-200', dot: confirmadoWhatsApp ? 'bg-emerald-500' : 'bg-sky-500' };
-      case 'EN_ESPERA': return { label: 'En Espera', bg: 'bg-amber-50 text-amber-800 border-amber-300 ring-1 ring-amber-300', dot: 'bg-amber-500' };
-      case 'EN_ATENCION': return { label: 'En Consulta', bg: 'bg-purple-50 text-purple-800 border-purple-300 ring-1 ring-purple-300', dot: 'bg-purple-500' };
-      case 'ATENDIDO': return { label: 'Atendido', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-600' };
-      default: return { label: estado, bg: 'bg-slate-50 text-slate-700 border-slate-200', dot: 'bg-slate-400' };
+      case 'PROGRAMADO': 
+        return { 
+          label: confirmadoWhatsApp ? 'WhatsApp OK' : 'Programado', 
+          bg: confirmadoWhatsApp ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-sky-50 text-sky-800 border-sky-300', 
+          borderLeft: 'border-l-sky-500',
+          dot: confirmadoWhatsApp ? 'bg-emerald-500' : 'bg-sky-500' 
+        };
+      case 'EN_ESPERA': 
+        return { 
+          label: 'En Sala', 
+          bg: 'bg-amber-50 text-amber-900 border-amber-400 font-bold', 
+          borderLeft: 'border-l-amber-500',
+          dot: 'bg-amber-500' 
+        };
+      case 'EN_ATENCION': 
+        return { 
+          label: 'En Consulta', 
+          bg: 'bg-purple-50 text-purple-900 border-purple-400 font-bold', 
+          borderLeft: 'border-l-purple-600',
+          dot: 'bg-purple-600' 
+        };
+      case 'ATENDIDO': 
+        return { 
+          label: 'Atendido', 
+          bg: 'bg-teal-50 text-teal-800 border-teal-300', 
+          borderLeft: 'border-l-teal-600',
+          dot: 'bg-teal-600' 
+        };
+      case 'CANCELADO':
+      case 'NO_ASISTIO':
+        return {
+          label: estado === 'CANCELADO' ? 'Cancelado' : 'Ausente',
+          bg: 'bg-slate-100 text-slate-600 border-slate-300',
+          borderLeft: 'border-l-slate-400',
+          dot: 'bg-slate-400'
+        };
+      default: 
+        return { 
+          label: estado, 
+          bg: 'bg-slate-100 text-slate-700 border-slate-300', 
+          borderLeft: 'border-l-slate-400',
+          dot: 'bg-slate-400' 
+        };
     }
   };
 
@@ -694,14 +732,8 @@ export const AgendaView = () => {
                         <div 
                           key={t.id}
                           onClick={() => setSelectedDetalleTurno(t)}
-                          className={`p-3 rounded-2xl border transition shadow-2xs space-y-2 cursor-pointer group hover:shadow-md ${
-                            isCancelled 
-                              ? 'bg-slate-100/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60 text-slate-500' 
-                              : t.estado === 'EN_ESPERA'
-                              ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/80 ring-1 ring-amber-300/50'
-                              : t.estado === 'EN_ATENCION'
-                              ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-700/80 ring-1 ring-purple-300/50'
-                              : 'bg-white dark:bg-slate-850 border-slate-200/90 dark:border-slate-750 hover:border-medical-400 dark:hover:border-medical-500'
+                          className={`p-3.5 rounded-2xl border border-slate-200 border-l-4 ${badge.borderLeft || 'border-l-sky-500'} bg-white transition shadow-2xs space-y-2 cursor-pointer group hover:shadow-md hover:border-sky-400 ${
+                            isCancelled ? 'opacity-60 bg-slate-50' : ''
                           }`}
                         >
                           {/* Horario & Badge */}
@@ -849,7 +881,7 @@ export const AgendaView = () => {
                         return (
                           <div 
                             key={prof.id} 
-                            className="p-1.5 rounded-lg bg-slate-50/40 dark:bg-slate-850/30 border border-slate-100 dark:border-slate-800 text-center text-slate-300 dark:text-slate-600 text-[10px] select-none cursor-not-allowed"
+                            className="h-10 rounded-xl bg-slate-50/60 border border-slate-100 text-center text-slate-300 text-[11px] select-none flex items-center justify-center cursor-not-allowed"
                             title={isPastDate || isPastTime ? `Horario ya transcurrido (${slotTime})` : 'Sin atención'}
                           >
                             —
@@ -861,17 +893,23 @@ export const AgendaView = () => {
                         <div 
                           key={prof.id} 
                           onClick={() => handleOpenNuevoTurno(prof.id, slotTime, currentDate)} 
-                          className="p-1.5 border border-dashed border-emerald-300/80 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-xl text-center text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100/60 cursor-pointer transition text-xs font-bold group"
+                          className="h-10 border border-emerald-300/80 bg-emerald-50/50 hover:bg-emerald-100 hover:border-emerald-500 rounded-xl flex items-center justify-center text-center text-emerald-900 shadow-2xs hover:shadow-sm cursor-pointer transition text-xs font-bold group"
                           title={`Agendar turno libre a las ${slotTime} con Dr(a). ${prof.apellido}`}
                         >
-                          <span className="group-hover:hidden text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">+ Libre ({slotTime})</span>
-                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-emerald-900 dark:text-emerald-200 text-xs"><Plus className="w-3 h-3" /> Agendar {slotTime}</span>
+                          <span className="group-hover:hidden text-xs text-emerald-800 font-extrabold flex items-center justify-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-2xs" />
+                            <span>Libre</span>
+                          </span>
+                          <span className="hidden group-hover:inline-flex items-center justify-center gap-1.5 font-black text-emerald-950 text-xs">
+                            <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>+ {slotTime}</span>
+                          </span>
                         </div>
                       );
                     }
 
                     return (
-                      <div key={prof.id} className="space-y-1">
+                      <div key={prof.id} className="space-y-1.5">
                         {turnosEnSlot.map(t => {
                           const pac = pacientes.find(p => p.id === t.paciente_id);
                           const os = obrasSociales.find(o => o.id === t.obra_social_id);
@@ -881,18 +919,17 @@ export const AgendaView = () => {
                             <div 
                               key={t.id} 
                               onClick={() => setSelectedDetalleTurno(t)} 
-                              className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
-                                t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
-                                t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
-                                'bg-white border-slate-200 hover:border-medical-400'
-                              }`}
+                              className={`p-2.5 rounded-xl border border-slate-200/90 border-l-4 ${badge.borderLeft || 'border-l-sky-500'} bg-white text-xs cursor-pointer transition shadow-2xs hover:shadow-md hover:border-sky-400 space-y-1 text-left`}
                             >
                               <div className="flex items-center justify-between gap-1">
-                                <span className="font-mono font-black text-slate-900 text-[11px]">{t.hora_inicio}</span>
-                                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${badge.bg}`}>{badge.label}</span>
+                                <span className="font-mono font-black text-slate-900 text-[11px]">{t.hora_inicio} - {t.hora_fin || ''}</span>
+                                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${badge.bg}`}>{badge.label}</span>
                               </div>
                               <div className="font-black text-slate-800 text-[11px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
-                              <span className="text-[10px] text-slate-500 truncate block">{os?.sigla || 'Particular'}</span>
+                              <div className="flex items-center justify-between text-[10px] text-slate-600">
+                                <span className="truncate font-semibold">{os?.sigla || 'Particular'}</span>
+                                {t.es_sobreturno && <span className="text-[9px] font-black text-orange-700 bg-orange-100 px-1 rounded border border-orange-200">SOBRETURNO</span>}
+                              </div>
                             </div>
                           );
                         })}
@@ -908,11 +945,13 @@ export const AgendaView = () => {
 
       {/* 3. TIMELINE SEMANAL (POR PROFESIONAL CON SLOTS EXACTOS) */}
       {viewMode === 'timeline_semanal' && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-3 sm:p-5 overflow-x-auto">
-          <div className="min-w-[880px]">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 overflow-x-auto">
+          <div className="min-w-[920px]">
             {/* Cabecera de Días de la Semana */}
-            <div className="grid gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
-              <div className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider py-2 text-center">Hora</div>
+            <div className="grid gap-2.5 border-b border-slate-200 pb-3" style={{ gridTemplateColumns: `85px repeat(6, minmax(135px, 1fr))` }}>
+              <div className="text-xs font-black text-slate-400 uppercase tracking-wider py-3 text-center flex items-center justify-center">
+                Hora
+              </div>
               {semanaDays.map((diaStr) => {
                 const dateObj = new Date(diaStr + 'T00:00:00');
                 const isSelectedDay = diaStr === currentDate;
@@ -930,61 +969,64 @@ export const AgendaView = () => {
                   <div 
                     key={diaStr} 
                     onClick={() => setCurrentDate(diaStr)}
-                    className={`p-2.5 rounded-2xl border text-center transition cursor-pointer relative overflow-hidden ${
+                    className={`p-3 rounded-2xl border text-center transition cursor-pointer relative overflow-hidden flex flex-col justify-between space-y-1.5 ${
                       isSelectedDay 
-                        ? 'bg-gradient-to-b from-medical-50 dark:from-medical-950/80 via-white dark:via-slate-850 to-medical-50/40 dark:to-medical-950/40 border-2 border-medical-600 dark:border-medical-500 shadow-xs ring-2 ring-medical-500/20' 
-                        : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-medical-300 dark:hover:border-medical-500 hover:shadow-2xs'
+                        ? 'bg-sky-50/70 border-2 border-sky-600 shadow-xs ring-2 ring-sky-500/20' 
+                        : 'bg-white border-slate-200/90 hover:bg-slate-50 hover:border-sky-300 hover:shadow-2xs'
                     }`}
                   >
-                    {isSelectedDay && (
-                      <span className="absolute top-0 inset-x-0 h-1 bg-medical-600" />
-                    )}
-                    <span className={`text-[11px] block uppercase font-black tracking-wider ${isSelectedDay ? 'text-medical-800 dark:text-medical-300' : 'text-slate-500 dark:text-slate-400'}`}>
-                      {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}
-                    </span>
-                    <strong className={`text-base font-black block leading-tight my-0.5 ${isSelectedDay ? 'text-medical-950 dark:text-medical-100' : 'text-slate-900 dark:text-slate-100'}`}>
-                      {diaStr.split('-')[2]}
-                    </strong>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[11px] uppercase font-black tracking-wider ${isSelectedDay ? 'text-sky-900' : 'text-slate-500'}`}>
+                        {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full ${
+                        turnosDelDiaCount > 0 
+                          ? 'bg-sky-100 text-sky-900 font-black border border-sky-200' 
+                          : 'text-slate-400 bg-slate-100'
+                      }`}>
+                        {turnosDelDiaCount} {turnosDelDiaCount === 1 ? 'turno' : 'turnos'}
+                      </span>
+                    </div>
+
+                    <div className="my-0.5">
+                      {isSelectedDay ? (
+                        <div className="w-8 h-8 rounded-full bg-sky-600 text-white font-black text-sm flex items-center justify-center mx-auto shadow-2xs">
+                          {diaStr.split('-')[2]}
+                        </div>
+                      ) : (
+                        <strong className="text-xl font-black block leading-tight text-slate-900">
+                          {diaStr.split('-')[2]}
+                        </strong>
+                      )}
+                    </div>
                     
                     {/* Badge de Feriado Nacional si aplica */}
                     {feriadoNac && (
-                      <div className="mb-1">
-                        <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950/80 text-sky-900 dark:text-sky-300 border border-sky-300 dark:border-sky-800 inline-block truncate max-w-full" title={feriadoNac.nombre}>
-                          🇦🇷 {feriadoNac.nombre.split(' ')[0]}
+                      <div className="mb-0.5">
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-amber-100 text-amber-950 border border-amber-300 inline-block truncate max-w-full" title={feriadoNac.nombre}>
+                          🇦🇷 Feriado: {feriadoNac.nombre.split(' ')[0]}
                         </span>
                       </div>
                     )}
 
                     {/* Badge de Horario de Atención para este Día */}
-                    <div className="mt-0.5">
+                    <div>
                       {tieneAtencion ? (
                         <div className="space-y-0.5">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-medical-600 text-white' : 'bg-emerald-100/80 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'}`}>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-sky-600 text-white shadow-2xs' : 'bg-slate-100 text-slate-700 border border-slate-200/80'}`}>
                             {horariosDia[0].hora_inicio} - {horariosDia[0].hora_fin}
                           </span>
                           {selectedCentroFilter === 'TODOS' && sedeDia && (
-                            <span className={`text-[8px] font-extrabold block truncate ${isSelectedDay ? 'text-medical-700 dark:text-medical-300' : 'text-sky-700 dark:text-sky-400'}`}>
+                            <span className={`text-[9px] font-bold block truncate ${isSelectedDay ? 'text-sky-800' : 'text-slate-500'}`}>
                               📍 {sedeDia.nombre.split('-')[0]}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500">
+                        <span className="text-[10px] font-semibold text-slate-400">
                           Sin atención
                         </span>
                       )}
-                    </div>
-
-                    <div className="mt-1">
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full inline-block ${
-                        isSelectedDay 
-                          ? 'bg-slate-900 dark:bg-slate-700 text-white' 
-                          : turnosDelDiaCount > 0 
-                          ? 'bg-medical-100 dark:bg-medical-950 text-medical-900 dark:text-medical-300 border border-medical-200 dark:border-medical-800' 
-                          : 'text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800'
-                      }`}>
-                        {turnosDelDiaCount} {turnosDelDiaCount === 1 ? 'turno' : 'turnos'}
-                      </span>
                     </div>
                   </div>
                 );
@@ -992,13 +1034,15 @@ export const AgendaView = () => {
             </div>
 
             {/* Filas con Resolución Exacta (e.g. cada 15/20/30m) */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="divide-y divide-slate-100">
               {timelineSlots.map(slotTime => {
                 const targetProfId = selectedWeeklyProfId || visibleProfessionals[0]?.id;
 
                 return (
-                  <div key={slotTime} className="grid gap-2 py-1 items-center" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
-                    <div className="font-mono text-xs font-black text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800 px-2 py-1 rounded-lg text-center">{slotTime}</div>
+                  <div key={slotTime} className="grid gap-2.5 py-1.5 items-center" style={{ gridTemplateColumns: `85px repeat(6, minmax(135px, 1fr))` }}>
+                    <div className="font-mono text-xs font-black text-slate-700 bg-slate-50 border border-slate-200/80 px-2 py-2 rounded-xl text-center shadow-2xs">
+                      {slotTime}
+                    </div>
                     {semanaDays.map(diaStr => {
                       // Buscar turnos exactamente en este slot para este médico
                       const turnosEnCelda = turnos.filter(t => 
@@ -1024,7 +1068,7 @@ export const AgendaView = () => {
                           return (
                             <div 
                               key={diaStr} 
-                              className="p-1.5 rounded-xl bg-slate-50/40 dark:bg-slate-850/40 border border-slate-100 dark:border-slate-800 text-center text-slate-300 dark:text-slate-600 text-[10px] select-none cursor-not-allowed"
+                              className="h-10 rounded-xl bg-slate-50/60 border border-slate-100 text-center text-slate-300 text-[11px] select-none flex items-center justify-center cursor-not-allowed"
                               title={isPastDate || isPastTime ? `Horario ya transcurrido (${diaStr} ${slotTime})` : 'Sin atención'}
                             >
                               —
@@ -1036,15 +1080,15 @@ export const AgendaView = () => {
                           <div 
                             key={diaStr} 
                             onClick={() => handleOpenNuevoTurno(targetProfId, slotTime, diaStr)} 
-                            className="p-1.5 border border-emerald-200/90 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/30 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/50 hover:border-emerald-500 rounded-xl text-center text-emerald-900 dark:text-emerald-300 hover:shadow-2xs cursor-pointer transition text-xs font-bold group"
+                            className="h-10 border border-emerald-300/80 bg-emerald-50/50 hover:bg-emerald-100 hover:border-emerald-500 rounded-xl flex items-center justify-center text-center text-emerald-900 shadow-2xs hover:shadow-sm cursor-pointer transition text-xs font-bold group"
                             title={`Agendar turno libre el ${diaStr} a las ${slotTime}`}
                           >
-                            <span className="group-hover:hidden text-[10px] text-emerald-700 dark:text-emerald-400 font-bold tracking-wide flex items-center justify-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span className="group-hover:hidden text-xs text-emerald-800 font-extrabold flex items-center justify-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-2xs" />
                               <span>Libre</span>
                             </span>
-                            <span className="hidden group-hover:inline-flex items-center justify-center gap-1 font-black text-emerald-950 dark:text-emerald-100 text-[10px]">
-                              <Plus className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
+                            <span className="hidden group-hover:inline-flex items-center justify-center gap-1.5 font-black text-emerald-950 text-xs">
+                              <Plus className="w-3.5 h-3.5 text-emerald-700" />
                               <span>+ {slotTime}</span>
                             </span>
                           </div>
@@ -1052,7 +1096,7 @@ export const AgendaView = () => {
                       }
 
                       return (
-                        <div key={diaStr} className="space-y-1">
+                        <div key={diaStr} className="space-y-1.5">
                           {turnosEnCelda.map(t => {
                             const pac = pacientes.find(p => p.id === t.paciente_id);
                             const os = obrasSociales.find(o => o.id === t.obra_social_id);
@@ -1062,18 +1106,17 @@ export const AgendaView = () => {
                               <div 
                                 key={t.id} 
                                 onClick={() => setSelectedDetalleTurno(t)} 
-                                className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
-                                  t.estado === 'EN_ESPERA' ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 ring-1 ring-amber-300' :
-                                  t.estado === 'EN_ATENCION' ? 'bg-purple-50 dark:bg-purple-950/40 border-purple-300 dark:border-purple-700 ring-1 ring-purple-300' :
-                                  'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-medical-400 dark:hover:border-medical-500'
-                                }`}
+                                className={`p-2.5 rounded-xl border border-slate-200/90 border-l-4 ${badge.borderLeft || 'border-l-sky-500'} bg-white text-xs cursor-pointer transition shadow-2xs hover:shadow-md hover:border-sky-400 space-y-1 text-left`}
                               >
                                 <div className="flex items-center justify-between gap-1">
-                                  <span className="font-mono font-black text-slate-900 dark:text-slate-100 text-[10px]">{t.hora_inicio}</span>
-                                  <span className={`text-[8px] font-bold px-1 rounded ${badge.bg}`}>{badge.label}</span>
+                                  <span className="font-mono font-black text-slate-900 text-[11px]">{t.hora_inicio} - {t.hora_fin || ''}</span>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${badge.bg}`}>{badge.label}</span>
                                 </div>
-                                <div className="font-black text-slate-800 dark:text-slate-100 text-[10px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
-                                <span className="text-[9px] text-slate-500 dark:text-slate-400 truncate block">{os?.sigla || 'Part.'}</span>
+                                <div className="font-black text-slate-900 text-xs truncate leading-tight">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-600">
+                                  <span className="truncate font-semibold">{os?.sigla || 'Particular'}</span>
+                                  {t.es_sobreturno && <span className="text-[9px] font-black text-orange-700 bg-orange-100 px-1 rounded border border-orange-200">SOBRETURNO</span>}
+                                </div>
                               </div>
                             );
                           })}

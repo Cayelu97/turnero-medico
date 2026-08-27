@@ -41,23 +41,13 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
   const [showImportPacientesModal, setShowImportPacientesModal] = useState(false);
   const [showSedesDropdown, setShowSedesDropdown] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('saludnet_dark_mode') === 'true';
-    }
-    return false;
-  });
 
-  // Sincronizar dark mode con <html> class
   useEffect(() => {
-    const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
+    if (typeof window !== 'undefined') {
+      document.documentElement.classList.remove('dark');
+      localStorage.removeItem('saludnet_dark_mode');
     }
-    localStorage.setItem('saludnet_dark_mode', darkMode ? 'true' : 'false');
-  }, [darkMode]);
+  }, []);
 
   // Atajo global Ctrl+K
   useEffect(() => {
@@ -207,20 +197,11 @@ export const Navbar = ({ isSidebarCollapsed, onToggleSidebar }) => {
               {/* Botón Abrir TV en Monitor de Sala */}
               <button
                 onClick={handleOpenTvTab}
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer"
                 title="Abrir el llamador en una ventana nueva para el monitor de la sala de espera"
               >
                 <Tv className="w-3.5 h-3.5 text-rose-400" />
                 <span>Abrir TV</span>
-              </button>
-
-              {/* Toggle Modo Claro / Oscuro */}
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-yellow-400 transition cursor-pointer"
-                title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
 
               {/* Selector de Perfil / Login */}

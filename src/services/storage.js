@@ -2,8 +2,8 @@
 // GESTOR DE ALMACENAMIENTO Y LÓGICA DE NEGOCIO MULTI-TENANT (LOCAL & SUPABASE READY)
 // ==============================================================================
 import { createClient } from '@supabase/supabase-js';
-import { getDayOfWeekFromDateString, getLocalDateString } from '../utils/dateUtils';
-import { triggerAutoCloudSync } from './cloudSync';
+import { getDayOfWeekFromDateString, getLocalDateString, getFeriadoNacional } from '../utils/dateUtils.js';
+import { triggerAutoCloudSync } from './cloudSync.js';
 
 const STORAGE_KEYS = {
   CLINICA: 'mediturnos_clinica',
@@ -2102,8 +2102,121 @@ export const StorageService = {
     const targetClinicaId = clinicaId || StorageService.getClinicaActiva().id;
     return all.filter(t => !t.clinica_id || t.clinica_id === targetClinicaId);
   },
-  saveTurno: (turno) => {
-    const items = StorageService.getCollection(STORAGE_KEYS.TURNOS);
+  // ==============================================================================
+  // VALIDACIÓN CLÍNICA ESTRICTA DE TURNOS (Colisiones, Fechas Pasadas, Cupos)
+  // ==============================================================================
+  validarTurno: (turnoData, { ignorarTurnoId = null, permitirPasado = false } = {}) => {
+    if (!turnoData) return { valido: false, codigo: 'DATOS_INVALIDOS', mensaje: 'Datos de turno requeridos.' };
+    
+    const todayStr = getLocalDateString(new Date());
+    const now = new Date();
+    const currentMinutesNow = now.getHours() * 60 + now.getMinutes();
+
+    // 1. Validar que no sea fecha pasada
+    if (!permitirPasado && turnoData.fecha < todayStr) {
+      return {
+        valido: false,
+        codigo: 'FECHA_PASADA',
+        mensaje: `No es posible agendar turnos en fechas pasadas (${turnoData.fecha}).`
+      };
+    }
+
+    // 2. Validar que no sea una hora pasada en el día de hoy
+    if (!permitirPasado && turnoData.fecha === todayStr && turnoData.hora_inicio) {
+      const [h, m] = turnoData.hora_inicio.split(':').map(Number);
+      const turnoStartMinutes = h * 60 + m;
+      if (turnoStartMinutes <= currentMinutesNow) {
+        return {
+          valido: false,
+          codigo: 'HORA_PASADA',
+          mensaje: `No es posible agendar turnos en horarios que ya transcurrieron hoy (${turnoData.hora_inicio}).`
+        };
+      }
+    }
+
+    // 3. Validar si la fecha es Feriado Nacional
+    const feriado = getFeriadoNacional(turnoData.fecha);
+    const profs = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES) || [];
+    const prof = profs.find(p => String(p.id) === String(turnoData.profesional_id));
+    const atiendeFeriados = prof?.atiende_feriados === true;
+
+    if (feriado && !atiendeFeriados && !turnoData.es_sobreturno && !permitirPasado) {
+      return {
+        valido: false,
+        codigo: 'DIA_FERIADO',
+        mensaje: `La fecha seleccionada es Feriado Nacional (${feriado.nombre}) y el profesional no atiende feriados.`
+      };
+    }
+
+    // 4. Validar colisiones horarias para el mismo profesional (salvo sobreturno explícito)
+    if (!turnoData.es_sobreturno) {
+      const turnosExistentes = (StorageService.getCollection(STORAGE_KEYS.TURNOS) || []).filter(t => 
+        String(t.profesional_id) === String(turnoData.profesional_id) &&
+        t.fecha === turnoData.fecha &&
+        t.estado !== 'CANCELADO' &&
+        (!ignorarTurnoId || t.id !== ignorarTurnoId) &&
+        (!turnoData.id || t.id !== turnoData.id)
+      );
+
+      const [nHIni, nMIni] = (turnoData.hora_inicio || '00:00').split(':').map(Number);
+      const nStart = nHIni * 60 + nMIni;
+      let nEnd;
+      if (turnoData.hora_fin) {
+        const [nHFin, nMFin] = turnoData.hora_fin.split(':').map(Number);
+        nEnd = nHFin * 60 + nMFin;
+      } else {
+        const dur = Number(prof?.duracion_turno_minutos) || 20;
+        nEnd = nStart + dur;
+      }
+
+      const colision = turnosExistentes.find(t => {
+        if (!t.hora_inicio) return false;
+        const [tHIni, tMIni] = t.hora_inicio.split(':').map(Number);
+        const tStart = tHIni * 60 + tMIni;
+        let tEnd;
+        if (t.hora_fin) {
+          const [tHFin, tMFin] = t.hora_fin.split(':').map(Number);
+          tEnd = tHFin * 60 + tMFin;
+        } else {
+          tEnd = tStart + 20;
+        }
+        return Math.max(tStart, nStart) < Math.min(tEnd, nEnd);
+      });
+
+      if (colision) {
+        return {
+          valido: false,
+          codigo: 'COLISION_HORARIO',
+          mensaje: `El profesional ya tiene un turno reservado (${colision.hora_inicio} a ${colision.hora_fin || 'fin'}) para esta fecha y horario.`,
+          colision
+        };
+      }
+    } else {
+      // 5. Validar límite máximo de sobreturnos
+      const maxSobreturnos = Number(prof?.max_sobreturnos_dia || 3);
+      const sobreturnosHoy = (StorageService.getCollection(STORAGE_KEYS.TURNOS) || []).filter(t => 
+        String(t.profesional_id) === String(turnoData.profesional_id) &&
+        t.fecha === turnoData.fecha &&
+        t.es_sobreturno &&
+        t.estado !== 'CANCELADO' &&
+        (!ignorarTurnoId || t.id !== ignorarTurnoId) &&
+        (!turnoData.id || t.id !== turnoData.id)
+      ).length;
+
+      if (sobreturnosHoy >= maxSobreturnos) {
+        return {
+          valido: false,
+          codigo: 'MAX_SOBRETURNOS_EXCEDIDO',
+          mensaje: `Se alcanzó el límite máximo de sobreturnos permitidos (${maxSobreturnos}) para este profesional en la fecha seleccionada.`
+        };
+      }
+    }
+
+    return { valido: true };
+  },
+
+  saveTurno: (turno, options = {}) => {
+    const items = StorageService.getCollection(STORAGE_KEYS.TURNOS) || [];
     const clinicaId = StorageService.getClinicaActiva().id;
     turno.clinica_id = turno.clinica_id || clinicaId;
 
@@ -2125,12 +2238,25 @@ export const StorageService = {
   getSlotsDisponibles: (profesionalId, fechaStr, servicioId = null, modalidad = null, clinicaId = null) => {
     if (!profesionalId || !fechaStr) return [];
 
+    const todayStr = getLocalDateString(new Date());
+    const now = new Date();
+    const currentMinutesNow = now.getHours() * 60 + now.getMinutes();
+    const esDiaHoy = fechaStr === todayStr;
+    const esDiaPasado = fechaStr < todayStr;
+
+    // Verificar si es Feriado Nacional y si el médico atiende feriados
+    const feriado = getFeriadoNacional(fechaStr);
+    const profs = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES) || [];
+    const prof = profs.find(p => String(p.id) === String(profesionalId));
+    const atiendeFeriados = prof?.atiende_feriados === true;
+    const esFeriadoNoAtendido = feriado && !atiendeFeriados;
+
     const diaSemana = getDayOfWeekFromDateString(fechaStr);
     // Domingo nunca tiene atención en nuestro sistema clínico
     if (diaSemana === 0) return [];
 
     const bloqueos = StorageService.getBloqueos();
-    const esFeriadoOBloqueado = bloqueos.some(b => {
+    const esBloqueado = bloqueos.some(b => {
       const matchFecha = fechaStr >= b.fecha_inicio && fechaStr <= b.fecha_fin;
       if (!matchFecha) return false;
       if (!b.profesional_id) return true;
@@ -2138,7 +2264,7 @@ export const StorageService = {
       return false;
     });
 
-    if (esFeriadoOBloqueado) return [];
+    if (esBloqueado || esFeriadoNoAtendido) return [];
 
     // Obtener horarios que coincidan con el día de la semana y vigencia activa
     const allAgendas = StorageService.getAgendas(null, profesionalId, true);
@@ -2165,7 +2291,7 @@ export const StorageService = {
     if (horarios.length === 0) return [];
 
     // Turnos ya agendados para este profesional y fecha (excluyendo cancelados)
-    const turnosExistentes = StorageService.getTurnos().filter(t => 
+    const turnosExistentes = (StorageService.getCollection(STORAGE_KEYS.TURNOS) || []).filter(t => 
       String(t.profesional_id) === String(profesionalId) && 
       t.fecha === fechaStr && 
       t.estado !== 'CANCELADO'
@@ -2197,6 +2323,9 @@ export const StorageService = {
         const endSlotMin = endSlotMinutes % 60;
         const horaFinStr = `${String(endSlotHour).padStart(2, '0')}:${String(endSlotMin).padStart(2, '0')}`;
 
+        // Validación estricta de tiempo transcurrido (pasado)
+        const esHoraPasada = esDiaPasado || (esDiaHoy && currentMinutes <= currentMinutesNow);
+
         // Validación estricta de solapamiento matemático: max(start1, start2) < min(end1, end2)
         const isOccupied = turnosExistentes.some(t => {
           if (!t.hora_inicio) return false;
@@ -2215,7 +2344,9 @@ export const StorageService = {
         slots.push({
           hora_inicio: horaStr,
           hora_fin: horaFinStr,
-          disponible: !isOccupied,
+          disponible: !isOccupied && !esHoraPasada,
+          es_pasado: esHoraPasada,
+          esta_ocupado: isOccupied,
           consultorio_id: h.consultorio_id,
           consultorio_nombre: consObj?.nombre || 'Consultorio 1',
           clinica_id: slotClinicaId,

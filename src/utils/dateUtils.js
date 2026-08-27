@@ -91,6 +91,40 @@ export const DIAS_SEMANA_LABELS = [
   { id: 0, label: 'Domingo' }
 ];
 
+// ==============================================================================
+// FERIADOS NACIONALES OFICIALES DE ARGENTINA (2026)
+// ==============================================================================
+export const FERIADOS_ARGENTINA = [
+  { fecha: '2026-01-01', nombre: 'Año Nuevo', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-02-16', nombre: 'Carnaval', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-02-17', nombre: 'Carnaval', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-03-24', nombre: 'Día Nacional de la Memoria por la Verdad y la Justicia', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-04-02', nombre: 'Día del Veterano y de los Caídos en la Guerra de Malvinas', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-04-03', nombre: 'Viernes Santo', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-05-01', nombre: 'Día del Trabajador', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-05-25', nombre: 'Día de la Revolución de Mayo', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-06-20', nombre: 'Paso a la Inmortalidad del Gral. Manuel Belgrano', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-07-09', nombre: 'Día de la Independencia', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-08-17', nombre: 'Paso a la Inmortalidad del Gral. José de San Martín', tipo: 'TRASLADABLE' },
+  { fecha: '2026-10-12', nombre: 'Día del Respeto a la Diversidad Cultural', tipo: 'TRASLADABLE' },
+  { fecha: '2026-11-20', nombre: 'Día de la Soberanía Nacional', tipo: 'TRASLADABLE' },
+  { fecha: '2026-12-08', nombre: 'Inmaculada Concepción de María', tipo: 'INAMOVIBLE' },
+  { fecha: '2026-12-25', nombre: 'Navidad', tipo: 'INAMOVIBLE' }
+];
+
+/**
+ * Retorna el objeto del feriado si la fecha dada es feriado nacional oficial, o null.
+ */
+export const getFeriadoNacional = (dateStr) => {
+  if (!dateStr) return null;
+  const clean = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+  return FERIADOS_ARGENTINA.find(f => f.fecha === clean) || null;
+};
+
+export const esFeriadoNacional = (dateStr) => {
+  return getFeriadoNacional(dateStr) !== null;
+};
+
 export const formatDateAR = (dateStr) => {
   if (!dateStr) return '';
   if (typeof dateStr !== 'string') dateStr = String(dateStr);

@@ -556,6 +556,20 @@ export const AbmProfesionales = () => {
                 </div>
               </div>
 
+              {/* Bit de Configuración: Atención en Feriados */}
+              <label className="flex items-center gap-2.5 p-2.5 bg-amber-50/80 border border-amber-200 rounded-xl cursor-pointer hover:bg-amber-100/60 transition">
+                <input
+                  type="checkbox"
+                  checked={profForm.atiende_feriados || false}
+                  onChange={(e) => setProfForm({ ...profForm, atiende_feriados: e.target.checked })}
+                  className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500"
+                />
+                <div>
+                  <span className="text-xs font-black text-amber-950 block">Atiende días Feriados / Guardias</span>
+                  <span className="text-[10px] text-amber-800 font-medium">Si no está marcado, el sistema bloquea turnos automáticamente en feriados nacionales.</span>
+                </div>
+              </label>
+
               {/* Servicios Médicos que presta */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">

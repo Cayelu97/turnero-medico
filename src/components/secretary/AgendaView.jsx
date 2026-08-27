@@ -34,7 +34,7 @@ import { CancelarTurnoModal } from './CancelarTurnoModal';
 import { DetalleTurnoModal } from './DetalleTurnoModal';
 import { VoucherModal } from '../patient/VoucherModal';
 import { StorageService } from '../../services/storage';
-import { getLocalDateString, addDaysToDateString, getDayOfWeekFromDateString, getDayDetailsFromDateString } from '../../utils/dateUtils';
+import { getLocalDateString, addDaysToDateString, getDayOfWeekFromDateString, getDayDetailsFromDateString, getFeriadoNacional } from '../../utils/dateUtils';
 
 export const AgendaView = () => {
   const { 
@@ -625,11 +625,11 @@ export const AgendaView = () => {
             return (
               <div 
                 key={prof.id} 
-                className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col hover:border-slate-300 transition"
+                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col hover:border-slate-300 dark:hover:border-slate-700 transition"
               >
                 {/* Cabecera del Profesional */}
                 <div 
-                  className="p-3.5 border-b border-slate-100 flex items-center justify-between"
+                  className="p-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
                   style={{ borderTop: `4px solid ${prof.color_agenda || '#0284c7'}` }}
                 >
                   <div className="flex items-center gap-2.5">
@@ -640,10 +640,10 @@ export const AgendaView = () => {
                       {prof.nombre[0]}{prof.apellido[0]}
                     </div>
                     <div>
-                      <h3 className="font-black text-xs text-slate-900 leading-tight">
+                      <h3 className="font-black text-xs text-slate-900 dark:text-slate-100 leading-tight">
                         Dr(a). {prof.nombre} {prof.apellido}
                       </h3>
-                      <span className="text-[10px] text-slate-500 font-semibold block mt-0.5">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-0.5">
                         {prof.especialidad} • {prof.duracion_turno_minutos || 20}m
                       </span>
                     </div>
@@ -651,7 +651,7 @@ export const AgendaView = () => {
 
                   <button
                     onClick={() => handleOpenNuevoTurno(prof.id, null, currentDate)}
-                    className="p-1.5 bg-medical-50 hover:bg-medical-100 text-medical-800 rounded-xl text-[11px] font-black border border-medical-200 transition cursor-pointer"
+                    className="p-1.5 bg-medical-50 dark:bg-medical-950/70 hover:bg-medical-100 dark:hover:bg-medical-900 text-medical-800 dark:text-medical-300 rounded-xl text-[11px] font-black border border-medical-200 dark:border-medical-800 transition cursor-pointer"
                     title="Agendar turno o sobreturno para este profesional"
                   >
                     + Turno
@@ -659,23 +659,23 @@ export const AgendaView = () => {
                 </div>
 
                 {/* Resumen de la Columna */}
-                <div className="px-3.5 py-2 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-600 font-medium">
+                <div className="px-3.5 py-2 bg-slate-50/70 dark:bg-slate-850 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 font-medium">
                   <span><strong>{profTurnos.length}</strong> citados</span>
                   {sobreturnosCount > 0 && (
-                    <span className="text-orange-700 font-bold bg-orange-50 px-2 py-0.2 rounded-md border border-orange-200 text-[10px]">
+                    <span className="text-orange-700 dark:text-orange-300 font-bold bg-orange-50 dark:bg-orange-950/60 px-2 py-0.2 rounded-md border border-orange-200 dark:border-orange-800 text-[10px]">
                       {sobreturnosCount} sobreturnos
                     </span>
                   )}
                 </div>
 
                 {/* Lista de Turnos */}
-                <div className="p-3 space-y-2.5 max-h-[640px] overflow-y-auto bg-slate-50/30">
+                <div className="p-3 space-y-2.5 max-h-[640px] overflow-y-auto bg-slate-50/30 dark:bg-slate-950/40">
                   {profTurnos.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-2xl space-y-2">
+                    <div className="p-8 text-center text-xs text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
                       <p>Sin turnos para esta fecha.</p>
                       <button
                         onClick={() => handleOpenNuevoTurno(prof.id, null, currentDate)}
-                        className="inline-flex items-center gap-1 text-medical-600 font-black hover:underline cursor-pointer"
+                        className="inline-flex items-center gap-1 text-medical-600 dark:text-medical-400 font-black hover:underline cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" /> Agendar turno
                       </button>
@@ -696,12 +696,12 @@ export const AgendaView = () => {
                           onClick={() => setSelectedDetalleTurno(t)}
                           className={`p-3 rounded-2xl border transition shadow-2xs space-y-2 cursor-pointer group hover:shadow-md ${
                             isCancelled 
-                              ? 'bg-slate-100/70 border-slate-200 opacity-60' 
+                              ? 'bg-slate-100/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60 text-slate-500' 
                               : t.estado === 'EN_ESPERA'
-                              ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/30'
+                              ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/80 ring-1 ring-amber-300/50'
                               : t.estado === 'EN_ATENCION'
-                              ? 'bg-purple-50/80 border-purple-300 ring-2 ring-purple-400/30'
-                              : 'bg-white border-slate-200/80 hover:border-medical-300'
+                              ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-700/80 ring-1 ring-purple-300/50'
+                              : 'bg-white dark:bg-slate-850 border-slate-200/90 dark:border-slate-750 hover:border-medical-400 dark:hover:border-medical-500'
                           }`}
                         >
                           {/* Horario & Badge */}
@@ -835,12 +835,23 @@ export const AgendaView = () => {
                       t.estado !== 'CANCELADO'
                     );
 
-                    const isWorking = checkDoctorWorkingAt(prof.id, currentDate, slotTime);
+                    const isWorking = checkDoctorWorkingAt(prof.id, currentDate, slotTime, selectedCentroFilter);
+                    const todayStr = getLocalDateString(new Date());
+                    const now = new Date();
+                    const currentMinutesNow = now.getHours() * 60 + now.getMinutes();
+                    const isPastDate = currentDate < todayStr;
+                    const [sH, sM] = slotTime.split(':').map(Number);
+                    const slotMinutes = sH * 60 + sM;
+                    const isPastTime = currentDate === todayStr && slotMinutes <= currentMinutesNow;
 
                     if (turnosEnSlot.length === 0) {
-                      if (!isWorking) {
+                      if (!isWorking || isPastDate || isPastTime) {
                         return (
-                          <div key={prof.id} className="p-1.5 rounded-lg bg-slate-50/50 border border-slate-100 text-center text-slate-300 text-[10px] select-none">
+                          <div 
+                            key={prof.id} 
+                            className="p-1.5 rounded-lg bg-slate-50/40 dark:bg-slate-850/30 border border-slate-100 dark:border-slate-800 text-center text-slate-300 dark:text-slate-600 text-[10px] select-none cursor-not-allowed"
+                            title={isPastDate || isPastTime ? `Horario ya transcurrido (${slotTime})` : 'Sin atención'}
+                          >
                             —
                           </div>
                         );
@@ -850,11 +861,11 @@ export const AgendaView = () => {
                         <div 
                           key={prof.id} 
                           onClick={() => handleOpenNuevoTurno(prof.id, slotTime, currentDate)} 
-                          className="p-1.5 border border-dashed border-emerald-300/80 bg-emerald-50/30 rounded-xl text-center text-emerald-800 hover:text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100/60 cursor-pointer transition text-xs font-bold group"
+                          className="p-1.5 border border-dashed border-emerald-300/80 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-xl text-center text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100/60 cursor-pointer transition text-xs font-bold group"
                           title={`Agendar turno libre a las ${slotTime} con Dr(a). ${prof.apellido}`}
                         >
-                          <span className="group-hover:hidden text-[11px] text-emerald-700 font-semibold">+ Libre ({slotTime})</span>
-                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-emerald-900 text-xs"><Plus className="w-3 h-3" /> Agendar {slotTime}</span>
+                          <span className="group-hover:hidden text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">+ Libre ({slotTime})</span>
+                          <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-emerald-900 dark:text-emerald-200 text-xs"><Plus className="w-3 h-3" /> Agendar {slotTime}</span>
                         </div>
                       );
                     }
@@ -897,11 +908,11 @@ export const AgendaView = () => {
 
       {/* 3. TIMELINE SEMANAL (POR PROFESIONAL CON SLOTS EXACTOS) */}
       {viewMode === 'timeline_semanal' && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-3 sm:p-5 overflow-x-auto">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-3 sm:p-5 overflow-x-auto">
           <div className="min-w-[880px]">
             {/* Cabecera de Días de la Semana */}
-            <div className="grid gap-2 border-b border-slate-200 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
-              <div className="text-xs font-black text-slate-400 uppercase tracking-wider py-2 text-center">Hora</div>
+            <div className="grid gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
+              <div className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider py-2 text-center">Hora</div>
               {semanaDays.map((diaStr) => {
                 const dateObj = new Date(diaStr + 'T00:00:00');
                 const isSelectedDay = diaStr === currentDate;
@@ -913,6 +924,7 @@ export const AgendaView = () => {
                 const horariosDia = StorageService.getHorariosByProfesional(targetProfId, targetCentro).filter(h => Number(h.dia_semana) === Number(diaNum));
                 const tieneAtencion = horariosDia.length > 0;
                 const sedeDia = tieneAtencion ? allClinicas.find(c => c.id === horariosDia[0]?.clinica_id) : null;
+                const feriadoNac = getFeriadoNacional(diaStr);
 
                 return (
                   <div 
@@ -920,35 +932,44 @@ export const AgendaView = () => {
                     onClick={() => setCurrentDate(diaStr)}
                     className={`p-2.5 rounded-2xl border text-center transition cursor-pointer relative overflow-hidden ${
                       isSelectedDay 
-                        ? 'bg-gradient-to-b from-medical-50 via-white to-medical-50/40 border-2 border-medical-600 shadow-xs ring-2 ring-medical-500/20' 
-                        : 'bg-slate-50 border-slate-200/80 hover:bg-white hover:border-medical-300 hover:shadow-2xs'
+                        ? 'bg-gradient-to-b from-medical-50 dark:from-medical-950/80 via-white dark:via-slate-850 to-medical-50/40 dark:to-medical-950/40 border-2 border-medical-600 dark:border-medical-500 shadow-xs ring-2 ring-medical-500/20' 
+                        : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-medical-300 dark:hover:border-medical-500 hover:shadow-2xs'
                     }`}
                   >
                     {isSelectedDay && (
                       <span className="absolute top-0 inset-x-0 h-1 bg-medical-600" />
                     )}
-                    <span className={`text-[11px] block uppercase font-black tracking-wider ${isSelectedDay ? 'text-medical-800' : 'text-slate-500'}`}>
+                    <span className={`text-[11px] block uppercase font-black tracking-wider ${isSelectedDay ? 'text-medical-800 dark:text-medical-300' : 'text-slate-500 dark:text-slate-400'}`}>
                       {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}
                     </span>
-                    <strong className={`text-base font-black block leading-tight my-0.5 ${isSelectedDay ? 'text-medical-950' : 'text-slate-900'}`}>
+                    <strong className={`text-base font-black block leading-tight my-0.5 ${isSelectedDay ? 'text-medical-950 dark:text-medical-100' : 'text-slate-900 dark:text-slate-100'}`}>
                       {diaStr.split('-')[2]}
                     </strong>
                     
+                    {/* Badge de Feriado Nacional si aplica */}
+                    {feriadoNac && (
+                      <div className="mb-1">
+                        <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950/80 text-sky-900 dark:text-sky-300 border border-sky-300 dark:border-sky-800 inline-block truncate max-w-full" title={feriadoNac.nombre}>
+                          🇦🇷 {feriadoNac.nombre.split(' ')[0]}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Badge de Horario de Atención para este Día */}
-                    <div className="mt-1">
+                    <div className="mt-0.5">
                       {tieneAtencion ? (
                         <div className="space-y-0.5">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-medical-600 text-white' : 'bg-emerald-100/80 text-emerald-900'}`}>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-medical-600 text-white' : 'bg-emerald-100/80 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'}`}>
                             {horariosDia[0].hora_inicio} - {horariosDia[0].hora_fin}
                           </span>
                           {selectedCentroFilter === 'TODOS' && sedeDia && (
-                            <span className={`text-[8px] font-extrabold block truncate ${isSelectedDay ? 'text-medical-700' : 'text-sky-700'}`}>
+                            <span className={`text-[8px] font-extrabold block truncate ${isSelectedDay ? 'text-medical-700 dark:text-medical-300' : 'text-sky-700 dark:text-sky-400'}`}>
                               📍 {sedeDia.nombre.split('-')[0]}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-[9px] font-semibold text-slate-400">
+                        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500">
                           Sin atención
                         </span>
                       )}
@@ -957,10 +978,10 @@ export const AgendaView = () => {
                     <div className="mt-1">
                       <span className={`text-[10px] font-black px-2 py-0.5 rounded-full inline-block ${
                         isSelectedDay 
-                          ? 'bg-slate-900 text-white' 
+                          ? 'bg-slate-900 dark:bg-slate-700 text-white' 
                           : turnosDelDiaCount > 0 
-                          ? 'bg-medical-100 text-medical-900' 
-                          : 'text-slate-400 bg-slate-100'
+                          ? 'bg-medical-100 dark:bg-medical-950 text-medical-900 dark:text-medical-300 border border-medical-200 dark:border-medical-800' 
+                          : 'text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800'
                       }`}>
                         {turnosDelDiaCount} {turnosDelDiaCount === 1 ? 'turno' : 'turnos'}
                       </span>
@@ -971,13 +992,13 @@ export const AgendaView = () => {
             </div>
 
             {/* Filas con Resolución Exacta (e.g. cada 15/20/30m) */}
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {timelineSlots.map(slotTime => {
                 const targetProfId = selectedWeeklyProfId || visibleProfessionals[0]?.id;
 
                 return (
                   <div key={slotTime} className="grid gap-2 py-1 items-center" style={{ gridTemplateColumns: `80px repeat(6, minmax(130px, 1fr))` }}>
-                    <div className="font-mono text-xs font-black text-slate-600 bg-slate-100/80 px-2 py-1 rounded-lg text-center">{slotTime}</div>
+                    <div className="font-mono text-xs font-black text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800 px-2 py-1 rounded-lg text-center">{slotTime}</div>
                     {semanaDays.map(diaStr => {
                       // Buscar turnos exactamente en este slot para este médico
                       const turnosEnCelda = turnos.filter(t => 
@@ -988,12 +1009,24 @@ export const AgendaView = () => {
                         t.estado !== 'CANCELADO'
                       );
 
+                      const todayStr = getLocalDateString(new Date());
+                      const now = new Date();
+                      const currentMinutesNow = now.getHours() * 60 + now.getMinutes();
+                      const isPastDate = diaStr < todayStr;
+                      const [sH, sM] = slotTime.split(':').map(Number);
+                      const slotMinutes = sH * 60 + sM;
+                      const isPastTime = diaStr === todayStr && slotMinutes <= currentMinutesNow;
+
                       const isWorking = checkDoctorWorkingAt(targetProfId, diaStr, slotTime, selectedCentroFilter);
 
                       if (turnosEnCelda.length === 0) {
-                        if (!isWorking) {
+                        if (!isWorking || isPastDate || isPastTime) {
                           return (
-                            <div key={diaStr} className="p-1.5 rounded-lg bg-slate-50/40 border border-slate-100 text-center text-slate-300 text-[10px] select-none">
+                            <div 
+                              key={diaStr} 
+                              className="p-1.5 rounded-xl bg-slate-50/40 dark:bg-slate-850/40 border border-slate-100 dark:border-slate-800 text-center text-slate-300 dark:text-slate-600 text-[10px] select-none cursor-not-allowed"
+                              title={isPastDate || isPastTime ? `Horario ya transcurrido (${diaStr} ${slotTime})` : 'Sin atención'}
+                            >
                               —
                             </div>
                           );
@@ -1003,15 +1036,15 @@ export const AgendaView = () => {
                           <div 
                             key={diaStr} 
                             onClick={() => handleOpenNuevoTurno(targetProfId, slotTime, diaStr)} 
-                            className="p-1.5 border border-emerald-200/90 bg-emerald-50/40 hover:bg-emerald-100/80 hover:border-emerald-500 rounded-xl text-center text-emerald-900 hover:shadow-2xs cursor-pointer transition text-xs font-bold group"
+                            className="p-1.5 border border-emerald-200/90 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/30 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/50 hover:border-emerald-500 rounded-xl text-center text-emerald-900 dark:text-emerald-300 hover:shadow-2xs cursor-pointer transition text-xs font-bold group"
                             title={`Agendar turno libre el ${diaStr} a las ${slotTime}`}
                           >
-                            <span className="group-hover:hidden text-[10px] text-emerald-700 font-bold tracking-wide flex items-center justify-center gap-1">
+                            <span className="group-hover:hidden text-[10px] text-emerald-700 dark:text-emerald-400 font-bold tracking-wide flex items-center justify-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               <span>Libre</span>
                             </span>
-                            <span className="hidden group-hover:inline-flex items-center justify-center gap-1 font-black text-emerald-950 text-[10px]">
-                              <Plus className="w-3 h-3 text-emerald-700" />
+                            <span className="hidden group-hover:inline-flex items-center justify-center gap-1 font-black text-emerald-950 dark:text-emerald-100 text-[10px]">
+                              <Plus className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                               <span>+ {slotTime}</span>
                             </span>
                           </div>
@@ -1030,17 +1063,17 @@ export const AgendaView = () => {
                                 key={t.id} 
                                 onClick={() => setSelectedDetalleTurno(t)} 
                                 className={`p-1.5 rounded-xl border text-xs cursor-pointer transition shadow-2xs hover:shadow-md ${
-                                  t.estado === 'EN_ESPERA' ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' :
-                                  t.estado === 'EN_ATENCION' ? 'bg-purple-50 border-purple-300 ring-1 ring-purple-300' :
-                                  'bg-white border-slate-200 hover:border-medical-400'
+                                  t.estado === 'EN_ESPERA' ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 ring-1 ring-amber-300' :
+                                  t.estado === 'EN_ATENCION' ? 'bg-purple-50 dark:bg-purple-950/40 border-purple-300 dark:border-purple-700 ring-1 ring-purple-300' :
+                                  'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-medical-400 dark:hover:border-medical-500'
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-1">
-                                  <span className="font-mono font-black text-slate-900 text-[10px]">{t.hora_inicio}</span>
+                                  <span className="font-mono font-black text-slate-900 dark:text-slate-100 text-[10px]">{t.hora_inicio}</span>
                                   <span className={`text-[8px] font-bold px-1 rounded ${badge.bg}`}>{badge.label}</span>
                                 </div>
-                                <div className="font-black text-slate-800 text-[10px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
-                                <span className="text-[9px] text-slate-500 truncate block">{os?.sigla || 'Part.'}</span>
+                                <div className="font-black text-slate-800 dark:text-slate-100 text-[10px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
+                                <span className="text-[9px] text-slate-500 dark:text-slate-400 truncate block">{os?.sigla || 'Part.'}</span>
                               </div>
                             );
                           })}
@@ -1057,10 +1090,10 @@ export const AgendaView = () => {
 
       {/* 4. VISTA RESUMEN SEMANAL */}
       {viewMode === 'semanal' && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-            <h3 className="font-black text-sm text-slate-900">Cronograma Semanal</h3>
-            <button onClick={() => setSortOrderSemanal(s => s === 'asc' ? 'desc' : 'asc')} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6 space-y-4">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">Cronograma Semanal</h3>
+            <button onClick={() => setSortOrderSemanal(s => s === 'asc' ? 'desc' : 'asc')} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold cursor-pointer">
               Orden: {sortOrderSemanal === 'asc' ? '08:00 ➔ 20:00' : '20:00 ➔ 08:00'}
             </button>
           </div>
@@ -1073,27 +1106,27 @@ export const AgendaView = () => {
               const dateObj = new Date(diaStr + 'T00:00:00');
 
               return (
-                <div key={diaStr} onClick={() => { setCurrentDate(diaStr); setViewMode('diaria'); }} className={`p-3.5 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3 ${isCurrentSelected ? 'border-medical-600 bg-medical-50/40 shadow-sm' : 'border-slate-200 hover:border-medical-300 bg-slate-50/40 hover:bg-white'}`}>
+                <div key={diaStr} onClick={() => { setCurrentDate(diaStr); setViewMode('diaria'); }} className={`p-3.5 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3 ${isCurrentSelected ? 'border-medical-600 dark:border-medical-500 bg-medical-50/40 dark:bg-medical-950/40 shadow-sm' : 'border-slate-200 dark:border-slate-800 hover:border-medical-300 dark:hover:border-medical-600 bg-slate-50/40 dark:bg-slate-850 hover:bg-white dark:hover:bg-slate-800'}`}>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-black text-xs text-slate-800 uppercase tracking-wider">{dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}</span>
-                      <span className={`text-[11px] font-black px-2 py-0.5 rounded-md border ${isCurrentSelected ? 'bg-medical-600 text-white border-medical-600' : 'bg-white text-slate-900 border-slate-200'}`}>{diaStr.split('-')[2]}</span>
+                      <span className="font-black text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wider">{dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}</span>
+                      <span className={`text-[11px] font-black px-2 py-0.5 rounded-md border ${isCurrentSelected ? 'bg-medical-600 text-white border-medical-600' : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700'}`}>{diaStr.split('-')[2]}</span>
                     </div>
-                    <span className="text-xs font-black text-medical-800 block mb-2">{diaTurnos.length} turnos</span>
+                    <span className="text-xs font-black text-medical-800 dark:text-medical-400 block mb-2">{diaTurnos.length} turnos</span>
                     <div className="space-y-1.5 min-h-[120px]">
                       {diaTurnos.length === 0 ? (
-                        <div className="py-6 text-center text-slate-400 text-[11px] italic">Sin turnos</div>
+                        <div className="py-6 text-center text-slate-400 dark:text-slate-600 text-[11px] italic">Sin turnos</div>
                       ) : (
                         diaTurnos.map(t => (
-                          <div key={t.id} onClick={(e) => { e.stopPropagation(); setSelectedDetalleTurno(t); }} className="p-2 bg-white border border-slate-200 hover:border-medical-500 hover:shadow-md rounded-xl text-xs transition cursor-pointer">
-                            <strong className="font-mono font-black text-slate-900 text-[11px] mr-1">{t.hora_inicio}</strong>
-                            <span className="font-bold text-slate-800 text-[11px] truncate block">{pacientes.find(p => p.id === t.paciente_id)?.apellido || 'Paciente'}</span>
+                          <div key={t.id} onClick={(e) => { e.stopPropagation(); setSelectedDetalleTurno(t); }} className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-medical-500 hover:shadow-md rounded-xl text-xs transition cursor-pointer">
+                            <strong className="font-mono font-black text-slate-900 dark:text-slate-100 text-[11px] mr-1">{t.hora_inicio}</strong>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] truncate block">{pacientes.find(p => p.id === t.paciente_id)?.apellido || 'Paciente'}</span>
                           </div>
                         ))
                       )}
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-medical-600 text-center pt-2 border-t border-slate-200/80">Ver día ➔</div>
+                  <div className="text-[10px] font-bold text-medical-600 dark:text-medical-400 text-center pt-2 border-t border-slate-200/80 dark:border-slate-800">Ver día ➔</div>
                 </div>
               );
             })}
@@ -1103,18 +1136,18 @@ export const AgendaView = () => {
 
       {/* 5. VISTA TURNOS FUTUROS */}
       {viewMode === 'futuros' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden space-y-4 p-4 sm:p-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden space-y-4 p-4 sm:p-6">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
-              <h3 className="font-black text-base text-slate-900">Listado de Turnos Futuros Agendados</h3>
-              <p className="text-xs text-slate-500">Visualice y exporte todas las reservas futuras.</p>
+              <h3 className="font-black text-base text-slate-900 dark:text-slate-100">Listado de Turnos Futuros Agendados</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Visualice y exporte todas las reservas futuras.</p>
             </div>
-            <span className="px-3 py-1 bg-purple-100 text-purple-900 rounded-xl text-xs font-black">{turnosFuturos.length} turnos</span>
+            <span className="px-3 py-1 bg-purple-100 dark:bg-purple-950 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-black">{turnosFuturos.length} turnos</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 uppercase font-black text-[10px] border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 uppercase font-black text-[10px] border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="py-3 px-3">Código</th>
                   <th className="py-3 px-3">Fecha & Hora</th>
@@ -1125,9 +1158,9 @@ export const AgendaView = () => {
                   <th className="py-3 px-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
                 {turnosFuturos.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-8 text-slate-400">No hay turnos futuros.</td></tr>
+                  <tr><td colSpan={7} className="text-center py-8 text-slate-400 dark:text-slate-600">No hay turnos futuros.</td></tr>
                 ) : (
                   turnosFuturos.map((t) => {
                     const pac = pacientes.find(p => p.id === t.paciente_id);
@@ -1136,15 +1169,15 @@ export const AgendaView = () => {
                     const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
 
                     return (
-                      <tr key={t.id} className="hover:bg-slate-50/80 transition">
-                        <td className="py-3 px-3 font-mono font-bold text-slate-900">{t.codigo_reserva}</td>
-                        <td className="py-3 px-3 font-bold text-slate-900">{t.fecha} • <span className="text-medical-700">{t.hora_inicio} hs</span></td>
-                        <td className="py-3 px-3"><strong>{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</strong><span className="block text-[11px] text-slate-500">DNI {pac?.dni}</span></td>
-                        <td className="py-3 px-3"><strong>Dr(a). {prof?.nombre} {prof?.apellido}</strong><span className="block text-[11px] text-medical-700">{prof?.especialidad}</span></td>
+                      <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition">
+                        <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">{t.codigo_reserva}</td>
+                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-slate-100">{t.fecha} • <span className="text-medical-700 dark:text-medical-400">{t.hora_inicio} hs</span></td>
+                        <td className="py-3 px-3"><strong>{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</strong><span className="block text-[11px] text-slate-500 dark:text-slate-400">DNI {pac?.dni}</span></td>
+                        <td className="py-3 px-3"><strong>Dr(a). {prof?.nombre} {prof?.apellido}</strong><span className="block text-[11px] text-medical-700 dark:text-medical-400">{prof?.especialidad}</span></td>
                         <td className="py-3 px-3">{os?.nombre || 'Particular'}</td>
                         <td className="py-3 px-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${badge.bg}`}>{badge.label}</span></td>
                         <td className="py-3 px-3 text-right">
-                          <button onClick={() => setSelectedDetalleTurno(t)} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs cursor-pointer">Gestionar</button>
+                          <button onClick={() => setSelectedDetalleTurno(t)} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-xs cursor-pointer">Gestionar</button>
                         </td>
                       </tr>
                     );
@@ -1159,19 +1192,19 @@ export const AgendaView = () => {
       {/* MODAL DE PRÓXIMOS TURNOS LIBRES (MULTI-MÉDICO & SERVICIOS) */}
       {showProximoLibreModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-3 sm:p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden space-y-3.5 p-4 sm:p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden space-y-3.5 p-4 sm:p-6 text-slate-900 dark:text-slate-100">
             
             {/* CABECERA DEL MODAL */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-amber-100 text-amber-900 rounded-xl shadow-2xs">
-                  <Sparkles className="w-5 h-5 text-amber-600" />
+                <div className="p-2 bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 rounded-xl shadow-2xs">
+                  <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm sm:text-base text-slate-900 leading-tight">
+                  <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-slate-100 leading-tight">
                     Buscador de Turnos Libres Más Próximos
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     Encuentre al instante las primeras disponibilidades reales del centro.
                   </p>
                 </div>

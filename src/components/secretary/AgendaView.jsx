@@ -399,200 +399,166 @@ export const AgendaView = () => {
   }, []);
 
   return (
-    <div className="space-y-3.5">
-      {/* COMMAND CENTER CLÍNICO: BARRA DE COMANDO DE ALTA PRODUCTIVIDAD (2 NIVELES) */}
-      <div className="bg-white px-4 py-3 rounded-3xl border border-slate-200/90 shadow-sm space-y-3">
-        
-        {/* NIVEL 1: MASTER CONTEXT & ACTION HUB DE SECRETARÍA */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-          
-          {/* GRUPO IZQUIERDO: CONTEXTO DE SEDE & MÉDICO SELECCIONADO */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Selector de Sede / Centro */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl shadow-2xs transition">
-              <span className="text-xs">🏥</span>
-              <select 
-                value={selectedCentroFilter} 
-                onChange={(e) => setSelectedCentroFilter(e.target.value)} 
-                className="text-xs font-black bg-transparent text-slate-800 focus:outline-none cursor-pointer pr-1"
-                title="Filtrar por Sede o Centro de Atención"
-              >
-                <option value="TODOS">Todas las Sedes</option>
-                {allClinicas.map(c => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
-                ))}
-              </select>
-            </div>
+    <div className="space-y-2">
+      {/* ══════════════════════════════════════════════════════════════════════
+          COMMAND BAR — una sola tarjeta con 2 filas horizontales limpias
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
-            {/* Selector de Médico Activo con Avatar */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl shadow-2xs transition">
-              <div 
-                className="w-5 h-5 rounded-full flex items-center justify-center text-white font-black text-[9px] shrink-0 shadow-2xs" 
-                style={{ backgroundColor: activeWeeklyProf?.color_agenda || '#0284c7' }}
-              >
-                {activeWeeklyProf ? `${activeWeeklyProf.nombre[0]}${activeWeeklyProf.apellido[0]}` : 'MD'}
-              </div>
+        {/* ── ROW 1: Contexto + Navegación + Acciones ── */}
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-slate-100">
+
+          {/* — Left: Médico & Sede — */}
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
+            <div 
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-[10px] shrink-0" 
+              style={{ backgroundColor: activeWeeklyProf?.color_agenda || '#0284c7' }}
+            >
+              {activeWeeklyProf ? `${activeWeeklyProf.nombre?.[0] || ''}${activeWeeklyProf.apellido?.[0] || ''}` : '👨‍⚕️'}
+            </div>
+            <div className="min-w-0">
               <select 
                 value={selectedWeeklyProfId || selectedProfFilter} 
                 onChange={(e) => {
                   setSelectedProfFilter(e.target.value);
                   setSelectedWeeklyProfId(e.target.value);
                 }} 
-                className="text-xs font-black bg-transparent text-slate-900 focus:outline-none cursor-pointer max-w-[210px] truncate"
+                className="block w-full text-[13px] font-black text-slate-900 bg-transparent border-none focus:outline-none cursor-pointer truncate p-0"
               >
-                <option value="">Todos los Profesionales</option>
+                <option value="">Todos los profesionales</option>
                 {profesionales.map(p => (
-                  <option key={p.id} value={p.id}>
-                    Dr(a). {p.apellido} ({p.especialidad} • {p.duracion_turno_minutos || 15}m)
-                  </option>
+                  <option key={p.id} value={p.id}>Dr(a). {p.apellido} ({p.duracion_turno_minutos || 15}m)</option>
+                ))}
+              </select>
+              <select 
+                value={selectedCentroFilter} 
+                onChange={(e) => setSelectedCentroFilter(e.target.value)} 
+                className="block w-full text-[11px] font-semibold text-slate-500 bg-transparent border-none focus:outline-none cursor-pointer truncate p-0 -mt-0.5"
+              >
+                <option value="TODOS">Todas las sedes</option>
+                {allClinicas.map(c => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* GRUPO CENTRO: NAVEGADOR DE FECHA ERGONÓMICO */}
-          <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/70 shadow-inner">
-            {viewMode === 'timeline_semanal' || viewMode === 'semanal' ? (
-              <>
-                <button 
-                  onClick={handlePrevWeek} 
-                  className="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1 shadow-2xs" 
-                  title="Semana anterior"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>Ant</span>
-                </button>
-                
-                <button 
-                  onClick={handleToday} 
-                  className="px-3 py-1 text-xs font-black bg-white text-medical-800 rounded-xl shadow-xs border border-slate-200/60 transition cursor-pointer hover:bg-medical-50"
-                  title="Ir a esta semana [T]"
-                >
-                  Esta Semana
-                </button>
-                
-                <button 
-                  onClick={handleNextWeek} 
-                  className="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1 shadow-2xs" 
-                  title="Semana siguiente"
-                >
-                  <span>Sig</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </>
-            ) : (
-              <>
-                <button onClick={handlePrevDay} className="p-1.5 hover:bg-white text-slate-700 rounded-xl transition shadow-2xs" title="Día anterior">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <button onClick={handleToday} className="px-3 py-1 text-xs font-black bg-white text-medical-800 rounded-xl shadow-xs border border-slate-200/60 transition hover:bg-medical-50" title="Ir a hoy [T]">
-                  Hoy
-                </button>
-                <button onClick={handleNextDay} className="p-1.5 hover:bg-white text-slate-700 rounded-xl transition shadow-2xs" title="Día siguiente">
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )}
+          {/* — Separator — */}
+          <div className="w-px h-7 bg-slate-200 shrink-0" />
 
-            {/* Input de Fecha Nativo Estilizado */}
-            <div className="relative flex items-center">
-              <input 
-                type="date" 
-                value={currentDate} 
-                onChange={(e) => setCurrentDate(e.target.value)} 
-                className="pl-2.5 pr-2 py-1 bg-white border border-slate-200 rounded-xl text-xs font-black text-slate-900 focus:ring-2 focus:ring-medical-500 shadow-2xs w-32 cursor-pointer" 
-              />
-            </div>
+          {/* — Center: Navegación de fecha — */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button 
+              onClick={viewMode === 'timeline_semanal' || viewMode === 'semanal' ? handlePrevWeek : handlePrevDay} 
+              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={handleToday} 
+              className="px-3 h-7 text-xs font-black text-medical-700 bg-medical-50 hover:bg-medical-100 border border-medical-200 rounded-lg transition cursor-pointer"
+            >
+              {viewMode === 'timeline_semanal' || viewMode === 'semanal' ? 'Esta semana' : 'Hoy'}
+            </button>
+            <button 
+              onClick={viewMode === 'timeline_semanal' || viewMode === 'semanal' ? handleNextWeek : handleNextDay} 
+              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <input 
+              type="date" 
+              value={currentDate} 
+              onChange={(e) => setCurrentDate(e.target.value)} 
+              className="h-7 px-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-medical-500 cursor-pointer" 
+            />
           </div>
 
-          {/* GRUPO DERECHO: ACTION HUB DE SECRETARÍA */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Buscador Rápido de Pacientes */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          {/* — Spacer — */}
+          <div className="flex-1" />
+
+          {/* — Right: Búsqueda + Acciones — */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="relative hidden sm:block">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input 
                 type="text" 
-                placeholder="Buscar paciente / DNI..." 
+                placeholder="Buscar paciente…" 
                 value={searchPatientQuery} 
                 onChange={(e) => setSearchPatientQuery(e.target.value)} 
-                className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-2xl text-xs font-bold bg-slate-50 focus:bg-white focus:ring-2 focus:ring-medical-500 w-36 sm:w-48 shadow-2xs transition" 
+                className="h-7 pl-8 pr-3 w-40 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-medical-500 transition" 
               />
             </div>
 
-            {/* Paquete de Sesiones */}
             <button 
               onClick={() => setShowRecurrenteModal(true)} 
-              className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200/90 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-98"
-              title="Agendar paquete de sesiones periódicas (Psicología / Kinesiología)"
+              className="h-7 px-2.5 text-xs font-bold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition cursor-pointer flex items-center gap-1"
+              title="Sesiones recurrentes"
             >
-              <Repeat className="w-3.5 h-3.5 text-purple-600" />
-              <span className="hidden sm:inline">+ Sesiones</span>
+              <Repeat className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Sesiones</span>
             </button>
 
-            {/* Botón Próximo Turno Libre */}
             <button 
               onClick={handleOpenProximoLibre} 
-              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-98"
-              title="Buscar el turno libre más próximo del médico o de cualquier profesional [P]"
+              className="h-7 px-2.5 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition cursor-pointer flex items-center gap-1"
+              title="Próximo turno libre [P]"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-              <span>⚡ Próximo Libre</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Próx. libre</span>
             </button>
 
-            {/* Botón Principal: + Agendar Turno */}
             <button 
               onClick={() => handleOpenNuevoTurno()} 
-              className="px-4 py-1.5 bg-gradient-to-r from-medical-600 to-medical-700 hover:from-medical-700 hover:to-medical-800 text-white rounded-2xl text-xs font-black shadow-sm transition cursor-pointer flex items-center gap-1.5 active:scale-98"
-              title="Otorgar nuevo turno [N]"
+              className="h-7 px-3.5 text-xs font-black text-white bg-medical-600 hover:bg-medical-700 rounded-lg shadow-sm transition cursor-pointer flex items-center gap-1.5"
+              title="Nuevo turno [N]"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Agendar Turno</span>
-              <kbd className="hidden md:inline-block ml-1 px-1.5 py-0.2 bg-white/20 rounded text-[9px] font-mono">N</kbd>
+              <span>Turno</span>
             </button>
           </div>
         </div>
 
-        {/* NIVEL 2: VISTAS SEGMENTADAS & FILTROS DE PRECISIÓN */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-0.5">
-          
-          {/* Pestañas de Vista Segmentadas */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-2xl border border-slate-200/80 shadow-inner">
+        {/* ── ROW 2: Pestañas de vista + Filtros secundarios ── */}
+        <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50/80">
+
+          {/* — Tabs — */}
+          <div className="flex items-center gap-0.5 shrink-0">
             {[
-              { id: 'diaria', label: 'Diaria', icon: '📋' },
-              { id: 'timeline', label: 'Timeline Hoy', icon: '⏱️' },
-              { id: 'timeline_semanal', label: 'Timeline Semanal', icon: '📅' },
-              { id: 'futuros', label: 'Futuros', icon: '🔮' }
+              { id: 'diaria', label: 'Diaria' },
+              { id: 'timeline', label: 'Timeline' },
+              { id: 'timeline_semanal', label: 'Semanal' },
+              { id: 'futuros', label: 'Futuros' }
             ].map(m => (
               <button 
                 key={m.id} 
                 onClick={() => setViewMode(m.id)} 
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-md text-xs transition cursor-pointer ${
                   viewMode === m.id 
-                    ? 'bg-white text-slate-900 shadow-xs font-black ring-1 ring-slate-200/70' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    ? 'font-black text-medical-700 bg-white shadow-sm border border-slate-200' 
+                    : 'font-medium text-slate-500 hover:text-slate-800 hover:bg-white/60'
                 }`}
               >
-                <span>{m.icon}</span>
-                <span>{m.label}</span>
+                {m.label}
               </button>
             ))}
           </div>
 
-          {/* Filtros Contextuales Secundarios */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Filtro por Especialidad */}
+          {/* — Separator — */}
+          <div className="w-px h-5 bg-slate-200 shrink-0" />
+
+          {/* — Filtros — */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <select 
               value={selectedServicioFilter} 
               onChange={(e) => setSelectedServicioFilter(e.target.value)} 
-              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-700 hover:bg-white transition max-w-[150px] truncate"
+              className="h-6 px-2 text-[11px] font-bold text-slate-600 bg-white border border-slate-200 rounded-md focus:outline-none cursor-pointer max-w-[130px] truncate"
             >
-              <option value="">🩺 Especialidad (Todas)</option>
+              <option value="">Especialidad</option>
               {servicios.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
             </select>
 
-            {/* Selector de Intervalo / Paso */}
-            <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200/70 text-xs font-bold">
-              <span className="text-[10px] font-extrabold uppercase text-slate-400 px-1.5">Paso:</span>
+            <div className="flex items-center bg-white border border-slate-200 rounded-md overflow-hidden">
               {[
                 { id: 'auto', label: 'Auto' },
                 { id: '15', label: '15m' },
@@ -603,66 +569,65 @@ export const AgendaView = () => {
                 <button
                   key={r.id}
                   onClick={() => setSlotResolution(r.id)}
-                  className={`px-2 py-0.5 rounded-lg text-[11px] transition cursor-pointer ${
+                  className={`px-1.5 py-0.5 text-[11px] transition cursor-pointer ${
                     slotResolution === r.id 
-                      ? 'bg-white text-slate-900 shadow-2xs font-black' 
-                      : 'text-slate-500 hover:text-slate-900'
+                      ? 'font-black text-medical-700 bg-medical-50' 
+                      : 'font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   {r.label}
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Toggle de Métricas / KPIs */}
+          {/* — Right: KPIs + Config — */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button 
               onClick={() => setShowKpis(!showKpis)} 
-              className={`px-2.5 py-1 rounded-xl border text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                showKpis ? 'bg-slate-900 text-white border-slate-900 shadow-2xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+              className={`h-6 px-2 rounded-md text-[11px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                showKpis ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
-              title="Mostrar u ocultar métricas de la agenda"
             >
-              <Users className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-black">{kpisDia.total} citados</span>
+              <Users className="w-3 h-3" />
+              <span>{kpisDia.total}</span>
             </button>
 
-            {/* Botón Configurar Horarios */}
             <button 
               onClick={() => setShowConfigAgendaModal(true)} 
-              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs" 
-              title="Configurar Horarios del Médico"
+              className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 transition cursor-pointer" 
+              title="Configurar horarios"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Horarios</span>
+              <Settings className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* DRAWER COLAPSABLE DE MÉTRICAS (SOLO SE ABRE CUANDO EL USUARIO LO PIDE) */}
+        {/* ── KPIs drawer (colapsable) ── */}
         {showKpis && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2.5 border-t border-slate-100 animate-in fade-in duration-150">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 px-4 py-2 border-t border-slate-100 bg-slate-50/50">
             {[
-              { id: 'ALL', l: 'Total Citados', v: kpisDia.total, bg: 'hover:bg-slate-100' },
-              { id: 'EN_ESPERA', l: 'En Sala Espera', v: kpisDia.enEspera, bg: 'text-amber-900', dot: 'bg-amber-500' },
-              { id: 'EN_ATENCION', l: 'En Consulta', v: kpisDia.enAtencion, bg: 'text-purple-900', dot: 'bg-purple-500' },
-              { id: 'ATENDIDO', l: 'Atendidos', v: kpisDia.atendidos, bg: 'text-emerald-900', dot: 'bg-emerald-500' },
-              { id: 'SOBRETURNOS', l: 'Sobreturnos', v: kpisDia.sobreturnos, bg: 'text-orange-900', dot: 'bg-orange-500' },
-              { id: 'CANCELADOS', l: 'Cancelados / Aus', v: kpisDia.cancelados, bg: 'text-slate-600', dot: 'bg-slate-400' }
+              { id: 'ALL', l: 'Citados', v: kpisDia.total, dot: 'bg-slate-500' },
+              { id: 'EN_ESPERA', l: 'Espera', v: kpisDia.enEspera, dot: 'bg-amber-500' },
+              { id: 'EN_ATENCION', l: 'Consulta', v: kpisDia.enAtencion, dot: 'bg-purple-500' },
+              { id: 'ATENDIDO', l: 'Atendidos', v: kpisDia.atendidos, dot: 'bg-emerald-500' },
+              { id: 'SOBRETURNOS', l: 'Sobre', v: kpisDia.sobreturnos, dot: 'bg-orange-500' },
+              { id: 'CANCELADOS', l: 'Ausentes', v: kpisDia.cancelados, dot: 'bg-slate-400' }
             ].map(k => (
               <button 
                 key={k.id} 
                 onClick={() => setActiveKpiFilter(activeKpiFilter === k.id ? 'ALL' : k.id)} 
-                className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
+                className={`py-1.5 px-2 rounded-lg text-center transition cursor-pointer ${
                   activeKpiFilter === k.id 
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs' 
-                    : 'bg-slate-50 border-slate-200/70 hover:border-slate-300'
+                    ? 'bg-slate-800 text-white shadow-sm' 
+                    : 'bg-white border border-slate-200 hover:border-slate-300'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] block uppercase font-black tracking-wider opacity-80">{k.l}</span>
-                  {k.dot && <span className={`w-1.5 h-1.5 rounded-full ${k.dot}`} />}
+                <div className="flex items-center justify-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${k.dot}`} />
+                  <span className="text-[10px] font-bold uppercase tracking-wide opacity-70">{k.l}</span>
                 </div>
-                <span className="text-base font-black">{k.v}</span>
+                <span className="text-sm font-black block">{k.v}</span>
               </button>
             ))}
           </div>

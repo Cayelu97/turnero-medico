@@ -1518,10 +1518,12 @@ export const AgendaView = () => {
       <PlanillaImpresionModal 
         isOpen={showPlanillaModal} 
         onClose={() => setShowPlanillaModal(false)} 
-        turnos={viewMode === 'timeline_semanal' || viewMode === 'semanal' ? turnosSemana : turnosDelDia} 
+        turnos={turnos} 
         fechaSeleccionada={currentDate} 
+        semanaDays={semanaDays}
         profesionalSeleccionado={selectedWeeklyProfId || selectedProfFilter} 
         sedeSeleccionada={selectedCentroFilter} 
+        defaultViewMode={viewMode}
       />
     </div>
   );

@@ -158,8 +158,8 @@ export const DetalleTurnoModal = ({
         {/* BODY SCROLLABLE */}
         <div className="p-5 overflow-y-auto flex-1 space-y-4">
           
-          {/* TARJETA FECHA Y HORA */}
-          <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between">
+          {/* TARJETA FECHA, HORA & SEDE */}
+          <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white rounded-xl border border-slate-200 text-medical-600">
                 <Clock className="w-5 h-5" />
@@ -169,11 +169,21 @@ export const DetalleTurnoModal = ({
                 <strong className="text-sm font-black text-slate-900">
                   {formatDateAR(turno.fecha)} a las {turno.hora_inicio} hs
                 </strong>
+                <span className="text-[11px] text-slate-600 font-bold block">
+                  {turno.modalidad === 'ONLINE' ? '💻 Consulta Virtual / Online' : '🏢 Atención Presencial'}
+                </span>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-[11px] font-bold text-slate-500 block">Consultorio</span>
-              <strong className="text-xs font-black text-slate-800">{consultorio?.nombre || 'Consultorio 1'}</strong>
+            <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+              <span className="text-[10px] font-black uppercase text-medical-700 block">
+                📍 {StorageService.getClinicasList().find(c => c.id === turno.clinica_id)?.nombre || 'Sede Central'}
+              </span>
+              <strong className="text-xs font-black text-slate-800 block">
+                {consultorio?.nombre || 'Consultorio de Atención'}
+              </strong>
+              <span className="text-[10px] text-slate-500 font-medium">
+                {StorageService.getClinicasList().find(c => c.id === turno.clinica_id)?.direccion || ''}
+              </span>
             </div>
           </div>
 

@@ -1,3 +1,5 @@
+import { StorageService } from './storage';
+
 // Helper para generar y disparar enlaces de WhatsApp oficiales con mensajes preformateados
 
 export const WhatsAppService = {
@@ -21,21 +23,26 @@ export const WhatsAppService = {
     return clean;
   },
 
-  // Generar mensaje de confirmación de turno
+  // Generar mensaje de confirmación / recordatorio de turno con Sede y Dirección exactas
   generarMensajeTurno: ({ turno, paciente, profesional, consultorio, clinica, tipo = 'NUEVO' }) => {
-    const clinicaNombre = clinica?.nombre || 'Centro Médico San Lucas';
-    const clinicaDir = clinica?.direccion || 'Av. Santa Fe 2450';
-    const docNombre = profesional ? `Dr(a). ${profesional.nombre} ${profesional.apellido} (${profesional.especialidad})` : 'Profesional Médico';
+    const allClinicas = StorageService.getClinicasList();
+    const targetClinica = clinica || allClinicas.find(c => c.id === turno?.clinica_id) || allClinicas[0];
+    const clinicaNombre = targetClinica?.nombre || 'Sede Central';
+    const clinicaDir = targetClinica?.direccion || 'Av. Colón 1250, Córdoba';
+    const esOnline = turno?.modalidad === 'ONLINE' || targetClinica?.id === 'clinica-4';
+
+    const docNombre = profesional ? `Dr(a). ${profesional.nombre} ${profesional.apellido} (${profesional.especialidad})` : 'Profesional';
     const pacNombre = paciente ? `${paciente.nombre} ${paciente.apellido}` : 'Estimado/a paciente';
-    const consultorioNombre = consultorio?.nombre || 'Consultorio';
+    const consultorioNombre = consultorio?.nombre || (esOnline ? 'Consultorio Virtual' : 'Consultorio de Atención');
 
     if (tipo === 'CANCELADO') {
       return (
-        `Hola ${pacNombre}, te informamos que tu turno en *${clinicaNombre}* ha sido *CANCELADO*.\n\n` +
+        `Hola ${pacNombre}, te informamos que tu turno para *${clinicaNombre}* ha sido *CANCELADO*.\n\n` +
         `❌ *Detalles del turno cancelado:*\n` +
-        `• Código: ${turno.codigo_reserva}\n` +
-        `• Médico: ${docNombre}\n` +
-        `• Fecha: ${turno.fecha} a las ${turno.hora_inicio} hs\n\n` +
+        `• Código de Reserva: ${turno?.codigo_reserva || 'S/D'}\n` +
+        `• Profesional: ${docNombre}\n` +
+        `• Sede: ${clinicaNombre}\n` +
+        `• Fecha y Hora: ${turno?.fecha} a las ${turno?.hora_inicio} hs\n\n` +
         `Si deseas reprogramarlo, puedes ingresar a nuestro turnero online o comunicarte con recepción.`
       );
     }
@@ -43,27 +50,57 @@ export const WhatsAppService = {
     if (tipo === 'REPROGRAMADO') {
       return (
         `Hola ${pacNombre}, tu turno en *${clinicaNombre}* ha sido *REPROGRAMADO* exitosamente.\n\n` +
-        `🗓️ *NUEVA FECHA Y HORA:*\n` +
-        `• Fecha: *${turno.fecha}*\n` +
-        `• Horario: *${turno.hora_inicio} hs*\n` +
-        `• Profesional: ${docNombre}\n` +
-        `• Lugar: ${consultorioNombre} (${clinicaDir})\n` +
-        `• Código de reserva: *${turno.codigo_reserva}*\n\n` +
-        `Por favor presentarse 10 minutos antes con DNI y credencial médica.`
+        `🗓️ *NUEVOS DETALLES DEL TURNO:*\n` +
+        `• Código de Reserva: *${turno?.codigo_reserva}*\n` +
+        `• Profesional: *${docNombre}*\n` +
+        `• Fecha: *${turno?.fecha}*\n` +
+        `• Horario: *${turno?.hora_inicio} hs*\n` +
+        `• Modalidad: ${esOnline ? '💻 Consulta Online / Videollamada' : '🏢 Presencial'}\n` +
+        `• Sede de Atención: *📍 ${clinicaNombre}*\n` +
+        `• Dirección: *${clinicaDir}*\n` +
+        `• Consultorio: ${consultorioNombre}\n\n` +
+        (esOnline 
+          ? `🔗 Te enviaremos el enlace de la videollamada previo al inicio del turno.\n\n`
+          : `⚠️ Por favor presentarse 10 minutos antes en recepción con DNI y carnet de cobertura.\n\n`) +
+        `¡Te esperamos!`
       );
     }
 
-    // Tipo NUEVO
+    if (tipo === 'RECORDATORIO') {
+      return (
+        `Hola ${pacNombre}, te recordamos tu próximo turno médico en *${clinicaNombre}*:\n\n` +
+        `⏰ *RECORDATORIO DE CITA:*\n` +
+        `• Código de Reserva: *${turno?.codigo_reserva}*\n` +
+        `• Profesional: *${docNombre}*\n` +
+        `• Fecha: *${turno?.fecha}*\n` +
+        `• Horario: *${turno?.hora_inicio} hs*\n` +
+        `• Modalidad: ${esOnline ? '💻 Consulta Online / Videollamada' : '🏢 Presencial'}\n` +
+        `• Sede de Atención: *📍 ${clinicaNombre}*\n` +
+        `• Dirección: *${clinicaDir}*\n` +
+        `• Consultorio: ${consultorioNombre}\n\n` +
+        (esOnline 
+          ? `🔗 Ten lista la conexión para la videollamada a la hora pactada.\n\n`
+          : `⚠️ Presentarse 10 minutos antes con DNI y credencial médica.\n\n`) +
+        `¡Muchas gracias!`
+      );
+    }
+
+    // Tipo NUEVO / CONFIRMACIÓN
     return (
       `Hola ${pacNombre}, confirmamos tu turno en *${clinicaNombre}*.\n\n` +
       `🩺 *DETALLES DE TU TURNO:*\n` +
-      `• Código de Reserva: *${turno.codigo_reserva}*\n` +
-      `• Fecha: *${turno.fecha}*\n` +
-      `• Horario: *${turno.hora_inicio} hs*\n` +
+      `• Código de Reserva: *${turno?.codigo_reserva}*\n` +
       `• Profesional: *${docNombre}*\n` +
-      `• Ubicación: ${consultorioNombre} (${clinicaDir})\n` +
-      `${turno.monto_coseguro > 0 ? `• Coseguro estimado en recepción: $${Number(turno.monto_coseguro).toLocaleString('es-AR')}\n` : ''}\n` +
-      `⚠️ *Requisitos:* Presentarse 10 minutos antes en recepción con DNI y credencial médica.\n\n` +
+      `• Fecha: *${turno?.fecha}*\n` +
+      `• Horario: *${turno?.hora_inicio} hs*\n` +
+      `• Modalidad: ${esOnline ? '💻 Consulta Online / Videollamada' : '🏢 Presencial'}\n` +
+      `• Sede de Atención: *📍 ${clinicaNombre}*\n` +
+      `• Dirección: *${clinicaDir}*\n` +
+      `• Consultorio: ${consultorioNombre}\n` +
+      `${turno?.monto_coseguro > 0 ? `• Coseguro estimado en recepción: $${Number(turno.monto_coseguro).toLocaleString('es-AR')}\n` : ''}\n` +
+      (esOnline 
+        ? `🔗 *Instrucciones:* El enlace de videollamada se habilitará en tu portal antes de la consulta.\n\n`
+        : `⚠️ *Requisitos:* Presentarse 10 minutos antes en recepción con DNI y credencial médica.\n\n`) +
       `¡Te esperamos!`
     );
   },

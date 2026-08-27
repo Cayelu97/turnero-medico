@@ -1219,6 +1219,33 @@ export const TurneroWizard = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Banner de Sede Seleccionada */}
+                  {selectedSlot && (
+                    <div className="p-3.5 bg-medical-50/90 border-2 border-medical-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs animate-scaleIn shadow-xs">
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-3 py-1.5 rounded-xl bg-medical-600 text-white font-black text-sm shadow-xs shrink-0">
+                          {selectedSlot.hora_inicio} hs
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-1.5 font-black text-slate-900 text-xs">
+                            <span>{selectedSlot.modalidad === 'ONLINE' ? '💻' : '📍'}</span>
+                            <span>Sede: {selectedSlot.clinica_nombre}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white text-medical-800 border border-medical-200">
+                              {selectedSlot.modalidad === 'ONLINE' ? 'Consulta Virtual' : 'Presencial'}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-600 font-medium block mt-0.5">
+                            {selectedSlot.clinica_direccion ? `Dirección: ${selectedSlot.clinica_direccion} • ` : ''}
+                            {selectedSlot.consultorio_nombre || 'Consultorio de Atención'}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-lg shrink-0 self-start sm:self-center">
+                        ✓ Horario y Sede Elegidos
+                      </span>
+                    </div>
+                  )}
+
                   {/* Turno Mañana */}
                   {slots.some(s => Number(s.hora_inicio.split(':')[0]) < 13) && (
                     <div className="space-y-2">
@@ -1234,7 +1261,7 @@ export const TurneroWizard = () => {
                               type="button"
                               disabled={!s.disponible}
                               onClick={() => setSelectedSlot(s)}
-                              className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
+                              className={`py-2 px-2 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer gap-0.5 ${
                                 isSelected
                                   ? 'bg-medical-600 text-white border-medical-700 shadow-md shadow-medical-600/20'
                                   : s.disponible
@@ -1243,16 +1270,14 @@ export const TurneroWizard = () => {
                               }`}
                             >
                               <span className="font-mono text-sm font-black">{s.hora_inicio}</span>
-                              <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded mt-1 truncate max-w-full ${
+                              <span className={`text-[8px] font-extrabold px-1.5 py-0.2 rounded truncate max-w-full block ${
                                 isSelected
                                   ? 'bg-white/20 text-white'
-                                  : s.disponible
-                                  ? (coseguroCalculado === 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-indigo-50 text-indigo-800 border border-indigo-200')
-                                  : 'text-slate-400'
+                                  : s.modalidad === 'ONLINE'
+                                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                  : 'bg-sky-50 text-sky-800 border border-sky-200'
                               }`}>
-                                {s.disponible
-                                  ? (selectedOS?.sigla === 'PART' ? `$${Number(selectedPractica?.valor_particular || 16000).toLocaleString('es-AR')}` : coseguroCalculado === 0 ? '100% Cubierto' : `Copago $${coseguroCalculado}`)
-                                  : 'Ocupado'}
+                                {s.modalidad === 'ONLINE' ? '💻 Online' : `📍 ${s.clinica_nombre?.replace('Consultorios ', '').split('-')[0].trim()}`}
                               </span>
                             </button>
                           );
@@ -1265,7 +1290,7 @@ export const TurneroWizard = () => {
                   {slots.some(s => Number(s.hora_inicio.split(':')[0]) >= 13) && (
                     <div className="space-y-2">
                       <span className="text-xs font-extrabold text-slate-600 flex items-center gap-1.5">
-                        🌙 Turno Tarde (13:00 a 20:00 hs)
+                        🌙 Turno Tarde (13:00 a 21:00 hs)
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
                         {slots.filter(s => Number(s.hora_inicio.split(':')[0]) >= 13).map((s, idx) => {
@@ -1276,7 +1301,7 @@ export const TurneroWizard = () => {
                               type="button"
                               disabled={!s.disponible}
                               onClick={() => setSelectedSlot(s)}
-                              className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
+                              className={`py-2 px-2 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer gap-0.5 ${
                                 isSelected
                                   ? 'bg-medical-600 text-white border-medical-700 shadow-md shadow-medical-600/20'
                                   : s.disponible
@@ -1285,16 +1310,14 @@ export const TurneroWizard = () => {
                               }`}
                             >
                               <span className="font-mono text-sm font-black">{s.hora_inicio}</span>
-                              <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded mt-1 truncate max-w-full ${
+                              <span className={`text-[8px] font-extrabold px-1.5 py-0.2 rounded truncate max-w-full block ${
                                 isSelected
                                   ? 'bg-white/20 text-white'
-                                  : s.disponible
-                                  ? (coseguroCalculado === 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-indigo-50 text-indigo-800 border border-indigo-200')
-                                  : 'text-slate-400'
+                                  : s.modalidad === 'ONLINE'
+                                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                  : 'bg-sky-50 text-sky-800 border border-sky-200'
                               }`}>
-                                {s.disponible
-                                  ? (selectedOS?.sigla === 'PART' ? `$${Number(selectedPractica?.valor_particular || 16000).toLocaleString('es-AR')}` : coseguroCalculado === 0 ? '100% Cubierto' : `Copago $${coseguroCalculado}`)
-                                  : 'Ocupado'}
+                                {s.modalidad === 'ONLINE' ? '💻 Online' : `📍 ${s.clinica_nombre?.replace('Consultorios ', '').split('-')[0].trim()}`}
                               </span>
                             </button>
                           );

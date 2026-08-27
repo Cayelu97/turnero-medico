@@ -2172,6 +2172,7 @@ export const StorageService = {
     );
 
     const consultoriosList = StorageService.getConsultorios('TODAS');
+    const clinicasList = StorageService.getClinicasList();
     const slots = [];
 
     horarios.forEach(h => {
@@ -2184,6 +2185,7 @@ export const StorageService = {
 
       const consObj = consultoriosList.find(c => c.id === h.consultorio_id);
       const slotClinicaId = h.clinica_id || consObj?.clinica_id || StorageService.getClinicaActiva().id;
+      const slotClinica = clinicasList.find(c => c.id === slotClinicaId) || clinicasList[0];
 
       while (currentMinutes + slotDuration <= endMinutes) {
         const slotHour = Math.floor(currentMinutes / 60);
@@ -2215,7 +2217,11 @@ export const StorageService = {
           hora_fin: horaFinStr,
           disponible: !isOccupied,
           consultorio_id: h.consultorio_id,
+          consultorio_nombre: consObj?.nombre || 'Consultorio 1',
           clinica_id: slotClinicaId,
+          clinica_nombre: slotClinica?.nombre || 'Sede Central',
+          clinica_direccion: slotClinica?.direccion || '',
+          clinica_color: slotClinica?.color_primario || '#0284c7',
           servicio_id: h.servicio_id,
           modalidad: h.modalidad || 'PRESENCIAL',
           duracion_min: slotDuration

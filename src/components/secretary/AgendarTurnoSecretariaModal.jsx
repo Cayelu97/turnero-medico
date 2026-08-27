@@ -223,12 +223,14 @@ export const AgendarTurnoSecretariaModal = ({
         const slotsDisponibles = StorageService.getSlotsDisponibles(selectedProfId, dateStr, selectedServicioId || null, modFilter, selectedSedeId || null);
         const disponiblesCount = slotsDisponibles.filter(s => s.disponible).length;
         if (disponiblesCount > 0) {
+          const sedesUnicas = [...new Set(slotsDisponibles.map(s => s.clinica_nombre || 'Sede Central'))];
           result.push({
             fecha: dateStr,
             diaNombre: dayDetails.diaNombre,
             diaNumero: dayDetails.diaNumero,
             mesNombre: dayDetails.mesNombre,
-            disponiblesCount
+            disponiblesCount,
+            sedes: sedesUnicas
           });
         }
       }
@@ -618,26 +620,84 @@ export const AgendarTurnoSecretariaModal = ({
                   </div>
 
                   {isDoctorSelfSchedule ? (
-                    <div className="p-3 bg-white border border-sky-300 rounded-xl flex items-center justify-between shadow-2xs">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-xs"
-                          style={{ backgroundColor: selectedProf?.color_agenda || '#0284c7' }}
-                        >
-                          <Stethoscope className="w-4 h-4" />
+                    <div className="p-3 bg-white border border-sky-300 rounded-xl space-y-2.5 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-xs shrink-0"
+                            style={{ backgroundColor: selectedProf?.color_agenda || '#0284c7' }}
+                          >
+                            <Stethoscope className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <strong className="text-xs text-slate-900 block font-black">
+                              Dr(a). {selectedProf?.nombre} {selectedProf?.apellido}
+                            </strong>
+                            <span className="text-[11px] text-medical-800 font-semibold">
+                              {selectedProf?.especialidad} • Turno en consultorio propio
+                            </span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 font-bold text-[10px] rounded shrink-0">
+                          ✓ Asignado a tu agenda
+                        </span>
+                      </div>
+
+                      {/* Selector de Sede para el profesional */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
+                            <Building className="w-3 h-3 text-medical-600" />
+                            Filtrar Sede de Atención
+                          </label>
+                          <select
+                            value={selectedSedeId}
+                            onChange={(e) => {
+                              setSelectedSedeId(e.target.value);
+                              setSelectedSlot(null);
+                            }}
+                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded-xl text-xs font-bold bg-slate-50 text-slate-800"
+                          >
+                            <option value="">Todas las Sedes ({allClinicas.length})</option>
+                            {allClinicas.map(c => (
+                              <option key={c.id} value={c.id}>🏥 {c.nombre}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
-                          <strong className="text-xs text-slate-900 block font-black">
-                            Dr(a). {selectedProf?.nombre} {selectedProf?.apellido}
-                          </strong>
-                          <span className="text-[11px] text-medical-800 font-semibold">
-                            {selectedProf?.especialidad} • Turno en consultorio propio
-                          </span>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Modalidad</label>
+                          <div className="flex items-center gap-1 pt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setModalidadTurno(modalidadTurno === 'PRESENCIAL' ? 'ALL' : 'PRESENCIAL');
+                                setSelectedSlot(null);
+                              }}
+                              className={`flex-1 py-1.5 rounded-xl font-bold text-[11px] border transition cursor-pointer ${
+                                modalidadTurno === 'PRESENCIAL'
+                                  ? 'bg-medical-600 text-white border-medical-600 shadow-2xs'
+                                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                              }`}
+                            >
+                              🏢 Presencial
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setModalidadTurno(modalidadTurno === 'ONLINE' ? 'ALL' : 'ONLINE');
+                                setSelectedSlot(null);
+                              }}
+                              className={`flex-1 py-1.5 rounded-xl font-bold text-[11px] border transition cursor-pointer ${
+                                modalidadTurno === 'ONLINE'
+                                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                              }`}
+                            >
+                              💻 Online
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 font-bold text-[10px] rounded">
-                        ✓ Asignado a tu agenda
-                      </span>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -683,7 +743,10 @@ export const AgendarTurnoSecretariaModal = ({
                         <div className="flex items-center gap-1 pt-0.5">
                           <button
                             type="button"
-                            onClick={() => setModalidadTurno('PRESENCIAL')}
+                            onClick={() => {
+                              setModalidadTurno(modalidadTurno === 'PRESENCIAL' ? 'ALL' : 'PRESENCIAL');
+                              setSelectedSlot(null);
+                            }}
                             className={`flex-1 py-1.5 rounded-xl font-bold text-[11px] border transition cursor-pointer ${
                               modalidadTurno === 'PRESENCIAL'
                                 ? 'bg-medical-600 text-white border-medical-600 shadow-2xs'
@@ -694,7 +757,10 @@ export const AgendarTurnoSecretariaModal = ({
                           </button>
                           <button
                             type="button"
-                            onClick={() => setModalidadTurno('ONLINE')}
+                            onClick={() => {
+                              setModalidadTurno(modalidadTurno === 'ONLINE' ? 'ALL' : 'ONLINE');
+                              setSelectedSlot(null);
+                            }}
                             className={`flex-1 py-1.5 rounded-xl font-bold text-[11px] border transition cursor-pointer ${
                               modalidadTurno === 'ONLINE'
                                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
@@ -733,13 +799,13 @@ export const AgendarTurnoSecretariaModal = ({
                     </div>
                   </div>
 
-                  {/* PÍLDORAS DE DÍAS DISPONIBLES */}
+                  {/* PÍLDORAS DE DÍAS DISPONIBLES CON BADGES DE SEDE */}
                   {proximosDiasDisponibles.length > 0 && (
                     <div className="space-y-1.5">
                       <label className="block text-[11px] font-extrabold text-slate-600">
-                        Días de atención con turnos libres para esta modalidad:
+                        Días de atención con turnos libres:
                       </label>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                         {proximosDiasDisponibles.slice(0, 5).map((dia) => {
                           const isSelected = fecha === dia.fecha;
                           return (
@@ -758,6 +824,27 @@ export const AgendarTurnoSecretariaModal = ({
                             >
                               <span className="text-[10px] font-bold uppercase block opacity-80">{dia.diaNombre}</span>
                               <strong className="text-sm font-black block">{dia.diaNumero} {dia.mesNombre}</strong>
+                              
+                              {/* Badges de Sedes del Día */}
+                              {dia.sedes && dia.sedes.length > 0 && (
+                                <div className="my-1 flex flex-wrap justify-center gap-1">
+                                  {dia.sedes.map((sNom, sIdx) => (
+                                    <span 
+                                      key={sIdx}
+                                      className={`text-[8px] font-black px-1.5 py-0.5 rounded truncate max-w-full block ${
+                                        isSelected 
+                                          ? 'bg-white/20 text-white' 
+                                          : sNom.includes('online') || sNom.includes('CASA')
+                                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                          : 'bg-sky-50 text-sky-800 border border-sky-200'
+                                      }`}
+                                    >
+                                      {sNom.includes('online') || sNom.includes('CASA') ? '💻 Online' : `📍 ${sNom.replace('Consultorios ', '').split('-')[0].trim()}`}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
                               <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full inline-block mt-0.5 ${
                                 isSelected ? 'bg-white/25 text-white' : 'bg-emerald-100 text-emerald-800'
                               }`}>
@@ -767,6 +854,33 @@ export const AgendarTurnoSecretariaModal = ({
                           );
                         })}
                       </div>
+                    </div>
+                  )}
+
+                  {/* BANNER DESTACADO DE SEDE Y SLOT SELECCIONADO */}
+                  {selectedSlot && (
+                    <div className="p-3 bg-medical-50/90 border-2 border-medical-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs animate-scaleIn shadow-xs">
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-2.5 py-1 rounded-xl bg-medical-600 text-white font-black text-xs shadow-xs shrink-0">
+                          {selectedSlot.hora_inicio} hs
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-1.5 font-black text-slate-900">
+                            <span>{selectedSlot.modalidad === 'ONLINE' ? '💻' : '📍'}</span>
+                            <span>Sede: {selectedSlot.clinica_nombre}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white text-medical-800 border border-medical-200">
+                              {selectedSlot.modalidad === 'ONLINE' ? 'Consulta Online' : 'Presencial'}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-600 font-medium block">
+                            {selectedSlot.clinica_direccion ? `Dirección: ${selectedSlot.clinica_direccion} • ` : ''}
+                            {selectedSlot.consultorio_nombre || 'Consultorio de Atención'}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg shrink-0 self-start sm:self-center">
+                        ✓ Sede y Turno Confirmados
+                      </span>
                     </div>
                   )}
 
@@ -791,7 +905,7 @@ export const AgendarTurnoSecretariaModal = ({
                           <label className="block text-[11px] font-bold text-slate-600">
                             Horarios Disponibles ({slotsDelMedico.filter(s => s.disponible).length} libres):
                           </label>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-56 overflow-y-auto p-1">
                             {slotsDelMedico.map((slot, idx) => {
                               const isSelected = selectedSlot?.hora_inicio === slot.hora_inicio;
                               return (
@@ -800,7 +914,7 @@ export const AgendarTurnoSecretariaModal = ({
                                   type="button"
                                   disabled={!slot.disponible}
                                   onClick={() => setSelectedSlot(slot)}
-                                  className={`py-2 px-1 rounded-xl text-xs font-black transition border cursor-pointer ${
+                                  className={`py-2 px-2 rounded-xl text-xs font-black transition border cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
                                     !slot.disponible
                                       ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
                                       : isSelected
@@ -808,7 +922,18 @@ export const AgendarTurnoSecretariaModal = ({
                                       : 'bg-white text-slate-800 border-slate-200 hover:border-medical-500 hover:bg-medical-50/50'
                                   }`}
                                 >
-                                  {slot.hora_inicio}
+                                  <span className="text-sm font-black">{slot.hora_inicio}</span>
+                                  <span 
+                                    className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded truncate max-w-full block ${
+                                      isSelected
+                                        ? 'bg-white/20 text-white'
+                                        : slot.modalidad === 'ONLINE'
+                                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                        : 'bg-slate-100 text-slate-700'
+                                    }`}
+                                  >
+                                    {slot.modalidad === 'ONLINE' ? '💻 Online' : `📍 ${slot.clinica_nombre?.replace('Consultorios ', '').split('-')[0].trim()}`}
+                                  </span>
                                 </button>
                               );
                             })}

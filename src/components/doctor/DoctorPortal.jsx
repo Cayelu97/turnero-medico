@@ -442,11 +442,19 @@ export const DoctorPortal = () => {
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {programados.map(t => {
                   const pac = pacientes.find(p => p.id === t.paciente_id);
+                  const sedeT = StorageService.getClinicasList().find(c => c.id === t.clinica_id);
                   return (
-                    <div key={t.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <div key={t.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs gap-2">
                       <span className="font-mono font-bold text-slate-700">{t.hora_inicio}</span>
-                      <span className="font-bold text-slate-900 truncate max-w-[150px]">{pac?.apellido}, {pac?.nombre}</span>
-                      <span className="text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-bold">Programado</span>
+                      <div className="truncate flex-1">
+                        <span className="font-bold text-slate-900 truncate block">{pac?.apellido}, {pac?.nombre}</span>
+                        {sedeT && (
+                          <span className="text-[9px] text-slate-500 font-bold block truncate">
+                            {t.modalidad === 'ONLINE' ? '💻 Online' : `📍 ${sedeT.nombre.split('-')[0]}`}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-bold shrink-0">Programado</span>
                     </div>
                   );
                 })}
@@ -827,6 +835,7 @@ export const DoctorPortal = () => {
                 <tr>
                   <th className="py-3 px-3">Código</th>
                   <th className="py-3 px-3">Fecha & Hora</th>
+                  <th className="py-3 px-3">Sede & Lugar</th>
                   <th className="py-3 px-3">Paciente & DNI</th>
                   <th className="py-3 px-3">Motivo / Práctica</th>
                   <th className="py-3 px-3">Cobertura</th>
@@ -837,7 +846,7 @@ export const DoctorPortal = () => {
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {doctorTurnosFuturos.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-slate-400">
+                    <td colSpan={8} className="text-center py-8 text-slate-400">
                       No registra turnos futuros agendados en este momento.
                     </td>
                   </tr>
@@ -847,6 +856,8 @@ export const DoctorPortal = () => {
                     const os = obrasSociales.find(o => o.id === t.obra_social_id);
                     const plan = planes.find(p => p.id === t.plan_id);
                     const practica = nomenclador.find(p => p.id === t.practica_id);
+                    const sedeT = StorageService.getClinicasList().find(c => c.id === t.clinica_id);
+                    const consT = consultorios.find(c => c.id === t.consultorio_id);
 
                     return (
                       <tr key={t.id} className="hover:bg-slate-50/80 transition">
@@ -860,6 +871,15 @@ export const DoctorPortal = () => {
                         </td>
                         <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
                           {formatDateAR(t.fecha)} • <span className="text-indigo-700 font-black">{t.hora_inicio} hs</span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="font-extrabold text-slate-900 block flex items-center gap-1">
+                            <span>{t.modalidad === 'ONLINE' ? '💻' : '📍'}</span>
+                            <span>{sedeT?.nombre || 'Sede Central'}</span>
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-medium block truncate max-w-[140px]">
+                            {t.modalidad === 'ONLINE' ? 'Consulta Virtual' : (consT?.nombre || 'Consultorio 1')}
+                          </span>
                         </td>
                         <td className="py-3 px-3">
                           <strong className="text-slate-900">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</strong>

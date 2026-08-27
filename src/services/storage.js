@@ -1793,18 +1793,54 @@ export const StorageService = {
 
     if (hasHeader) {
       headerCells.forEach((h, idx) => {
-        if (h.includes('marca') || h.includes('timestamp') || h.includes('hora')) colMap.marca_temporal = idx;
-        else if (h.includes('correo') || h.includes('email') || h.includes('electr')) colMap.email = idx;
-        else if (h.includes('nombre') || h.includes('apellido') || h.includes('paciente')) colMap.nombre_completo = idx;
-        else if (h.includes('dni') || h.includes('documento') || h.includes('cédula')) colMap.dni = idx;
-        else if (h.includes('celular') || h.includes('whatsapp') || (h.includes('tel') && !h.includes('llamar'))) colMap.celular = idx;
-        else if (h.includes('domicilio') || h.includes('reside') || h.includes('direcci') || h.includes('calle')) colMap.domicilio = idx;
-        else if (h.includes('llamar') || h.includes('familiar') || h.includes('contacto') || h.includes('necesario')) colMap.contacto_emergencia = idx;
-        else if (h.includes('servicio de emergencia') || h.includes('posee servicio') || h.includes('emergencia')) colMap.servicio_emergencia = idx;
-        else if (h.includes('edad') || h.includes('años')) colMap.edad = idx;
-        else if (h.includes('obra social') || h.includes('prepaga') || h.includes('cobertura') || h.includes('social')) colMap.obra_social = idx;
-        else if (h.includes('vive') || h.includes('convive') || h.includes('conviviente') || h.includes('hogar')) colMap.con_quien_vive = idx;
-        else if (h.includes('consentimiento') || h.includes('términos') || h.includes('trminos') || h.includes('acepto')) colMap.consentimiento = idx;
+        // 1. Prioridad: Contacto de Emergencia / Familiar (para no confundirlo con el nombre del paciente)
+        if (h.includes('llamar') || h.includes('familiar') || h.includes('necesario') || h.includes('caso de ser necesario') || (h.includes('contacto') && !h.includes('directo'))) {
+          colMap.contacto_emergencia = idx;
+        }
+        // 2. Servicio de Emergencia Médica (Ambulancia)
+        else if (h.includes('servicio de emergencia') || h.includes('posee servicio') || (h.includes('emergencia') && !h.includes('llamar'))) {
+          colMap.servicio_emergencia = idx;
+        }
+        // 3. Con quién vive
+        else if (h.includes('vive') || h.includes('convive') || h.includes('conviviente') || h.includes('hogar')) {
+          colMap.con_quien_vive = idx;
+        }
+        // 4. Obra Social
+        else if (h.includes('obra social') || h.includes('prepaga') || h.includes('cobertura') || h.includes('social')) {
+          colMap.obra_social = idx;
+        }
+        // 5. Consentimiento Informado
+        else if (h.includes('consentimiento') || h.includes('términos') || h.includes('trminos') || h.includes('acepto')) {
+          colMap.consentimiento = idx;
+        }
+        // 6. Marca Temporal / Timestamp
+        else if (h.includes('marca') || h.includes('timestamp') || h.includes('hora') || h.includes('fecha')) {
+          colMap.marca_temporal = idx;
+        }
+        // 7. Email
+        else if (h.includes('correo') || h.includes('email') || h.includes('electr')) {
+          colMap.email = idx;
+        }
+        // 8. Domicilio
+        else if (h.includes('domicilio') || h.includes('reside') || h.includes('direcci') || h.includes('calle')) {
+          colMap.domicilio = idx;
+        }
+        // 9. DNI / Documento
+        else if (h.includes('dni') || h.includes('documento') || h.includes('cédula')) {
+          colMap.dni = idx;
+        }
+        // 10. Celular del Paciente
+        else if (h.includes('celular') || h.includes('whatsapp') || (h.includes('tel') && !h.includes('llamar'))) {
+          colMap.celular = idx;
+        }
+        // 11. Edad
+        else if (h.includes('edad') || h.includes('años')) {
+          colMap.edad = idx;
+        }
+        // 12. Nombre Completo del Paciente
+        else if (h.includes('nombre') || h.includes('apellido') || h.includes('paciente')) {
+          colMap.nombre_completo = idx;
+        }
       });
     } else {
       // Mapeo por defecto según las columnas exactas del formulario
@@ -1835,9 +1871,9 @@ export const StorageService = {
 
       const rawMarcaTemporal = getVal(colMap.marca_temporal);
       const rawEmail = getVal(colMap.email);
-      const rawNombreCompleto = getVal(colMap.nombre_completo);
+      let rawNombreCompleto = getVal(colMap.nombre_completo);
       const rawDni = getVal(colMap.dni);
-      const rawCelular = getVal(colMap.celular);
+      let rawCelular = getVal(colMap.celular);
       const rawDomicilio = getVal(colMap.domicilio);
       const rawContactoEmergencia = getVal(colMap.contacto_emergencia);
       const rawServicioEmergencia = getVal(colMap.servicio_emergencia);
@@ -1845,6 +1881,15 @@ export const StorageService = {
       const rawObraSocial = getVal(colMap.obra_social);
       const rawConQuienVive = getVal(colMap.con_quien_vive);
       const rawConsentimiento = getVal(colMap.consentimiento);
+
+      // Si el nombre viene con un teléfono pegado al inicio (ej: "3515449908 Pedro Rumualdo"), sanitizarlo
+      if (/^\+?\d{6,}/.test(rawNombreCompleto.trim())) {
+        const phoneMatch = rawNombreCompleto.trim().match(/^(\+?\d[\d\s\-]{6,}\d)\s*(.*)$/);
+        if (phoneMatch) {
+          if (!rawCelular) rawCelular = phoneMatch[1].trim();
+          rawNombreCompleto = phoneMatch[2].trim();
+        }
+      }
 
       // 1. Separación de Nombre y Apellido
       let nombre = '';

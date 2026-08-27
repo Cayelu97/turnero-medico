@@ -35,13 +35,13 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
   const allNavItems = [
     { id: 'agenda', label: 'Agenda Secretaría', icon: Calendar, badge: turnosHoy.length > 0 ? turnosHoy.length : null, badgeColor: 'bg-medical-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
-    { id: 'pacientes_abm', label: 'Padrón & Importador', icon: Users, badge: pacientes?.length > 0 ? `${pacientes.length}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'recepcion', label: 'Recepción & Espera', icon: UserCheck, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-amber-500', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'doctor', label: 'Portal Consultorio', icon: Stethoscope, badge: enEsperaCount > 0 ? `${enEsperaCount}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
     { id: 'caja', label: 'Caja Recaudadora', icon: Wallet, badge: 'Cobros', badgeColor: 'bg-emerald-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'hce', label: 'Historia Clínica (HCE)', icon: FileText, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
     { id: 'facturacion', label: 'Facturación & Obras Soc.', icon: DollarSign, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
     { id: 'admin', label: 'Configuración & ABM', icon: Settings, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
+    { id: 'pacientes_abm', label: 'Padrón & Importador', icon: Users, badge: pacientes?.length > 0 ? `${pacientes.length}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'paciente', label: 'Turnero Pacientes', icon: Globe, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] }
   ];
 

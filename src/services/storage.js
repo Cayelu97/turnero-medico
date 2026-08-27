@@ -219,13 +219,13 @@ export const INITIAL_SERVICIOS = [
 export const INITIAL_CLINICAS = [
   {
     id: 'clinica-1',
-    nombre: 'Centro San Lucas - Sede Central',
+    nombre: 'Aipaa 355',
     cuit: '30-71234567-9',
     direccion: 'Av. Colón 1250, Córdoba Capital',
     telefono: '+54 351 428-9000',
     whatsapp: '+54 9 351 428-9000',
-    email: 'central@centrosanlucas.com.ar',
-    mensaje_bienvenida: 'Bienvenido a Sede Central. Atención integral y especialidades.',
+    email: 'aipaa@saludnet.com.ar',
+    mensaje_bienvenida: 'Sede Aipaa 355 - Consultorios de Psicología y Salud Mental.',
     color_primario: '#6366f1',
     condicion_iva: 'MONO',
     punto_venta: 1,
@@ -235,13 +235,13 @@ export const INITIAL_CLINICAS = [
   },
   {
     id: 'clinica-2',
-    nombre: 'Consultorios San Lucas - Sede Norte',
+    nombre: 'Circulare COLON',
     cuit: '30-79812345-1',
-    direccion: 'Av. Rafael Núñez 4200, Cerro de las Rosas',
+    direccion: 'Av. Colón 2450, Alberdi',
     telefono: '+54 351 481-4400',
     whatsapp: '+54 9 351 481-4400',
-    email: 'norte@centrosanlucas.com.ar',
-    mensaje_bienvenida: 'Sede Norte Cerro de las Rosas - Consultas Médicas y Especialidades.',
+    email: 'colon@saludnet.com.ar',
+    mensaje_bienvenida: 'Sede Circulare COLON - Atención Psicológica y Consultorios.',
     color_primario: '#0d9488',
     condicion_iva: 'RI',
     punto_venta: 2,
@@ -251,13 +251,13 @@ export const INITIAL_CLINICAS = [
   },
   {
     id: 'clinica-3',
-    nombre: 'Consultorios San Lucas - Sede Nueva Córdoba',
+    nombre: 'Inti Carrara',
     cuit: '30-72458901-3',
-    direccion: 'Av. Hipólito Yrigoyen 350, Nueva Córdoba',
+    direccion: 'Av. Rafael Núñez 4200, Cerro de las Rosas',
     telefono: '+54 351 468-2200',
     whatsapp: '+54 9 351 468-2200',
-    email: 'nuevacordoba@centrosanlucas.com.ar',
-    mensaje_bienvenida: 'Sede Nueva Córdoba - Atención Médica Ambulatoria y Salud Mental.',
+    email: 'inticarrara@saludnet.com.ar',
+    mensaje_bienvenida: 'Sede Inti Carrara - Consultas y Terapias Especializadas.',
     color_primario: '#8b5cf6',
     condicion_iva: 'RI',
     punto_venta: 3,
@@ -267,13 +267,13 @@ export const INITIAL_CLINICAS = [
   },
   {
     id: 'clinica-4',
-    nombre: 'Consultorios San Lucas - Sede Villa Belgrano',
+    nombre: 'online CASA',
     cuit: '30-75619283-7',
-    direccion: 'Av. Recta Martinolli 5600, Villa Belgrano',
+    direccion: 'Atención Remota Online / Telemedicina',
     telefono: '+54 351 493-1100',
     whatsapp: '+54 9 351 493-1100',
-    email: 'villabelgrano@centrosanlucas.com.ar',
-    mensaje_bienvenida: 'Sede Villa Belgrano - Centro Médico de Especialidades y Diagnóstico.',
+    email: 'online@saludnet.com.ar',
+    mensaje_bienvenida: 'Sede online CASA - Consultas Online / Videollamada.',
     color_primario: '#0284c7',
     condicion_iva: 'RI',
     punto_venta: 4,
@@ -296,20 +296,17 @@ export const INITIAL_DATA = {
   especialidades: INITIAL_ESPECIALIDADES,
   servicios: INITIAL_SERVICIOS,
   consultorios: [
-    // Sede 1: Central
-    { id: 'c-1-1', clinica_id: 'clinica-1', nombre: 'Consultorio 1 - Psicología & Terapia', piso_ubicacion: 'Planta Alta - Sala 1', equipamiento: 'Sillones individuales, insonorización', activo: true },
-    { id: 'c-1-2', clinica_id: 'clinica-1', nombre: 'Consultorio 2 - Cardiología & Clínica', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Tensiómetro, Camilla', activo: true },
-    { id: 'c-1-3', clinica_id: 'clinica-1', nombre: 'Consultorio 3 - Pediatría', piso_ubicacion: 'Planta Baja', equipamiento: 'Balanza pediátrica, Tallímetro', activo: true },
-    { id: 'c-1-4', clinica_id: 'clinica-1', nombre: 'Consultorio 4 - Diagnóstico por Imágenes', piso_ubicacion: 'Piso 1 - Sala A', equipamiento: 'Ecógrafo Doppler Color', activo: true },
-    // Sede 2: Norte
-    { id: 'c-2-1', clinica_id: 'clinica-2', nombre: 'Consultorio Norte 1 - Terapia & Salud Mental', piso_ubicacion: 'Planta Baja', equipamiento: 'Sillones de consulta, Escritorio', activo: true },
-    { id: 'c-2-2', clinica_id: 'clinica-2', nombre: 'Consultorio Norte 2 - Cardiología & Especialidades', piso_ubicacion: 'Planta Baja', equipamiento: 'Electrocardiógrafo, Camilla', activo: true },
-    // Sede 3: Nueva Córdoba
-    { id: 'c-3-1', clinica_id: 'clinica-3', nombre: 'Consultorio Nva Cba 1 - Salud Mental & Consultas', piso_ubicacion: 'Piso 2 - Sala 201', equipamiento: 'Sillones confortables, escritorio', activo: true },
-    { id: 'c-3-2', clinica_id: 'clinica-3', nombre: 'Consultorio Nva Cba 2 - Cardiología & Adultos', piso_ubicacion: 'Piso 2 - Sala 202', equipamiento: 'Camilla clínica, Tensiómetro', activo: true },
-    // Sede 4: Villa Belgrano
-    { id: 'c-4-1', clinica_id: 'clinica-4', nombre: 'Consultorio Villa Belgrano 1 - Especialidades Médicas', piso_ubicacion: 'Planta Baja', equipamiento: 'Camilla de examen, Electrocardiógrafo', activo: true },
-    { id: 'c-4-2', clinica_id: 'clinica-4', nombre: 'Consultorio Villa Belgrano 2 - Psicología & Infanto-Juvenil', piso_ubicacion: 'Planta Baja', equipamiento: 'Caja diagnóstica, sillones', activo: true }
+    // Sede 1: Aipaa 355
+    { id: 'c-1-1', clinica_id: 'clinica-1', nombre: 'Consultorio Aipaa 1 - Psicología & Terapia', piso_ubicacion: 'Planta Alta', equipamiento: 'Sillones individuales, insonorización', activo: true },
+    { id: 'c-1-2', clinica_id: 'clinica-1', nombre: 'Consultorio Aipaa 2 - Consultas Generales', piso_ubicacion: 'Planta Baja', equipamiento: 'Escritorio, sillones', activo: true },
+    // Sede 2: Circulare COLON
+    { id: 'c-2-1', clinica_id: 'clinica-2', nombre: 'Consultorio Colón 1 - Terapia & Salud Mental', piso_ubicacion: 'Planta Baja', equipamiento: 'Sillones de consulta, Escritorio', activo: true },
+    { id: 'c-2-2', clinica_id: 'clinica-2', nombre: 'Consultorio Colón 2 - Consultorio Principal', piso_ubicacion: 'Planta Baja', equipamiento: 'Escritorio clínico', activo: true },
+    // Sede 3: Inti Carrara
+    { id: 'c-3-1', clinica_id: 'clinica-3', nombre: 'Consultorio Inti 1 - Salud Mental & Consultas', piso_ubicacion: 'Piso 1', equipamiento: 'Sillones confortables, escritorio', activo: true },
+    { id: 'c-3-2', clinica_id: 'clinica-3', nombre: 'Consultorio Inti 2 - Consultorio de Atención', piso_ubicacion: 'Piso 1', equipamiento: 'Escritorio y sillón', activo: true },
+    // Sede 4: online CASA
+    { id: 'c-4-1', clinica_id: 'clinica-4', nombre: 'Consultorio Virtual - Videollamada', piso_ubicacion: 'Online', equipamiento: 'Plataforma de Videoconsulta', activo: true }
   ],
   obras_sociales: [
     { id: 'os-1', clinica_id: 'clinica-1', nombre: 'Particular / Privado', sigla: 'PART', cuit: '', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Abono por sesión o pack mensual en recepción/transferencia.', activo: true },
@@ -1466,6 +1463,12 @@ export const StorageService = {
   // Sincroniza la tabla horarios a partir de todas las agendas activas del médico
   sincronizarHorariosDesdeAgendas: (profesionalId) => {
     const agendasActivas = StorageService.getAgendas(null, profesionalId, false);
+    
+    // Si no hay agendas explícitas configuradas, no pisar ni borrar los horarios existentes del profesional!
+    if (agendasActivas.length === 0) {
+      return StorageService.getHorarios().filter(h => String(h.profesional_id) === String(profesionalId));
+    }
+
     const allHorarios = StorageService.getHorarios().filter(h => h.profesional_id !== profesionalId);
 
     const newHorarios = [];

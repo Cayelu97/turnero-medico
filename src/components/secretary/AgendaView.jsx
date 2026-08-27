@@ -157,13 +157,14 @@ export const AgendaView = () => {
   };
 
   // Función para determinar si un profesional atiende en un día y hora específicos
-  const checkDoctorWorkingAt = (profId, fechaStr, horaStr) => {
+  const checkDoctorWorkingAt = (profId, fechaStr, horaStr, clinicaId = null) => {
     if (!profId || !fechaStr || !horaStr) return false;
     const diaSemana = getDayOfWeekFromDateString(fechaStr);
     if (diaSemana === 0) return false; // Domingos no
 
     const slotMin = toMinutes(horaStr);
-    const horarios = StorageService.getHorariosByProfesional(profId).filter(h => {
+    const targetClinica = clinicaId && clinicaId !== 'TODOS' ? clinicaId : null;
+    const horarios = StorageService.getHorariosByProfesional(profId, targetClinica).filter(h => {
       if (Number(h.dia_semana) !== Number(diaSemana)) return false;
       if (h.activo === false) return false;
       if (h.fecha_desde && fechaStr < h.fecha_desde) return false;
@@ -890,8 +891,10 @@ export const AgendaView = () => {
                 const turnosDelDiaCount = turnos.filter(t => t.fecha === diaStr && (!targetProfId || t.profesional_id === targetProfId) && t.estado !== 'CANCELADO').length;
 
                 const diaNum = dateObj.getDay();
-                const horariosDia = StorageService.getHorariosByProfesional(targetProfId).filter(h => Number(h.dia_semana) === Number(diaNum));
+                const targetCentro = selectedCentroFilter !== 'TODOS' ? selectedCentroFilter : null;
+                const horariosDia = StorageService.getHorariosByProfesional(targetProfId, targetCentro).filter(h => Number(h.dia_semana) === Number(diaNum));
                 const tieneAtencion = horariosDia.length > 0;
+                const sedeDia = tieneAtencion ? allClinicas.find(c => c.id === horariosDia[0]?.clinica_id) : null;
 
                 return (
                   <div 
@@ -911,9 +914,16 @@ export const AgendaView = () => {
                     {/* Badge de Horario de Atención para este Día */}
                     <div className="mt-1">
                       {tieneAtencion ? (
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${isSelectedDay ? 'bg-white/20 text-white' : 'bg-emerald-100/70 text-emerald-800'}`}>
-                          {horariosDia[0].hora_inicio} - {horariosDia[0].hora_fin}
-                        </span>
+                        <div className="space-y-0.5">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-white/20 text-white' : 'bg-emerald-100/70 text-emerald-800'}`}>
+                            {horariosDia[0].hora_inicio} - {horariosDia[0].hora_fin}
+                          </span>
+                          {selectedCentroFilter === 'TODOS' && sedeDia && (
+                            <span className={`text-[8px] font-extrabold block truncate ${isSelectedDay ? 'text-white/80' : 'text-blue-600'}`}>
+                              📍 {sedeDia.nombre.split('-')[0]}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className={`text-[9px] font-semibold ${isSelectedDay ? 'text-white/60' : 'text-slate-400'}`}>
                           Sin atención
@@ -943,10 +953,11 @@ export const AgendaView = () => {
                         t.fecha === diaStr && 
                         (t.hora_inicio === slotTime || (slotResolution === '60' && t.hora_inicio.startsWith(slotTime.slice(0, 2)))) && 
                         (!targetProfId || t.profesional_id === targetProfId) && 
+                        (selectedCentroFilter === 'TODOS' || !t.clinica_id || t.clinica_id === selectedCentroFilter) &&
                         t.estado !== 'CANCELADO'
                       );
 
-                      const isWorking = checkDoctorWorkingAt(targetProfId, diaStr, slotTime);
+                      const isWorking = checkDoctorWorkingAt(targetProfId, diaStr, slotTime, selectedCentroFilter);
 
                       if (turnosEnCelda.length === 0) {
                         if (!isWorking) {

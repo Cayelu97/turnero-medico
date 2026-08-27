@@ -403,10 +403,10 @@ export const AgendaView = () => {
       {/* ══════════════════════════════════════════════════════════════════════
           COMMAND BAR — una sola tarjeta con 2 filas horizontales limpias
           ══════════════════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
 
         {/* ── ROW 1: Contexto + Navegación + Acciones ── */}
-        <div className="flex items-center gap-3 px-4 py-2 border-b border-slate-100">
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-slate-100 dark:border-slate-800">
 
           {/* — Left: Médico & Sede — */}
           <div className="flex items-center gap-2 min-w-0 shrink-0">
@@ -423,46 +423,46 @@ export const AgendaView = () => {
                   setSelectedProfFilter(e.target.value);
                   setSelectedWeeklyProfId(e.target.value);
                 }} 
-                className="block w-full text-[13px] font-black text-slate-900 bg-transparent border-none focus:outline-none cursor-pointer truncate p-0"
+                className="block w-full text-[13px] font-black text-slate-900 dark:text-slate-100 bg-transparent border-none focus:outline-none cursor-pointer truncate p-0"
               >
-                <option value="">Todos los profesionales</option>
+                <option value="" className="dark:bg-slate-800">Todos los profesionales</option>
                 {profesionales.map(p => (
-                  <option key={p.id} value={p.id}>Dr(a). {p.apellido} ({p.duracion_turno_minutos || 15}m)</option>
+                  <option key={p.id} value={p.id} className="dark:bg-slate-800">Dr(a). {p.apellido} ({p.duracion_turno_minutos || 15}m)</option>
                 ))}
               </select>
               <select 
                 value={selectedCentroFilter} 
                 onChange={(e) => setSelectedCentroFilter(e.target.value)} 
-                className="block w-full text-[11px] font-semibold text-slate-500 bg-transparent border-none focus:outline-none cursor-pointer truncate p-0 -mt-0.5"
+                className="block w-full text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-transparent border-none focus:outline-none cursor-pointer truncate p-0 -mt-0.5"
               >
-                <option value="TODOS">Todas las sedes</option>
+                <option value="TODOS" className="dark:bg-slate-800">Todas las sedes</option>
                 {allClinicas.map(c => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                  <option key={c.id} value={c.id} className="dark:bg-slate-800">{c.nombre}</option>
                 ))}
               </select>
             </div>
           </div>
 
           {/* — Separator — */}
-          <div className="w-px h-7 bg-slate-200 shrink-0" />
+          <div className="w-px h-7 bg-slate-200 dark:bg-slate-750 shrink-0" />
 
           {/* — Center: Navegación de fecha — */}
           <div className="flex items-center gap-1 shrink-0">
             <button 
               onClick={viewMode === 'timeline_semanal' || viewMode === 'semanal' ? handlePrevWeek : handlePrevDay} 
-              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button 
               onClick={handleToday} 
-              className="px-3 h-7 text-xs font-black text-medical-700 bg-medical-50 hover:bg-medical-100 border border-medical-200 rounded-lg transition cursor-pointer"
+              className="px-3 h-7 text-xs font-black text-medical-700 dark:text-medical-400 bg-medical-50 dark:bg-medical-950/60 hover:bg-medical-100 dark:hover:bg-medical-900/60 border border-medical-200 dark:border-medical-800 rounded-lg transition cursor-pointer"
             >
               {viewMode === 'timeline_semanal' || viewMode === 'semanal' ? 'Esta semana' : 'Hoy'}
             </button>
             <button 
               onClick={viewMode === 'timeline_semanal' || viewMode === 'semanal' ? handleNextWeek : handleNextDay} 
-              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -470,7 +470,7 @@ export const AgendaView = () => {
               type="date" 
               value={currentDate} 
               onChange={(e) => setCurrentDate(e.target.value)} 
-              className="h-7 px-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-medical-500 cursor-pointer" 
+              className="h-7 px-2 text-xs font-bold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-medical-500 cursor-pointer" 
             />
           </div>
 
@@ -486,13 +486,13 @@ export const AgendaView = () => {
                 placeholder="Buscar paciente…" 
                 value={searchPatientQuery} 
                 onChange={(e) => setSearchPatientQuery(e.target.value)} 
-                className="h-7 pl-8 pr-3 w-40 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-medical-500 transition" 
+                className="h-7 pl-8 pr-3 w-40 text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-medical-500 transition" 
               />
             </div>
 
             <button 
               onClick={() => setShowRecurrenteModal(true)} 
-              className="h-7 px-2.5 text-xs font-bold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition cursor-pointer flex items-center gap-1"
+              className="h-7 px-2.5 text-xs font-bold text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800 rounded-lg transition cursor-pointer flex items-center gap-1"
               title="Sesiones recurrentes"
             >
               <Repeat className="w-3.5 h-3.5" />
@@ -501,7 +501,7 @@ export const AgendaView = () => {
 
             <button 
               onClick={handleOpenProximoLibre} 
-              className="h-7 px-2.5 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition cursor-pointer flex items-center gap-1"
+              className="h-7 px-2.5 text-xs font-bold text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 rounded-lg transition cursor-pointer flex items-center gap-1"
               title="Próximo turno libre [P]"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -520,7 +520,7 @@ export const AgendaView = () => {
         </div>
 
         {/* ── ROW 2: Pestañas de vista + Filtros secundarios ── */}
-        <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50/80">
+        <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50/80 dark:bg-slate-850">
 
           {/* — Tabs — */}
           <div className="flex items-center gap-0.5 shrink-0">
@@ -535,8 +535,8 @@ export const AgendaView = () => {
                 onClick={() => setViewMode(m.id)} 
                 className={`px-2.5 py-1 rounded-md text-xs transition cursor-pointer ${
                   viewMode === m.id 
-                    ? 'font-black text-medical-700 bg-white shadow-sm border border-slate-200' 
-                    : 'font-medium text-slate-500 hover:text-slate-800 hover:bg-white/60'
+                    ? 'font-black text-medical-700 dark:text-medical-400 bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700' 
+                    : 'font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
                 }`}
               >
                 {m.label}
@@ -545,40 +545,18 @@ export const AgendaView = () => {
           </div>
 
           {/* — Separator — */}
-          <div className="w-px h-5 bg-slate-200 shrink-0" />
+          <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 shrink-0" />
 
           {/* — Filtros — */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <select 
               value={selectedServicioFilter} 
               onChange={(e) => setSelectedServicioFilter(e.target.value)} 
-              className="h-6 px-2 text-[11px] font-bold text-slate-600 bg-white border border-slate-200 rounded-md focus:outline-none cursor-pointer max-w-[130px] truncate"
+              className="h-6 px-2 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none cursor-pointer max-w-[130px] truncate"
             >
-              <option value="">Especialidad</option>
-              {servicios.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+              <option value="" className="dark:bg-slate-800">Servicio</option>
+              {servicios.map(s => <option key={s.id} value={s.id} className="dark:bg-slate-800">{s.nombre}</option>)}
             </select>
-
-            <div className="flex items-center bg-white border border-slate-200 rounded-md overflow-hidden">
-              {[
-                { id: 'auto', label: 'Auto' },
-                { id: '15', label: '15m' },
-                { id: '20', label: '20m' },
-                { id: '30', label: '30m' },
-                { id: '60', label: '1h' }
-              ].map(r => (
-                <button
-                  key={r.id}
-                  onClick={() => setSlotResolution(r.id)}
-                  className={`px-1.5 py-0.5 text-[11px] transition cursor-pointer ${
-                    slotResolution === r.id 
-                      ? 'font-black text-medical-700 bg-medical-50' 
-                      : 'font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* — Right: KPIs + Config — */}
@@ -586,7 +564,7 @@ export const AgendaView = () => {
             <button 
               onClick={() => setShowKpis(!showKpis)} 
               className={`h-6 px-2 rounded-md text-[11px] font-bold transition cursor-pointer flex items-center gap-1 ${
-                showKpis ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                showKpis ? 'bg-slate-800 dark:bg-slate-700 text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
               <Users className="w-3 h-3" />
@@ -595,7 +573,7 @@ export const AgendaView = () => {
 
             <button 
               onClick={() => setShowConfigAgendaModal(true)} 
-              className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 transition cursor-pointer" 
+              className="w-6 h-6 flex items-center justify-center rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer" 
               title="Configurar horarios"
             >
               <Settings className="w-3.5 h-3.5" />
@@ -605,7 +583,7 @@ export const AgendaView = () => {
 
         {/* ── KPIs drawer (colapsable) ── */}
         {showKpis && (
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 px-4 py-2 border-t border-slate-100 bg-slate-50/50">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
             {[
               { id: 'ALL', l: 'Citados', v: kpisDia.total, dot: 'bg-slate-500' },
               { id: 'EN_ESPERA', l: 'Espera', v: kpisDia.enEspera, dot: 'bg-amber-500' },
@@ -619,8 +597,8 @@ export const AgendaView = () => {
                 onClick={() => setActiveKpiFilter(activeKpiFilter === k.id ? 'ALL' : k.id)} 
                 className={`py-1.5 px-2 rounded-lg text-center transition cursor-pointer ${
                   activeKpiFilter === k.id 
-                    ? 'bg-slate-800 text-white shadow-sm' 
-                    : 'bg-white border border-slate-200 hover:border-slate-300'
+                    ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-sm' 
+                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-800 dark:text-slate-200'
                 }`}
               >
                 <div className="flex items-center justify-center gap-1">

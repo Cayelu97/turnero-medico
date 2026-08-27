@@ -41,7 +41,7 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
     { id: 'hce', label: 'Historia Clínica (HCE)', icon: FileText, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'PROFESIONAL'] },
     { id: 'facturacion', label: 'Facturación & Obras Soc.', icon: DollarSign, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
     { id: 'admin', label: 'Configuración & ABM', icon: Settings, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN'] },
-    { id: 'pacientes_abm', label: 'Padrón & Importador', icon: Users, badge: pacientes?.length > 0 ? `${pacientes.length}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
+    { id: 'pacientes_abm', label: 'Pacientes', icon: Users, badge: pacientes?.length > 0 ? `${pacientes.length}` : null, badgeColor: 'bg-purple-600', roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] },
     { id: 'paciente', label: 'Turnero Pacientes', icon: Globe, badge: null, roles: ['ADMIN_CLINICA', 'SUPERADMIN', 'SECRETARIA'] }
   ];
 
@@ -58,14 +58,14 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
   return (
     <aside
-      className={`bg-white border-r border-slate-200/80 transition-all duration-300 flex flex-col justify-between flex-shrink-0 z-30 shadow-xs ${
+      className={`bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 transition-all duration-300 flex flex-col justify-between flex-shrink-0 z-30 shadow-xs ${
         isCollapsed ? 'w-16' : 'w-60'
       }`}
     >
       {/* ITEMS DE NAVEGACIÓN */}
       <div className="p-3 space-y-1.5 overflow-y-auto">
         {!isCollapsed && (
-          <div className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Menú Principal
           </div>
         )}
@@ -86,11 +86,11 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
               } ${
                 isActive
                   ? 'bg-medical-600 text-white font-black shadow-md shadow-medical-600/25'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                 {!isCollapsed && (
                   <span className="truncate max-w-[130px]">{item.label}</span>
                 )}
@@ -109,10 +109,10 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
       </div>
 
       {/* BOTÓN COLAPSAR / EXPANDIR SIDEBAR */}
-      <div className="p-3 border-t border-slate-100 hidden sm:block">
+      <div className="p-3 border-t border-slate-100 dark:border-slate-800 hidden sm:block">
         <button
           onClick={onToggleCollapse}
-          className={`w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition cursor-pointer ${
+          className={`w-full flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer ${
             isCollapsed ? 'justify-center' : 'justify-start'
           }`}
           title={isCollapsed ? "Expandir menú" : "Colapsar menú lateral"}

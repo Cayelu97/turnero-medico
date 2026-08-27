@@ -135,7 +135,7 @@ const MainContent = () => {
 
   // 4. VISTA PRINCIPAL DEL SISTEMA CON SIDEBAR LATERAL & HEADER COMPACTO
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-150">
       {/* Header Superior Limpio */}
       <Navbar 
         isSidebarCollapsed={isSidebarCollapsed} 
@@ -151,32 +151,32 @@ const MainContent = () => {
         />
 
         {/* Contenido Dinámico según la Vista Activa */}
-        <main className="flex-1 w-full overflow-x-hidden p-3 sm:p-6">
+        <main className="flex-1 w-full overflow-x-hidden p-3 sm:p-6 bg-slate-50 dark:bg-slate-950">
           {/* VISTA PACIENTE DENTRO DEL PANEL */}
           {currentView === 'paciente' && (
             <div className="max-w-7xl mx-auto space-y-6">
               <div className="flex justify-center">
-                <div className="bg-slate-200/80 p-1 rounded-2xl flex items-center gap-1 shadow-inner">
+                <div className="bg-slate-200/80 dark:bg-slate-800 p-1 rounded-2xl flex items-center gap-1 shadow-inner">
                   <button
                     onClick={() => setPatientSubView('nuevo')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold transition ${
                       patientSubView === 'nuevo'
-                        ? 'bg-white text-medical-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-medical-800 dark:text-medical-300 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    <CalendarPlus className="w-4 h-4 text-medical-600" />
+                    <CalendarPlus className="w-4 h-4 text-medical-600 dark:text-medical-400" />
                     <span>Sacar Nuevo Turno Online</span>
                   </button>
                   <button
                     onClick={() => setPatientSubView('mis_turnos')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold transition ${
                       patientSubView === 'mis_turnos'
-                        ? 'bg-white text-medical-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-medical-800 dark:text-medical-300 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    <Search className="w-4 h-4 text-medical-600" />
+                    <Search className="w-4 h-4 text-medical-600 dark:text-medical-400" />
                     <span>Consultar / Cancelar Mis Turnos</span>
                   </button>
                 </div>
@@ -217,7 +217,7 @@ const MainContent = () => {
       </div>
 
       {/* Footer General */}
-      <footer className="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500 font-medium no-print">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-3 text-center text-xs text-slate-500 dark:text-slate-400 font-medium no-print">
         <span>SaludNet Pro • Sistema Integral de Consultorios Médicos & Turnero Online</span>
       </footer>
 

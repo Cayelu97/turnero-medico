@@ -612,79 +612,82 @@ export const INITIAL_AGENDAS = [
     updated_at: '2026-01-01T08:00:00Z'
   },
 
-  // Lic. Nahuel López: 4 agendas
+  // Lic. Nahuel López: 4 agendas exactas según cronograma multi-sede
   {
-    id: 'ag-nl-1',
+    id: 'ag-lopez-aipaa',
     clinica_id: 'clinica-1',
     profesional_id: 'prof-psi-3',
     servicio_id: 'serv-0a',
     consultorio_id: 'c-1-1',
-    nombre: 'Sede Central - Lunes y Viernes',
+    nombre: 'Atención en Aipaa 355',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
     duracion_slot_min: 45,
     modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 2,
+    max_sobreturnos_dia: 3,
     dias_horarios: [
-      { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 5, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'AMBAS' }] }
+      { dia_semana: 1, franjas: [{ hora_inicio: '09:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 3, franjas: [{ hora_inicio: '11:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 4, franjas: [{ hora_inicio: '13:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
     updated_at: '2026-01-01T08:00:00Z'
   },
   {
-    id: 'ag-nl-2',
+    id: 'ag-lopez-colon',
     clinica_id: 'clinica-2',
     profesional_id: 'prof-psi-3',
     servicio_id: 'serv-0a',
     consultorio_id: 'c-2-1',
-    nombre: 'Sede Norte - Martes',
+    nombre: 'Atención en Circulare COLON',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
     duracion_slot_min: 45,
     modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 2,
+    max_sobreturnos_dia: 3,
     dias_horarios: [
-      { dia_semana: 2, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] }
+      { dia_semana: 2, franjas: [{ hora_inicio: '09:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 5, franjas: [{ hora_inicio: '08:30', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
     updated_at: '2026-01-01T08:00:00Z'
   },
   {
-    id: 'ag-nl-3',
+    id: 'ag-lopez-inti',
     clinica_id: 'clinica-3',
     profesional_id: 'prof-psi-3',
     servicio_id: 'serv-0a',
     consultorio_id: 'c-3-1',
-    nombre: 'Sede Nueva Córdoba - Miércoles (Online)',
+    nombre: 'Atención en Inti Carrara',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
     duracion_slot_min: 45,
-    modalidad: 'ONLINE',
-    max_sobreturnos_dia: 2,
+    modalidad: 'PRESENCIAL',
+    max_sobreturnos_dia: 3,
     dias_horarios: [
-      { dia_semana: 3, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'ONLINE' }] }
+      { dia_semana: 2, franjas: [{ hora_inicio: '14:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 5, franjas: [{ hora_inicio: '13:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
     updated_at: '2026-01-01T08:00:00Z'
   },
   {
-    id: 'ag-nl-4',
+    id: 'ag-lopez-online',
     clinica_id: 'clinica-4',
     profesional_id: 'prof-psi-3',
     servicio_id: 'serv-0a',
-    consultorio_id: 'c-4-2',
-    nombre: 'Sede Villa Belgrano - Jueves',
+    consultorio_id: 'c-4-1',
+    nombre: 'Atención en online CASA',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
     duracion_slot_min: 45,
-    modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 2,
+    modalidad: 'ONLINE',
+    max_sobreturnos_dia: 3,
     dias_horarios: [
-      { dia_semana: 4, franjas: [{ hora_inicio: '08:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] }
+      { dia_semana: 4, franjas: [{ hora_inicio: '08:30', hora_fin: '13:00', modalidad: 'ONLINE' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',

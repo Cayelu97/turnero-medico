@@ -50,8 +50,7 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
   const handleNavClick = (itemId) => {
     if (itemId === 'pacientes_abm') {
-      if (setAdminTab) setAdminTab('pacientes');
-      setCurrentView('admin');
+      setCurrentView('pacientes');
     } else {
       setCurrentView(itemId);
     }
@@ -74,7 +73,7 @@ export const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.id === 'pacientes_abm' 
-            ? (currentView === 'admin' && adminTab === 'pacientes')
+            ? (currentView === 'pacientes' || (currentView === 'admin' && adminTab === 'pacientes'))
             : (currentView === item.id);
 
           return (

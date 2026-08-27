@@ -55,7 +55,7 @@ export const AdminDashboard = () => {
   } = useApp();
 
   const [showAgendaModal, setShowAgendaModal] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Módulos organizados por categorías funcionales
@@ -224,7 +224,7 @@ export const AdminDashboard = () => {
         </aside>
 
         {/* ÁREA DE CONTENIDO ADAPTABLE AL 100% DEL ESPACIO */}
-        <main className="flex-1 w-full bg-white rounded-3xl border border-slate-200/80 shadow-xs p-4 sm:p-7 overflow-hidden animate-fadeIn">
+        <main className="flex-1 min-w-0 w-full bg-white rounded-3xl border border-slate-200/80 shadow-xs p-4 sm:p-7 overflow-x-auto animate-fadeIn">
           {adminTab === 'usuarios' && <AbmUsuarios />}
           {adminTab === 'pacientes' && <AbmPacientes />}
           {adminTab === 'especialidades' && <AbmEspecialidades />}

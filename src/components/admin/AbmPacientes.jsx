@@ -438,19 +438,19 @@ export const AbmPacientes = () => {
         </div>
       </div>
 
-      {/* TABLA DE PACIENTES */}
-      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase tracking-wider">
+      {/* TABLA DE PACIENTES CON SCROLL HORIZONTAL CÓMODO Y ANCHO */}
+      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-xs min-w-[1200px]">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-black uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="px-4 py-3.5">Paciente / DNI</th>
-                <th className="px-4 py-3.5">Contacto Paciente</th>
-                <th className="px-4 py-3.5">Contactos Familiares / Urgencias</th>
-                <th className="px-4 py-3.5">Contexto Psicología & Emergencia</th>
-                <th className="px-4 py-3.5">Obra Social & Plan</th>
-                <th className="px-4 py-3.5 text-center">Historial</th>
-                <th className="px-4 py-3.5 text-right">Acciones</th>
+                <th className="px-5 py-4 min-w-[250px]">Paciente / DNI</th>
+                <th className="px-4 py-4 min-w-[180px]">Contacto Directo</th>
+                <th className="px-4 py-4 min-w-[260px]">Contactos Familiares / Urgencias</th>
+                <th className="px-4 py-4 min-w-[220px]">Contexto Psicología & Emergencia</th>
+                <th className="px-4 py-4 min-w-[190px]">Obra Social & Plan</th>
+                <th className="px-4 py-4 min-w-[110px] text-center">Historial</th>
+                <th className="px-4 py-4 min-w-[130px] text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-semibold">
@@ -643,8 +643,8 @@ export const AbmPacientes = () => {
       {/* MODAL ALTA / EDICIÓN DE PACIENTE (CON TABS Y CONTEXTO PSICOLÓGICO) */}
       {/* ========================================================================= */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-hidden animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scaleIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-slate-900/75 backdrop-blur-xs overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-5xl xl:max-w-6xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scaleIn">
             
             {/* HEADER STICKY */}
             <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between shrink-0">
@@ -714,95 +714,95 @@ export const AbmPacientes = () => {
               
               {/* TAB 1: DATOS PERSONALES */}
               {activeFormTab === 'DATOS' && (
-                <div className="space-y-4 animate-fadeIn">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-5 animate-fadeIn">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">DNI / Documento *</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">DNI / Documento *</label>
                       <input
                         type="text"
                         required
                         placeholder="ej: 35890123"
                         value={form.dni}
                         onChange={(e) => setForm({ ...form, dni: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-mono font-bold focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Apellido(s) *</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Apellido(s) *</label>
                       <input
                         type="text"
                         required
                         placeholder="ej: Gómez Rossi"
                         value={form.apellido}
                         onChange={(e) => setForm({ ...form, apellido: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Nombre(s) *</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Nombre(s) *</label>
                       <input
                         type="text"
                         required
                         placeholder="ej: Lucas Martín"
                         value={form.nombre}
                         onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Edad Actual</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Edad Actual</label>
                       <input
                         type="number"
                         placeholder="ej: 28"
                         value={form.edad}
                         onChange={(e) => setForm({ ...form, edad: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Celular / WhatsApp *</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Celular / WhatsApp *</label>
                       <input
                         type="text"
                         required
                         placeholder="ej: +54 9 351 550-1122"
                         value={form.telefono_whatsapp}
                         onChange={(e) => setForm({ ...form, telefono_whatsapp: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-bold text-emerald-800 focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Email</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Email</label>
                       <input
                         type="email"
                         placeholder="ej: paciente@email.com"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Domicilio donde reside actualmente</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Domicilio donde reside actualmente</label>
                       <input
                         type="text"
                         placeholder="ej: Bv. Chacabuco 820 Piso 4, Córdoba"
                         value={form.domicilio}
                         onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Fecha de Nacimiento</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Fecha de Nacimiento</label>
                       <input
                         type="date"
                         value={form.fecha_nacimiento}
                         onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm bg-white"
                       />
                     </div>
                   </div>
@@ -811,11 +811,11 @@ export const AbmPacientes = () => {
 
               {/* TAB 2: CONTEXTO FAMILIAR Y CONVIVIENTES (PSICOLOGÍA) */}
               {activeFormTab === 'FAMILIA' && (
-                <div className="space-y-4 animate-fadeIn">
+                <div className="space-y-5 animate-fadeIn">
                   {/* Con quién vive */}
-                  <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-2">
-                    <label className="block text-xs font-extrabold text-amber-950 flex items-center gap-1.5">
-                      <Home className="w-4 h-4 text-amber-700" />
+                  <div className="p-5 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-2.5">
+                    <label className="block text-sm font-extrabold text-amber-950 flex items-center gap-2">
+                      <Home className="w-5 h-5 text-amber-700" />
                       ¿Con quién vive actualmente? (Contexto Habitacional y Convivencia)
                     </label>
                     <input
@@ -823,62 +823,62 @@ export const AbmPacientes = () => {
                       placeholder="ej: Vive con sus padres y hermana menor / Vive solo/a / Con su pareja e hijos..."
                       value={form.con_quien_vive}
                       onChange={(e) => setForm({ ...form, con_quien_vive: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-amber-300 rounded-xl text-xs font-semibold bg-white focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-4 py-3 border border-amber-300 rounded-xl text-sm font-semibold bg-white focus:ring-2 focus:ring-amber-500"
                     />
-                    <p className="text-[11px] text-amber-800">
-                      Dato fundamental en psicología y salud mental para conocer la red de contención inmediata.
+                    <p className="text-xs text-amber-800">
+                      Dato fundamental en psicología y salud mental para conocer la red de contención inmediata del paciente.
                     </p>
                   </div>
 
                   {/* Contactos Familiares y Urgencias */}
-                  <div className="p-4 bg-purple-50/60 border border-purple-200 rounded-2xl space-y-3">
-                    <div className="flex items-center justify-between">
+                  <div className="p-5 bg-purple-50/60 border border-purple-200 rounded-2xl space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <span className="text-xs font-black text-purple-950 flex items-center gap-1.5">
-                          <HeartHandshake className="w-4 h-4 text-purple-700" />
+                        <span className="text-sm font-black text-purple-950 flex items-center gap-2">
+                          <HeartHandshake className="w-5 h-5 text-purple-700" />
                           Red de Contactos Familiares / Referentes de Urgencia
                         </span>
-                        <p className="text-[11px] text-purple-800">
+                        <p className="text-xs text-purple-800">
                           Personas a contactar en caso de ser necesario (padres, tutores, pareja, terapeutas).
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={handleAddFamiliar}
-                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-4 h-4" />
                         <span>+ Agregar Familiar</span>
                       </button>
                     </div>
 
-                    <div className="space-y-2.5">
+                    <div className="space-y-3">
                       {form.contactos_familiares.length === 0 ? (
-                        <div className="text-center py-6 bg-white border border-purple-100 rounded-xl text-slate-400 text-xs">
+                        <div className="text-center py-8 bg-white border border-purple-100 rounded-xl text-slate-400 text-xs">
                           No hay contactos familiares agregados. Haz clic en <strong>+ Agregar Familiar</strong>.
                         </div>
                       ) : (
                         form.contactos_familiares.map((fam, idx) => (
-                          <div key={fam.id || idx} className="p-3 bg-white border border-purple-200/80 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center shadow-2xs">
+                          <div key={fam.id || idx} className="p-4 bg-white border border-purple-200/80 rounded-2xl grid grid-cols-1 sm:grid-cols-12 gap-3 items-center shadow-xs">
                             {/* Nombre del Familiar */}
                             <div className="sm:col-span-4">
-                              <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Nombre Completo</label>
+                              <label className="block text-xs font-bold text-slate-600 mb-1">Nombre Completo</label>
                               <input
                                 type="text"
                                 placeholder="ej: Beatriz Rossi"
                                 value={fam.nombre}
                                 onChange={(e) => handleUpdateFamiliar(idx, 'nombre', e.target.value)}
-                                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold bg-slate-50"
+                                className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm font-bold bg-white"
                               />
                             </div>
 
-                            {/* Vínculo / Relación */}
+                            {/* Vínculo / Parentesco */}
                             <div className="sm:col-span-3">
-                              <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Vínculo / Parentesco</label>
+                              <label className="block text-xs font-bold text-slate-600 mb-1">Vínculo / Parentesco</label>
                               <select
                                 value={fam.relacion}
                                 onChange={(e) => handleUpdateFamiliar(idx, 'relacion', e.target.value)}
-                                className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs font-bold bg-slate-50"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold bg-white"
                               >
                                 <option value="Madre">Madre</option>
                                 <option value="Padre">Padre</option>
@@ -896,24 +896,24 @@ export const AbmPacientes = () => {
 
                             {/* Celular / WhatsApp */}
                             <div className="sm:col-span-3">
-                              <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Celular / WhatsApp</label>
+                              <label className="block text-xs font-bold text-slate-600 mb-1">Celular / WhatsApp</label>
                               <input
                                 type="text"
                                 placeholder="ej: 351 441-2233"
                                 value={fam.telefono}
                                 onChange={(e) => handleUpdateFamiliar(idx, 'telefono', e.target.value)}
-                                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-mono font-bold bg-slate-50 text-emerald-800"
+                                className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm font-mono font-bold bg-white text-emerald-800"
                               />
                             </div>
 
                             {/* Acciones */}
                             <div className="sm:col-span-2 flex items-center justify-end gap-2 pt-2 sm:pt-0">
-                              <label className="flex items-center gap-1 text-[10px] font-bold text-purple-900 cursor-pointer" title="Marcar como contacto de emergencia principal">
+                              <label className="flex items-center gap-1.5 text-xs font-bold text-purple-900 cursor-pointer" title="Marcar como contacto de emergencia principal">
                                 <input
                                   type="checkbox"
                                   checked={Boolean(fam.es_principal)}
                                   onChange={(e) => handleUpdateFamiliar(idx, 'es_principal', e.target.checked)}
-                                  className="w-3.5 h-3.5 text-purple-600 rounded"
+                                  className="w-4 h-4 text-purple-600 rounded"
                                 />
                                 <span>Principal</span>
                               </label>
@@ -921,7 +921,7 @@ export const AbmPacientes = () => {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFamiliar(idx)}
-                                className="p-1 text-slate-400 hover:text-rose-600 rounded transition cursor-pointer"
+                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition cursor-pointer"
                                 title="Eliminar este contacto"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -937,16 +937,65 @@ export const AbmPacientes = () => {
 
               {/* TAB 3: COBERTURA Y EMERGENCIAS */}
               {activeFormTab === 'COBERTURA' && (
-                <div className="space-y-4 animate-fadeIn">
+                <div className="space-y-5 animate-fadeIn">
+                  {/* Cobertura Médica */}
+                  <div className="p-5 bg-sky-50/70 border border-sky-200 rounded-2xl space-y-4">
+                    <span className="text-sm font-black text-sky-950 flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-sky-600" />
+                      Cobertura Médica & Obra Social
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-black text-slate-700 mb-1.5">Obra Social / Financiador</label>
+                        <select
+                          value={form.obra_social_id}
+                          onChange={(e) => setForm({ ...form, obra_social_id: e.target.value, plan_id: '' })}
+                          className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          {obrasSociales.map(os => (
+                            <option key={os.id} value={os.id}>{os.nombre} ({os.sigla || 'PART'})</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-black text-slate-700 mb-1.5">Plan de Cobertura</label>
+                        <select
+                          value={form.plan_id}
+                          onChange={(e) => setForm({ ...form, plan_id: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          <option value="">-- Sin plan específico / Particular --</option>
+                          {planes
+                            .filter(pl => !form.obra_social_id || pl.obra_social_id === form.obra_social_id)
+                            .map(pl => (
+                              <option key={pl.id} value={pl.id}>{pl.nombre_plan}</option>
+                            ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-black text-slate-700 mb-1.5">N° de Afiliado / Credencial</label>
+                        <input
+                          type="text"
+                          placeholder="ej: 1098492019/01"
+                          value={form.numero_afiliado}
+                          onChange={(e) => setForm({ ...form, numero_afiliado: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-mono font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Servicio de Emergencias */}
-                  <div className="p-4 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-3">
-                    <span className="text-xs font-black text-rose-950 flex items-center gap-1.5">
-                      <Ambulance className="w-4 h-4 text-rose-700" />
+                  <div className="p-5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-4">
+                    <span className="text-sm font-black text-rose-950 flex items-center gap-2">
+                      <Ambulance className="w-5 h-5 text-rose-700" />
                       Servicio de Emergencia Médica (Ambulancia / Urgencias Domiciliarias)
                     </span>
 
                     <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                      <label className="flex items-center gap-2 text-sm font-bold text-slate-800 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={form.servicio_emergencia.posee}
@@ -966,7 +1015,7 @@ export const AbmPacientes = () => {
 
                     {form.servicio_emergencia.posee && (
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-black text-slate-700 mb-1.5">
                           ¿Cuál es la empresa o servicio de emergencia?
                         </label>
                         <input
@@ -977,73 +1026,24 @@ export const AbmPacientes = () => {
                             ...form,
                             servicio_emergencia: { ...form.servicio_emergencia, nombre: e.target.value }
                           })}
-                          className="w-full px-3.5 py-2 border border-rose-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-rose-500"
+                          className="w-full px-4 py-2.5 border border-rose-300 rounded-xl text-sm font-bold bg-white focus:ring-2 focus:ring-rose-500"
                         />
                       </div>
                     )}
-                  </div>
-
-                  {/* Cobertura Médica */}
-                  <div className="p-4 bg-sky-50/60 border border-sky-200 rounded-2xl space-y-3">
-                    <span className="text-xs font-black text-sky-900 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-sky-600" />
-                      Cobertura Médica & Obra Social
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Obra Social / Financiador</label>
-                        <select
-                          value={form.obra_social_id}
-                          onChange={(e) => setForm({ ...form, obra_social_id: e.target.value, plan_id: '' })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
-                        >
-                          {obrasSociales.map(os => (
-                            <option key={os.id} value={os.id}>{os.nombre}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Plan</label>
-                        <select
-                          value={form.plan_id}
-                          onChange={(e) => setForm({ ...form, plan_id: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
-                        >
-                          <option value="">-- Sin plan específico --</option>
-                          {planes
-                            .filter(pl => !form.obra_social_id || pl.obra_social_id === form.obra_social_id)
-                            .map(pl => (
-                              <option key={pl.id} value={pl.id}>{pl.nombre_plan}</option>
-                            ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">N° de Afiliado / Credencial</label>
-                        <input
-                          type="text"
-                          placeholder="ej: 1098492019/01"
-                          value={form.numero_afiliado}
-                          onChange={(e) => setForm({ ...form, numero_afiliado: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-mono bg-white focus:ring-2 focus:ring-medical-500"
-                        />
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
 
               {/* TAB 4: CONSENTIMIENTO Y CLÍNICA */}
               {activeFormTab === 'CLINICA' && (
-                <div className="space-y-4 animate-fadeIn">
+                <div className="space-y-5 animate-fadeIn">
                   {/* Consentimiento Informado */}
-                  <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2">
-                    <span className="text-xs font-black text-emerald-950 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <div className="p-5 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-3">
+                    <span className="text-sm font-black text-emerald-950 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                       Consentimiento Informado y Registro
                     </span>
-                    <label className="flex items-center gap-2 text-xs font-bold text-emerald-900 cursor-pointer">
+                    <label className="flex items-center gap-2.5 text-sm font-bold text-emerald-950 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={form.consentimiento_informado?.aceptado}
@@ -1055,49 +1055,49 @@ export const AbmPacientes = () => {
                             fecha_firma: e.target.checked ? new Date().toISOString() : ''
                           }
                         })}
-                        className="w-4 h-4 text-emerald-600 rounded"
+                        className="w-5 h-5 text-emerald-600 rounded"
                       />
                       <span>Aceptó los términos y condiciones del Consentimiento Informado</span>
                     </label>
                     {form.marca_temporal_registro && (
-                      <p className="text-[11px] text-slate-500 font-mono">
+                      <p className="text-xs text-slate-600 font-mono">
                         Marca Temporal Original: <strong>{form.marca_temporal_registro}</strong>
                       </p>
                     )}
                   </div>
 
                   {/* Alertas Médicas / Antecedentes */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Alergias Conocidas</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Alergias Conocidas</label>
                       <input
                         type="text"
                         placeholder="ej: Penicilina, Látex, Ninguna..."
                         value={form.alergias}
                         onChange={(e) => setForm({ ...form, alergias: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Antecedentes Clínicos / Psicológicos</label>
+                      <label className="block text-xs font-black text-slate-700 mb-1.5">Antecedentes Clínicos / Psicológicos</label>
                       <input
                         type="text"
                         placeholder="ej: Trastorno de ansiedad, hipotiroidismo..."
                         value={form.antecedentes}
                         onChange={(e) => setForm({ ...form, antecedentes: e.target.value })}
-                        className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 bg-white"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Medicación Habitual</label>
+                    <label className="block text-xs font-black text-slate-700 mb-1.5">Medicación Habitual</label>
                     <input
                       type="text"
                       placeholder="ej: Sertralina 50mg, Clonazepam 0.5mg..."
                       value={form.medicacion_habitual}
                       onChange={(e) => setForm({ ...form, medicacion_habitual: e.target.value })}
-                      className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-medical-500 bg-slate-50"
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 bg-white"
                     />
                   </div>
                 </div>

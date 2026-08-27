@@ -15,6 +15,7 @@ import { HistoriaClinicaView } from './components/ehr/HistoriaClinicaView';
 import { DoctorPortal } from './components/doctor/DoctorPortal';
 import { FacturacionView } from './components/billing/FacturacionView';
 import { CajaView } from './components/cash/CajaView';
+import { AbmPacientes } from './components/admin/AbmPacientes';
 import { CalendarPlus, Search, ArrowLeft, Stethoscope, Lock, Building, Sparkles } from 'lucide-react';
 
 const MainContent = () => {
@@ -205,6 +206,13 @@ const MainContent = () => {
 
           {/* VISTA FACTURACIÓN & LIQUIDACIONES */}
           {currentView === 'facturacion' && <FacturacionView />}
+
+          {/* VISTA PADRÓN & IMPORTADOR DE PACIENTES DEDICADA A PANTALLA COMPLETA */}
+          {currentView === 'pacientes' && (
+            <div className="max-w-[1700px] mx-auto">
+              <AbmPacientes />
+            </div>
+          )}
         </main>
       </div>
 

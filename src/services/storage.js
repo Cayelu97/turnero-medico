@@ -1348,9 +1348,8 @@ export const StorageService = {
       StorageService.saveCollection(STORAGE_KEYS.AGENDAS, items);
     }
 
-    const targetClinicaId = clinicaId || StorageService.getClinicaActiva()?.id;
-    if (targetClinicaId && targetClinicaId !== 'TODAS' && targetClinicaId !== 'ALL') {
-      items = items.filter(a => !a.clinica_id || a.clinica_id === targetClinicaId);
+    if (clinicaId && clinicaId !== 'TODAS' && clinicaId !== 'ALL') {
+      items = items.filter(a => !a.clinica_id || a.clinica_id === clinicaId);
     }
     if (profesionalId) {
       items = items.filter(a => a.profesional_id === profesionalId);

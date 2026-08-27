@@ -6,7 +6,7 @@ import { ReprogramarTurnoModal } from '../secretary/ReprogramarTurnoModal';
 import { CancelarTurnoModal } from '../secretary/CancelarTurnoModal';
 
 export const MisTurnos = () => {
-  const { turnos, pacientes, profesionales, consultorios, obrasSociales, planes, nomenclador, cancelarTurno } = useApp();
+  const { turnos, pacientes, profesionales, consultorios, obrasSociales, planes, nomenclador, cancelarTurno, updateTurnoEstado, showToast } = useApp();
 
   const [dni, setDni] = useState('');
   const [authMethod, setAuthMethod] = useState('codigo'); // 'codigo' | 'celular'
@@ -274,7 +274,27 @@ export const MisTurnos = () => {
                   </div>
 
                   {!isCancelled && (
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 flex-wrap">
+                      {!t.confirmado_whatsapp && t.estado === 'PROGRAMADO' && (
+                        <button
+                          onClick={() => {
+                            updateTurnoEstado(t.id, 'PROGRAMADO', { confirmado_whatsapp: true });
+                            showToast('¡Gracias! Has confirmado tu asistencia a la consulta médica.', 'success');
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Confirmar Asistencia</span>
+                        </button>
+                      )}
+
+                      {t.confirmado_whatsapp && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Asistencia Confirmada</span>
+                        </span>
+                      )}
+
                       <button
                         onClick={() => setSelectedTurnoForVoucher({ turno: t, paciente: patient, profesional: prof, consultorio: cons, obraSocial: os, plan, practica })}
                         className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition"

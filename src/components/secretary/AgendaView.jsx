@@ -23,7 +23,9 @@ import {
   UserCheck,
   Stethoscope,
   Sparkles,
-  ArrowRightLeft
+  ArrowRightLeft,
+  FileSpreadsheet,
+  Printer
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ConfigurarAgendaModal } from './ConfigurarAgendaModal';
@@ -32,8 +34,10 @@ import { AgendarTurnoSecretariaModal } from './AgendarTurnoSecretariaModal';
 import { ReprogramarTurnoModal } from './ReprogramarTurnoModal';
 import { CancelarTurnoModal } from './CancelarTurnoModal';
 import { DetalleTurnoModal } from './DetalleTurnoModal';
+import { PlanillaImpresionModal } from './PlanillaImpresionModal';
 import { VoucherModal } from '../patient/VoucherModal';
 import { StorageService } from '../../services/storage';
+import { exportarTurnosExcel } from '../../utils/exportUtils';
 import { getLocalDateString, addDaysToDateString, getDayOfWeekFromDateString, getDayDetailsFromDateString, getFeriadoNacional } from '../../utils/dateUtils';
 
 export const AgendaView = () => {
@@ -75,6 +79,7 @@ export const AgendaView = () => {
   const [turnoToCancel, setTurnoToCancel] = useState(null);
   const [selectedTurnoForVoucher, setSelectedTurnoForVoucher] = useState(null);
   const [selectedDetalleTurno, setSelectedDetalleTurno] = useState(null);
+  const [showPlanillaModal, setShowPlanillaModal] = useState(false);
 
   const handlePrevDay = () => setCurrentDate(prev => addDaysToDateString(prev, -1));
   const handleNextDay = () => setCurrentDate(prev => addDaysToDateString(prev, 1));
@@ -279,6 +284,16 @@ export const AgendaView = () => {
       return getLocalDateString(d);
     });
   }, [currentDate]);
+
+  const turnosSemana = useMemo(() => {
+    return turnos.filter(t => {
+      if (!semanaDays.includes(t.fecha)) return false;
+      if (selectedCentroFilter !== 'TODOS' && t.clinica_id && t.clinica_id !== selectedCentroFilter) return false;
+      const targetProf = selectedWeeklyProfId || selectedProfFilter;
+      if (targetProf && t.profesional_id !== targetProf) return false;
+      return true;
+    });
+  }, [turnos, semanaDays, selectedCentroFilter, selectedWeeklyProfId, selectedProfFilter]);
 
   const timelineHours = useMemo(() => Array.from({ length: 13 }).map((_, i) => `${(i + 8).toString().padStart(2, '0')}:00`), []);
 
@@ -553,6 +568,40 @@ export const AgendaView = () => {
                 className="h-7 pl-8 pr-3 w-40 text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-medical-500 transition" 
               />
             </div>
+
+            <button 
+              onClick={() => {
+                const turnosAExportar = viewMode === 'timeline_semanal' || viewMode === 'semanal' 
+                  ? turnosSemana 
+                  : turnosDelDia;
+                exportarTurnosExcel({
+                  turnos: turnosAExportar,
+                  pacientes,
+                  profesionales,
+                  consultorios,
+                  obrasSociales,
+                  planes,
+                  servicios,
+                  nomenclador,
+                  clinicas: allClinicas,
+                  nombreArchivo: `Turnos_${activeWeeklyProf ? activeWeeklyProf.apellido : 'Todos'}_${currentDate}`
+                });
+              }}
+              className="h-7 px-2.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition cursor-pointer flex items-center gap-1 shadow-2xs"
+              title="Exportar listado de turnos a archivo Microsoft Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden xl:inline">Excel</span>
+            </button>
+
+            <button 
+              onClick={() => setShowPlanillaModal(true)} 
+              className="h-7 px-2.5 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition cursor-pointer flex items-center gap-1 shadow-2xs"
+              title="Imprimir planilla de consultorio médico para el profesional o guardar como PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-700" />
+              <span className="hidden xl:inline">Imprimir / PDF</span>
+            </button>
 
             <button 
               onClick={() => setShowRecurrenteModal(true)} 
@@ -1466,6 +1515,14 @@ export const AgendaView = () => {
           onClose={() => setSelectedTurnoForVoucher(null)} 
         />
       )}
+      <PlanillaImpresionModal 
+        isOpen={showPlanillaModal} 
+        onClose={() => setShowPlanillaModal(false)} 
+        turnos={viewMode === 'timeline_semanal' || viewMode === 'semanal' ? turnosSemana : turnosDelDia} 
+        fechaSeleccionada={currentDate} 
+        profesionalSeleccionado={selectedWeeklyProfId || selectedProfFilter} 
+        sedeSeleccionada={selectedCentroFilter} 
+      />
     </div>
   );
 };

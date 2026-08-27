@@ -101,6 +101,9 @@ export const WhatsAppService = {
       (esOnline 
         ? `🔗 *Instrucciones:* El enlace de videollamada se habilitará en tu portal antes de la consulta.\n\n`
         : `⚠️ *Requisitos:* Presentarse 10 minutos antes en recepción con DNI y credencial médica.\n\n`) +
+      `📱 *GESTIÓN ONLINE DE TU TURNO:*\n` +
+      `Para confirmar asistencia, reprogramar o cancelar ingresá a:\n` +
+      `👉 ${typeof window !== 'undefined' ? `${window.location.origin}/?view=mis_turnos` : 'https://saludnetar.vercel.app/?view=mis_turnos'}\n\n` +
       `¡Te esperamos!`
     );
   },

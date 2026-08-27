@@ -106,6 +106,18 @@ export const DetalleTurnoModal = ({
     showToast('¡Datos del turno y paciente actualizados con éxito!');
   };
 
+  const handleToggleConfirmar = () => {
+    const nuevoConfirmado = !turno.confirmado_whatsapp;
+    updateTurnoEstado(turno.id, turno.estado, { confirmado_whatsapp: nuevoConfirmado });
+    showToast(
+      nuevoConfirmado 
+        ? '✓ Turno confirmado por el paciente (WhatsApp / Teléfono)' 
+        : 'Confirmación de asistencia removida',
+      nuevoConfirmado ? 'success' : 'info'
+    );
+    onClose();
+  };
+
   const handleMarcarEnEspera = () => {
     updateTurnoEstado(turno.id, 'EN_ESPERA');
     showToast('Paciente marcado en Sala de Espera.');
@@ -134,12 +146,13 @@ export const DetalleTurnoModal = ({
                   Detalle & Gestión del Turno
                 </h3>
                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
+                  turno.confirmado_whatsapp ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
                   turno.estado === 'CONFIRMADO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                   turno.estado === 'EN_ESPERA' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                   turno.estado === 'EN_ATENCION' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                   'bg-slate-100 text-slate-700 border-slate-200'
                 }`}>
-                  {turno.estado.replace('_', ' ')}
+                  {turno.confirmado_whatsapp ? '✓ CONFIRMADO' : turno.estado.replace('_', ' ')}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-mono">
@@ -340,7 +353,21 @@ export const DetalleTurnoModal = ({
 
         {/* ACCIONES RÁPIDAS (FOOTER) */}
         <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Botón Acción Confirmar Asistencia */}
+            <button
+              onClick={handleToggleConfirmar}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-2xs cursor-pointer ${
+                turno.confirmado_whatsapp 
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
+              }`}
+              title={turno.confirmado_whatsapp ? 'Turno confirmado. Clic para desmarcar.' : 'Confirmar asistencia del paciente (WhatsApp o Telefónico)'}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{turno.confirmado_whatsapp ? 'Asistencia Confirmada ✓' : 'Confirmar Asistencia'}</span>
+            </button>
+
             <button
               onClick={() => {
                 onClose();

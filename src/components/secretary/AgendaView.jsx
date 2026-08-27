@@ -51,7 +51,7 @@ export const AgendaView = () => {
     showToast = () => {}
   } = useApp() || {};
 
-  const [viewMode, setViewMode] = useState('diaria'); // 'diaria' | 'timeline' | 'timeline_semanal' | 'semanal' | 'futuros'
+  const [viewMode, setViewMode] = useState('timeline_semanal'); // 'diaria' | 'timeline' | 'timeline_semanal' | 'semanal' | 'futuros'
   const [currentDate, setCurrentDate] = useState(() => getLocalDateString(new Date()));
   const [selectedCentroFilter, setSelectedCentroFilter] = useState('TODOS');
   const [selectedProfFilter, setSelectedProfFilter] = useState('');
@@ -88,11 +88,9 @@ export const AgendaView = () => {
         const profSedes = p.sedes_ids || (p.clinica_id ? [p.clinica_id] : []);
         if (profSedes.length > 0 && !profSedes.includes(selectedCentroFilter)) return false;
       }
-      if (selectedProfFilter && p.id !== selectedProfFilter) return false;
-      if (selectedServicioFilter && p.servicios_ids && p.servicios_ids.length > 0 && !p.servicios_ids.includes(selectedServicioFilter)) return false;
-      return p.activo !== false;
+      return true;
     });
-  }, [profesionales, selectedCentroFilter, selectedProfFilter, selectedServicioFilter]);
+  }, [profesionales, selectedCentroFilter]);
 
   const [slotResolution, setSlotResolution] = useState('auto'); // 'auto' | '15' | '20' | '30' | '60'
   const [selectedWeeklyProfId, setSelectedWeeklyProfId] = useState('');
@@ -135,20 +133,48 @@ export const AgendaView = () => {
     return 15;
   }, [slotResolution, activeWeeklyProf]);
 
-  // Generar lista de franjas horarias exactas (08:00 a 20:00 con el intervalo seleccionado)
+  // Generar lista de franjas horarias exactas basadas en los horarios reales de atención
   const timelineSlots = useMemo(() => {
     const slots = [];
-    const startMin = 8 * 60; // 08:00
-    const endMin = 20 * 60;  // 20:00
+    const targetProfId = activeWeeklyProf?.id;
+    const targetCentro = selectedCentroFilter !== 'TODOS' ? selectedCentroFilter : null;
+    
+    // Obtener todos los horarios de atención relevantes
+    const horarios = targetProfId 
+      ? StorageService.getHorariosByProfesional(targetProfId, targetCentro).filter(h => h.activo !== false)
+      : StorageService.getHorarios(targetCentro).filter(h => h.activo !== false);
+
+    let minMinutes = 9 * 60;  // Iniciar a las 09:00 por defecto
+    let maxMinutes = 20 * 60; // Finalizar a las 20:00 por defecto
+
+    if (horarios.length > 0) {
+      let earliest = 24 * 60;
+      let latest = 0;
+      horarios.forEach(h => {
+        if (h.hora_inicio) {
+          const [hI, mI] = h.hora_inicio.split(':').map(Number);
+          const t = hI * 60 + (mI || 0);
+          if (t < earliest) earliest = t;
+        }
+        if (h.hora_fin) {
+          const [hF, mF] = h.hora_fin.split(':').map(Number);
+          const t = hF * 60 + (mF || 0);
+          if (t > latest) latest = t;
+        }
+      });
+      if (earliest < 24 * 60) minMinutes = earliest;
+      if (latest > 0) maxMinutes = latest;
+    }
+
     const step = effectiveIntervalMinutes || 20;
 
-    for (let m = startMin; m < endMin; m += step) {
+    for (let m = minMinutes; m < maxMinutes; m += step) {
       const h = Math.floor(m / 60);
       const min = m % 60;
       slots.push(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
     }
     return slots;
-  }, [effectiveIntervalMinutes]);
+  }, [effectiveIntervalMinutes, activeWeeklyProf, selectedCentroFilter]);
 
   const toMinutes = (timeStr) => {
     if (!timeStr) return 0;
@@ -721,8 +747,9 @@ export const AgendaView = () => {
                   ) : (
                     profTurnos.map((t) => {
                       const pac = pacientes.find(p => p.id === t.paciente_id);
-                      const os = obrasSociales.find(o => o.id === t.obra_social_id);
-                      const plan = planes.find(p => p.id === t.plan_id);
+                      const os = obrasSociales.find(o => o.id === (t.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
+                      const osNombre = os?.sigla || os?.nombre || pac?.obra_social_nombre || pac?.obra_social || t.obra_social_nombre || 'Particular';
+                      const plan = planes.find(p => p.id === (t.plan_id || pac?.plan_id));
                       const practica = nomenclador.find(p => p.id === t.practica_id);
                       const serv = servicios.find(s => s.id === t.servicio_id);
                       const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
@@ -767,7 +794,7 @@ export const AgendaView = () => {
                             </h4>
                             <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium truncate mt-0.5">
                               <ShieldCheck className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                              <span>{os?.sigla || os?.nombre || 'Particular'} {plan ? `(${plan.nombre_plan})` : ''}</span>
+                              <span>{osNombre} {plan ? `(${plan.nombre_plan})` : ''}</span>
                             </div>
                             <div className="flex items-center gap-1.5 flex-wrap mt-1">
                               {serv && (
@@ -912,7 +939,8 @@ export const AgendaView = () => {
                       <div key={prof.id} className="space-y-1.5">
                         {turnosEnSlot.map(t => {
                           const pac = pacientes.find(p => p.id === t.paciente_id);
-                          const os = obrasSociales.find(o => o.id === t.obra_social_id);
+                          const os = obrasSociales.find(o => o.id === (t.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
+                          const osNombre = os?.sigla || os?.nombre || pac?.obra_social_nombre || pac?.obra_social || t.obra_social_nombre || 'Particular';
                           const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
 
                           return (
@@ -927,7 +955,7 @@ export const AgendaView = () => {
                               </div>
                               <div className="font-black text-slate-800 text-[11px] truncate mt-0.5">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
                               <div className="flex items-center justify-between text-[10px] text-slate-600">
-                                <span className="truncate font-semibold">{os?.sigla || 'Particular'}</span>
+                                <span className="truncate font-semibold">{osNombre}</span>
                                 {t.es_sobreturno && <span className="text-[9px] font-black text-orange-700 bg-orange-100 px-1 rounded border border-orange-200">SOBRETURNO</span>}
                               </div>
                             </div>
@@ -1099,7 +1127,8 @@ export const AgendaView = () => {
                         <div key={diaStr} className="space-y-1.5">
                           {turnosEnCelda.map(t => {
                             const pac = pacientes.find(p => p.id === t.paciente_id);
-                            const os = obrasSociales.find(o => o.id === t.obra_social_id);
+                            const os = obrasSociales.find(o => o.id === (t.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
+                            const osNombre = os?.sigla || os?.nombre || pac?.obra_social_nombre || pac?.obra_social || t.obra_social_nombre || 'Particular';
                             const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
 
                             return (
@@ -1114,7 +1143,7 @@ export const AgendaView = () => {
                                 </div>
                                 <div className="font-black text-slate-900 text-xs truncate leading-tight">{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</div>
                                 <div className="flex items-center justify-between text-[10px] text-slate-600">
-                                  <span className="truncate font-semibold">{os?.sigla || 'Particular'}</span>
+                                  <span className="truncate font-semibold">{osNombre}</span>
                                   {t.es_sobreturno && <span className="text-[9px] font-black text-orange-700 bg-orange-100 px-1 rounded border border-orange-200">SOBRETURNO</span>}
                                 </div>
                               </div>
@@ -1208,19 +1237,20 @@ export const AgendaView = () => {
                   turnosFuturos.map((t) => {
                     const pac = pacientes.find(p => p.id === t.paciente_id);
                     const prof = profesionales.find(p => p.id === t.profesional_id);
-                    const os = obrasSociales.find(o => o.id === t.obra_social_id);
+                    const os = obrasSociales.find(o => o.id === (t.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
+                    const osNombre = os?.sigla || os?.nombre || pac?.obra_social_nombre || pac?.obra_social || t.obra_social_nombre || 'Particular';
                     const badge = getEstadoBadge(t.estado, t.confirmado_whatsapp);
 
                     return (
-                      <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition">
-                        <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">{t.codigo_reserva}</td>
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-slate-100">{t.fecha} • <span className="text-medical-700 dark:text-medical-400">{t.hora_inicio} hs</span></td>
-                        <td className="py-3 px-3"><strong>{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</strong><span className="block text-[11px] text-slate-500 dark:text-slate-400">DNI {pac?.dni}</span></td>
-                        <td className="py-3 px-3"><strong>Dr(a). {prof?.nombre} {prof?.apellido}</strong><span className="block text-[11px] text-medical-700 dark:text-medical-400">{prof?.especialidad}</span></td>
-                        <td className="py-3 px-3">{os?.nombre || 'Particular'}</td>
+                      <tr key={t.id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3 px-3 font-mono font-bold text-slate-900">{t.codigo_reserva}</td>
+                        <td className="py-3 px-3 font-bold text-slate-900">{t.fecha} • <span className="text-medical-700">{t.hora_inicio} hs</span></td>
+                        <td className="py-3 px-3"><strong>{pac ? `${pac.apellido}, ${pac.nombre}` : 'Paciente'}</strong><span className="block text-[11px] text-slate-500">DNI {pac?.dni}</span></td>
+                        <td className="py-3 px-3"><strong>Dr(a). {prof?.nombre} {prof?.apellido}</strong><span className="block text-[11px] text-medical-700">{prof?.especialidad}</span></td>
+                        <td className="py-3 px-3">{osNombre}</td>
                         <td className="py-3 px-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${badge.bg}`}>{badge.label}</span></td>
                         <td className="py-3 px-3 text-right">
-                          <button onClick={() => setSelectedDetalleTurno(t)} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-xs cursor-pointer">Gestionar</button>
+                          <button onClick={() => setSelectedDetalleTurno(t)} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs cursor-pointer">Gestionar</button>
                         </td>
                       </tr>
                     );
@@ -1410,7 +1440,19 @@ export const AgendaView = () => {
         onClose={() => setSelectedDetalleTurno(null)} 
         onReprogramar={t => { setTurnoToReprogram(t); setShowReprogramarModal(true); }} 
         onCancelar={t => { setTurnoToCancel(t); setShowCancelarModal(true); }} 
-        onVerVoucher={t => setSelectedTurnoForVoucher({ turno: t, paciente: pacientes.find(p => p.id === t.paciente_id), profesional: profesionales.find(p => p.id === t.profesional_id), consultorio: consultorios.find(c => c.id === t.consultorio_id), obraSocial: obrasSociales.find(o => o.id === t.obra_social_id), plan: planes.find(p => p.id === t.plan_id), practica: nomenclador.find(n => n.id === t.practica_id) })} 
+        onVerVoucher={t => {
+          const pac = pacientes.find(p => p.id === t.paciente_id);
+          const os = obrasSociales.find(o => o.id === (t.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
+          setSelectedTurnoForVoucher({
+            turno: t,
+            paciente: pac,
+            profesional: profesionales.find(p => p.id === t.profesional_id),
+            consultorio: consultorios.find(c => c.id === t.consultorio_id),
+            obraSocial: os,
+            plan: planes.find(p => p.id === (t.plan_id || pac?.plan_id)),
+            practica: nomenclador.find(n => n.id === t.practica_id)
+          });
+        }} 
       />
       {selectedTurnoForVoucher && (
         <VoucherModal 

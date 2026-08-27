@@ -35,6 +35,7 @@ export const ConfigurarAgendaModal = ({ isOpen, onClose, defaultProfId = null })
     servicios = [], 
     consultorios = [], 
     agendas = [],
+    turnos = [],
     saveAgenda,
     cerrarAgenda,
     reactivarAgenda,

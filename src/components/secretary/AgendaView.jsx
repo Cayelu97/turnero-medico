@@ -378,105 +378,221 @@ export const AgendaView = () => {
     }
   };
 
+  // Atajos de teclado de Secretaría (N: Nuevo turno, P: Próximo libre, T: Hoy)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        handleOpenNuevoTurno();
+      } else if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        handleOpenProximoLibre();
+      } else if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        handleToday();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
-    <div className="space-y-3">
-      {/* BARRA DE COMANDOS ULTRA COMPACTA DE LA AGENDA (MÁXIMA PRESENCIA DE TURNOS) */}
-      <div className="bg-white px-3.5 py-2.5 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
+    <div className="space-y-3.5">
+      {/* COMMAND CENTER CLÍNICO: BARRA DE COMANDO DE ALTA PRODUCTIVIDAD (2 NIVELES) */}
+      <div className="bg-white px-4 py-3 rounded-3xl border border-slate-200/90 shadow-sm space-y-3">
+        
+        {/* NIVEL 1: MASTER CONTEXT & ACTION HUB DE SECRETARÍA */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           
-          {/* GRUPO IZQUIERDO: VISTAS & FECHA INLINE */}
+          {/* GRUPO IZQUIERDO: CONTEXTO DE SEDE & MÉDICO SELECCIONADO */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Selector de Vistas */}
-            <div className="flex items-center gap-0.5 p-0.5 bg-slate-100 rounded-xl border border-slate-200/60">
-              {[
-                { id: 'diaria', label: 'Diaria' },
-                { id: 'timeline', label: 'Timeline Hoy' },
-                { id: 'timeline_semanal', label: 'Timeline Semanal' },
-                { id: 'futuros', label: 'Futuros' }
-              ].map(m => (
-                <button 
-                  key={m.id} 
-                  onClick={() => setViewMode(m.id)} 
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    viewMode === m.id 
-                      ? 'bg-white text-slate-900 shadow-2xs font-black' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
+            {/* Selector de Sede / Centro */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl shadow-2xs transition">
+              <span className="text-xs">🏥</span>
+              <select 
+                value={selectedCentroFilter} 
+                onChange={(e) => setSelectedCentroFilter(e.target.value)} 
+                className="text-xs font-black bg-transparent text-slate-800 focus:outline-none cursor-pointer pr-1"
+                title="Filtrar por Sede o Centro de Atención"
+              >
+                <option value="TODOS">Todas las Sedes</option>
+                {allClinicas.map(c => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+              </select>
             </div>
 
-            {/* Navegador de Fecha Inline */}
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/60">
-              {viewMode === 'timeline_semanal' || viewMode === 'semanal' ? (
-                <>
-                  <button onClick={handlePrevWeek} className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-white rounded-lg transition" title="Semana anterior">◄ Sem</button>
-                  <button onClick={handleToday} className="px-2 py-1 text-xs font-black bg-white rounded-lg shadow-2xs">Esta Sem</button>
-                  <button onClick={handleNextWeek} className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-white rounded-lg transition" title="Semana siguiente">Sem ►</button>
-                </>
-              ) : (
-                <>
-                  <button onClick={handlePrevDay} className="p-1 hover:bg-white text-slate-700 rounded-lg transition"><ChevronLeft className="w-3.5 h-3.5" /></button>
-                  <button onClick={handleToday} className="px-2 py-1 text-xs font-black bg-white rounded-lg shadow-2xs">Hoy</button>
-                  <button onClick={handleNextDay} className="p-1 hover:bg-white text-slate-700 rounded-lg transition"><ChevronRight className="w-3.5 h-3.5" /></button>
-                </>
-              )}
+            {/* Selector de Médico Activo con Avatar */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl shadow-2xs transition">
+              <div 
+                className="w-5 h-5 rounded-full flex items-center justify-center text-white font-black text-[9px] shrink-0 shadow-2xs" 
+                style={{ backgroundColor: activeWeeklyProf?.color_agenda || '#0284c7' }}
+              >
+                {activeWeeklyProf ? `${activeWeeklyProf.nombre[0]}${activeWeeklyProf.apellido[0]}` : 'MD'}
+              </div>
+              <select 
+                value={selectedWeeklyProfId || selectedProfFilter} 
+                onChange={(e) => {
+                  setSelectedProfFilter(e.target.value);
+                  setSelectedWeeklyProfId(e.target.value);
+                }} 
+                className="text-xs font-black bg-transparent text-slate-900 focus:outline-none cursor-pointer max-w-[210px] truncate"
+              >
+                <option value="">Todos los Profesionales</option>
+                {profesionales.map(p => (
+                  <option key={p.id} value={p.id}>
+                    Dr(a). {p.apellido} ({p.especialidad} • {p.duracion_turno_minutos || 15}m)
+                  </option>
+                ))}
+              </select>
             </div>
-
-            <input 
-              type="date" 
-              value={currentDate} 
-              onChange={(e) => setCurrentDate(e.target.value)} 
-              className="px-2 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500 w-32" 
-            />
           </div>
 
-          {/* GRUPO CENTRO: SEDE, MÉDICO, ESPECIALIDAD & RESOLUCIÓN */}
+          {/* GRUPO CENTRO: NAVEGADOR DE FECHA ERGONÓMICO */}
+          <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/70 shadow-inner">
+            {viewMode === 'timeline_semanal' || viewMode === 'semanal' ? (
+              <>
+                <button 
+                  onClick={handlePrevWeek} 
+                  className="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1 shadow-2xs" 
+                  title="Semana anterior"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Ant</span>
+                </button>
+                
+                <button 
+                  onClick={handleToday} 
+                  className="px-3 py-1 text-xs font-black bg-white text-medical-800 rounded-xl shadow-xs border border-slate-200/60 transition cursor-pointer hover:bg-medical-50"
+                  title="Ir a esta semana [T]"
+                >
+                  Esta Semana
+                </button>
+                
+                <button 
+                  onClick={handleNextWeek} 
+                  className="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1 shadow-2xs" 
+                  title="Semana siguiente"
+                >
+                  <span>Sig</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={handlePrevDay} className="p-1.5 hover:bg-white text-slate-700 rounded-xl transition shadow-2xs" title="Día anterior">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={handleToday} className="px-3 py-1 text-xs font-black bg-white text-medical-800 rounded-xl shadow-xs border border-slate-200/60 transition hover:bg-medical-50" title="Ir a hoy [T]">
+                  Hoy
+                </button>
+                <button onClick={handleNextDay} className="p-1.5 hover:bg-white text-slate-700 rounded-xl transition shadow-2xs" title="Día siguiente">
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+
+            {/* Input de Fecha Nativo Estilizado */}
+            <div className="relative flex items-center">
+              <input 
+                type="date" 
+                value={currentDate} 
+                onChange={(e) => setCurrentDate(e.target.value)} 
+                className="pl-2.5 pr-2 py-1 bg-white border border-slate-200 rounded-xl text-xs font-black text-slate-900 focus:ring-2 focus:ring-medical-500 shadow-2xs w-32 cursor-pointer" 
+              />
+            </div>
+          </div>
+
+          {/* GRUPO DERECHO: ACTION HUB DE SECRETARÍA */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Selector de Centro / Sede */}
-            <select 
-              value={selectedCentroFilter} 
-              onChange={(e) => setSelectedCentroFilter(e.target.value)} 
-              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-800 max-w-[140px] truncate"
-              title="Filtrar por Sede o Centro de Atención"
-            >
-              <option value="TODOS">🏥 Todas las Sedes</option>
-              {allClinicas.map(c => (
-                <option key={c.id} value={c.id}>{c.nombre}</option>
-              ))}
-            </select>
+            {/* Buscador Rápido de Pacientes */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Buscar paciente / DNI..." 
+                value={searchPatientQuery} 
+                onChange={(e) => setSearchPatientQuery(e.target.value)} 
+                className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-2xl text-xs font-bold bg-slate-50 focus:bg-white focus:ring-2 focus:ring-medical-500 w-36 sm:w-48 shadow-2xs transition" 
+              />
+            </div>
 
-            {/* Selector de Médico */}
-            <select 
-              value={selectedWeeklyProfId || selectedProfFilter} 
-              onChange={(e) => {
-                setSelectedProfFilter(e.target.value);
-                setSelectedWeeklyProfId(e.target.value);
-              }} 
-              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-900 max-w-[200px] truncate"
+            {/* Paquete de Sesiones */}
+            <button 
+              onClick={() => setShowRecurrenteModal(true)} 
+              className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200/90 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-98"
+              title="Agendar paquete de sesiones periódicas (Psicología / Kinesiología)"
             >
-              <option value="">Todos los Profesionales</option>
-              {profesionales.map(p => (
-                <option key={p.id} value={p.id}>
-                  Dr(a). {p.apellido} ({p.duracion_turno_minutos || 20}m)
-                </option>
-              ))}
-            </select>
+              <Repeat className="w-3.5 h-3.5 text-purple-600" />
+              <span className="hidden sm:inline">+ Sesiones</span>
+            </button>
 
+            {/* Botón Próximo Turno Libre */}
+            <button 
+              onClick={handleOpenProximoLibre} 
+              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-98"
+              title="Buscar el turno libre más próximo del médico o de cualquier profesional [P]"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              <span>⚡ Próximo Libre</span>
+            </button>
+
+            {/* Botón Principal: + Agendar Turno */}
+            <button 
+              onClick={() => handleOpenNuevoTurno()} 
+              className="px-4 py-1.5 bg-gradient-to-r from-medical-600 to-medical-700 hover:from-medical-700 hover:to-medical-800 text-white rounded-2xl text-xs font-black shadow-sm transition cursor-pointer flex items-center gap-1.5 active:scale-98"
+              title="Otorgar nuevo turno [N]"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Agendar Turno</span>
+              <kbd className="hidden md:inline-block ml-1 px-1.5 py-0.2 bg-white/20 rounded text-[9px] font-mono">N</kbd>
+            </button>
+          </div>
+        </div>
+
+        {/* NIVEL 2: VISTAS SEGMENTADAS & FILTROS DE PRECISIÓN */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-0.5">
+          
+          {/* Pestañas de Vista Segmentadas */}
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-2xl border border-slate-200/80 shadow-inner">
+            {[
+              { id: 'diaria', label: 'Diaria', icon: '📋' },
+              { id: 'timeline', label: 'Timeline Hoy', icon: '⏱️' },
+              { id: 'timeline_semanal', label: 'Timeline Semanal', icon: '📅' },
+              { id: 'futuros', label: 'Futuros', icon: '🔮' }
+            ].map(m => (
+              <button 
+                key={m.id} 
+                onClick={() => setViewMode(m.id)} 
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === m.id 
+                    ? 'bg-white text-slate-900 shadow-xs font-black ring-1 ring-slate-200/70' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <span>{m.icon}</span>
+                <span>{m.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Filtros Contextuales Secundarios */}
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Filtro por Especialidad */}
             <select 
               value={selectedServicioFilter} 
               onChange={(e) => setSelectedServicioFilter(e.target.value)} 
-              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-700 hidden sm:inline-block max-w-[140px] truncate"
+              className="px-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 text-slate-700 hover:bg-white transition max-w-[150px] truncate"
             >
-              <option value="">Especialidad</option>
+              <option value="">🩺 Especialidad (Todas)</option>
               {servicios.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
             </select>
 
             {/* Selector de Intervalo / Paso */}
-            <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200/60 text-xs font-bold">
+            <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200/70 text-xs font-bold">
+              <span className="text-[10px] font-extrabold uppercase text-slate-400 px-1.5">Paso:</span>
               {[
                 { id: 'auto', label: 'Auto' },
                 { id: '15', label: '15m' },
@@ -487,7 +603,7 @@ export const AgendaView = () => {
                 <button
                   key={r.id}
                   onClick={() => setSlotResolution(r.id)}
-                  className={`px-1.5 py-0.5 rounded-md text-[11px] transition cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-lg text-[11px] transition cursor-pointer ${
                     slotResolution === r.id 
                       ? 'bg-white text-slate-900 shadow-2xs font-black' 
                       : 'text-slate-500 hover:text-slate-900'
@@ -498,74 +614,33 @@ export const AgendaView = () => {
               ))}
             </div>
 
-            {/* Búsqueda Rápida de Pacientes */}
-            <div className="relative">
-              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input 
-                type="text" 
-                placeholder="Buscar paciente / DNI..." 
-                value={searchPatientQuery} 
-                onChange={(e) => setSearchPatientQuery(e.target.value)} 
-                className="pl-7 pr-2.5 py-1 border border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:ring-2 focus:ring-medical-500 w-36 sm:w-44" 
-              />
-            </div>
-          </div>
-
-          {/* GRUPO DERECHO: ACCIONES DIRECTAS DE SECRETARÍA */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Paquete de Sesiones */}
-            <button 
-              onClick={() => setShowRecurrenteModal(true)} 
-              className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1 shadow-2xs"
-              title="Agendar paquete de sesiones periódicas"
-            >
-              <Repeat className="w-3.5 h-3.5 text-purple-600" />
-              <span>+ Sesiones</span>
-            </button>
-
-            {/* Botón Próximo Turno Libre */}
-            <button 
-              onClick={handleOpenProximoLibre} 
-              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1 shadow-2xs"
-              title="Buscar el turno libre más próximo del médico o de cualquier profesional"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>⚡ Próximo Libre</span>
-            </button>
-
-            <button 
-              onClick={() => handleOpenNuevoTurno()} 
-              className="px-3.5 py-1 bg-medical-600 hover:bg-medical-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Turno</span>
-            </button>
-
             {/* Toggle de Métricas / KPIs */}
             <button 
               onClick={() => setShowKpis(!showKpis)} 
-              className={`p-1.5 rounded-xl border text-xs font-bold transition cursor-pointer flex items-center gap-1 ${
-                showKpis ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+              className={`px-2.5 py-1 rounded-xl border text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                showKpis ? 'bg-slate-900 text-white border-slate-900 shadow-2xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
               }`}
               title="Mostrar u ocultar métricas de la agenda"
             >
               <Users className="w-3.5 h-3.5" />
-              <span className="text-[11px] hidden md:inline">{kpisDia.total} citados</span>
+              <span className="text-[11px] font-black">{kpisDia.total} citados</span>
             </button>
 
+            {/* Botón Configurar Horarios */}
             <button 
               onClick={() => setShowConfigAgendaModal(true)} 
-              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 transition cursor-pointer" 
+              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs" 
               title="Configurar Horarios del Médico"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Horarios</span>
             </button>
           </div>
         </div>
 
         {/* DRAWER COLAPSABLE DE MÉTRICAS (SOLO SE ABRE CUANDO EL USUARIO LO PIDE) */}
         {showKpis && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2.5 border-t border-slate-100 animate-in fade-in duration-150">
             {[
               { id: 'ALL', l: 'Total Citados', v: kpisDia.total, bg: 'hover:bg-slate-100' },
               { id: 'EN_ESPERA', l: 'En Sala Espera', v: kpisDia.enEspera, bg: 'text-amber-900', dot: 'bg-amber-500' },
@@ -577,7 +652,7 @@ export const AgendaView = () => {
               <button 
                 key={k.id} 
                 onClick={() => setActiveKpiFilter(activeKpiFilter === k.id ? 'ALL' : k.id)} 
-                className={`p-2 rounded-xl border text-left transition cursor-pointer ${
+                className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
                   activeKpiFilter === k.id 
                     ? 'bg-slate-900 text-white border-slate-900 shadow-xs' 
                     : 'bg-slate-50 border-slate-200/70 hover:border-slate-300'
@@ -900,14 +975,19 @@ export const AgendaView = () => {
                   <div 
                     key={diaStr} 
                     onClick={() => setCurrentDate(diaStr)}
-                    className={`p-2.5 rounded-2xl border text-center transition cursor-pointer ${
-                      isSelectedDay ? 'bg-medical-600 text-white border-medical-600 shadow-sm' : 'bg-slate-50 border-slate-200/80 hover:bg-white hover:border-medical-300'
+                    className={`p-2.5 rounded-2xl border text-center transition cursor-pointer relative overflow-hidden ${
+                      isSelectedDay 
+                        ? 'bg-gradient-to-b from-medical-50 via-white to-medical-50/40 border-2 border-medical-600 shadow-xs ring-2 ring-medical-500/20' 
+                        : 'bg-slate-50 border-slate-200/80 hover:bg-white hover:border-medical-300 hover:shadow-2xs'
                     }`}
                   >
-                    <span className="text-[11px] block uppercase font-black tracking-wider">
+                    {isSelectedDay && (
+                      <span className="absolute top-0 inset-x-0 h-1 bg-medical-600" />
+                    )}
+                    <span className={`text-[11px] block uppercase font-black tracking-wider ${isSelectedDay ? 'text-medical-800' : 'text-slate-500'}`}>
                       {dateObj.toLocaleDateString('es-AR', { weekday: 'short' })}
                     </span>
-                    <strong className="text-sm font-black block leading-none my-0.5">
+                    <strong className={`text-base font-black block leading-tight my-0.5 ${isSelectedDay ? 'text-medical-950' : 'text-slate-900'}`}>
                       {diaStr.split('-')[2]}
                     </strong>
                     
@@ -915,25 +995,33 @@ export const AgendaView = () => {
                     <div className="mt-1">
                       {tieneAtencion ? (
                         <div className="space-y-0.5">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-white/20 text-white' : 'bg-emerald-100/70 text-emerald-800'}`}>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block ${isSelectedDay ? 'bg-medical-600 text-white' : 'bg-emerald-100/80 text-emerald-900'}`}>
                             {horariosDia[0].hora_inicio} - {horariosDia[0].hora_fin}
                           </span>
                           {selectedCentroFilter === 'TODOS' && sedeDia && (
-                            <span className={`text-[8px] font-extrabold block truncate ${isSelectedDay ? 'text-white/80' : 'text-blue-600'}`}>
+                            <span className={`text-[8px] font-extrabold block truncate ${isSelectedDay ? 'text-medical-700' : 'text-sky-700'}`}>
                               📍 {sedeDia.nombre.split('-')[0]}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className={`text-[9px] font-semibold ${isSelectedDay ? 'text-white/60' : 'text-slate-400'}`}>
+                        <span className="text-[9px] font-semibold text-slate-400">
                           Sin atención
                         </span>
                       )}
                     </div>
 
-                    <span className={`text-[10px] font-bold block mt-0.5 ${isSelectedDay ? 'text-white/90' : 'text-slate-500'}`}>
-                      {turnosDelDiaCount} {turnosDelDiaCount === 1 ? 'turno' : 'turnos'}
-                    </span>
+                    <div className="mt-1">
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full inline-block ${
+                        isSelectedDay 
+                          ? 'bg-slate-900 text-white' 
+                          : turnosDelDiaCount > 0 
+                          ? 'bg-medical-100 text-medical-900' 
+                          : 'text-slate-400 bg-slate-100'
+                      }`}>
+                        {turnosDelDiaCount} {turnosDelDiaCount === 1 ? 'turno' : 'turnos'}
+                      </span>
+                    </div>
                   </div>
                 );
               })}
@@ -972,11 +1060,17 @@ export const AgendaView = () => {
                           <div 
                             key={diaStr} 
                             onClick={() => handleOpenNuevoTurno(targetProfId, slotTime, diaStr)} 
-                            className="p-1.5 border border-dashed border-emerald-300/80 bg-emerald-50/30 rounded-xl text-center text-emerald-800 hover:text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100/60 cursor-pointer transition text-xs font-bold group"
+                            className="p-1.5 border border-emerald-200/90 bg-emerald-50/40 hover:bg-emerald-100/80 hover:border-emerald-500 rounded-xl text-center text-emerald-900 hover:shadow-2xs cursor-pointer transition text-xs font-bold group"
                             title={`Agendar turno libre el ${diaStr} a las ${slotTime}`}
                           >
-                            <span className="group-hover:hidden text-[10px] text-emerald-700 font-semibold">+ Libre</span>
-                            <span className="hidden group-hover:inline-flex items-center gap-1 font-black text-emerald-900 text-[10px]"><Plus className="w-3 h-3" /> Agendar {slotTime}</span>
+                            <span className="group-hover:hidden text-[10px] text-emerald-700 font-bold tracking-wide flex items-center justify-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <span>Libre</span>
+                            </span>
+                            <span className="hidden group-hover:inline-flex items-center justify-center gap-1 font-black text-emerald-950 text-[10px]">
+                              <Plus className="w-3 h-3 text-emerald-700" />
+                              <span>+ {slotTime}</span>
+                            </span>
                           </div>
                         );
                       }

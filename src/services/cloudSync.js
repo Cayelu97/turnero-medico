@@ -101,8 +101,8 @@ export const CloudSyncService = {
     }
   },
 
-  // Descargar estado más reciente de Supabase (con protección de sobreescritura)
-  pullFromCloud: async (force = false) => {
+  // Descargar estado más reciente de Supabase
+  pullFromCloud: async (force = true) => {
     try {
       const { data, error } = await supabase
         .from('app_sync')
@@ -115,25 +115,23 @@ export const CloudSyncService = {
         return { success: false, message: error.message };
       }
 
-      if (data && data.payload) {
+      if (data && data.payload && typeof data.payload === 'object') {
         const lastSync = localStorage.getItem('mediturnos_last_cloud_sync');
         
-        // Si no es forzado y local ya tiene datos más recientes o iguales, no pisar
+        // Si no es forzado y local ya tiene datos más recientes, omitir
         if (!force && lastSync && data.updated_at && data.updated_at <= lastSync) {
           return { success: false, message: 'Los datos locales ya están actualizados.' };
         }
 
-        // Si local tiene consultorios o agendas cargadas y cloud es viejo, no pisar
-        const localConsultorios = localStorage.getItem('mediturnos_consultorios');
-        if (!force && localConsultorios && (!data.updated_at || data.updated_at < '2026-08-26')) {
-          // Push local to cloud instead
-          CloudSyncService.pushToCloud();
-          return { success: false, message: 'Se preservó el estado local más reciente.' };
-        }
-
+        // Aplicar payload de la nube a LocalStorage
         CloudSyncService.applyRemotePayload(data.payload);
         localStorage.setItem('mediturnos_last_cloud_sync', data.updated_at || new Date().toISOString());
-        return { success: true, timestamp: data.updated_at };
+        return { 
+          success: true, 
+          timestamp: data.updated_at,
+          turnosCount: data.payload.mediturnos_turnos?.length || 0,
+          clinicasCount: data.payload.mediturnos_clinicas_list?.length || 0
+        };
       }
 
       return { success: false, message: 'No hay datos previos en la nube.' };

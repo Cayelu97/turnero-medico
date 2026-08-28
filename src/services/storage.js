@@ -408,7 +408,7 @@ export const INITIAL_DATA = {
       activo: true
     },
     {
-      id: 'prof-psi-3',
+      id: 'prof-1786315328730',
       clinica_id: 'clinica-1',
       sedes_ids: ['clinica-1', 'clinica-2', 'clinica-3', 'clinica-4'],
       nombre: 'Nahuel',
@@ -417,58 +417,28 @@ export const INITIAL_DATA = {
       matricula_nacional: 'MN 46.520',
       especialidad: 'Psicología y Salud Mental',
       especialidad_id: 'esp-0',
-      servicios_ids: ['serv-0a', 'serv-0b', 'serv-0c'],
-      email: 'nlopez@centrosanlucas.com.ar',
+      servicios_ids: ['serv-1786315370753'],
+      email: 'nlopez@saludnet.com.ar',
       telefono: '351 445-9922',
-      duracion_turno_minutos: 45,
+      duracion_turno_minutos: 60,
       max_sobreturnos_dia: 2,
       color_agenda: '#0ea5e9',
-      obras_sociales_ids: ['os-1', 'os-apross', 'os-cppc', 'os-2', 'os-3'],
-      atiende_particular: true,
-      atiende_online: true,
-      activo: true
-    },
-    {
-      id: 'prof-1',
-      clinica_id: 'clinica-1',
-      sedes_ids: ['clinica-1', 'clinica-2', 'clinica-3', 'clinica-4'],
-      nombre: 'Martín',
-      apellido: 'Pérez Rossi',
-      matricula_nacional: 'MN 114.829',
-      matricula_provincial: 'MP 45.291',
-      especialidad: 'Cardiología',
-      especialidad_id: 'esp-1',
-      servicios_ids: ['serv-1', 'serv-2'],
-      email: 'mperez@centrosanlucas.com.ar',
-      telefono: '351 5521-4411',
-      duracion_turno_minutos: 20,
-      max_sobreturnos_dia: 4,
-      color_agenda: '#0284c7',
-      obras_sociales_ids: ['os-1', 'os-apross', 'os-2', 'os-3', 'os-4', 'os-5', 'os-8'],
+      obras_sociales_ids: ['os-sancor', 'os-apross', 'os-cppc', 'os-1', 'os-2', 'os-3'],
       atiende_particular: true,
       atiende_online: true,
       activo: true
     }
   ],
   horarios: [
-    // Dr. Martín Pérez Rossi: Distribuido en las 4 Sedes
-    { id: 'h-1', profesional_id: 'prof-1', clinica_id: 'clinica-1', servicio_id: 'serv-1', consultorio_id: 'c-1-2', dia_semana: 1, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-2', profesional_id: 'prof-1', clinica_id: 'clinica-2', servicio_id: 'serv-1', consultorio_id: 'c-2-2', dia_semana: 2, hora_inicio: '09:00', hora_fin: '14:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-3', profesional_id: 'prof-1', clinica_id: 'clinica-3', servicio_id: 'serv-1', consultorio_id: 'c-3-2', dia_semana: 3, hora_inicio: '14:00', hora_fin: '19:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-4', profesional_id: 'prof-1', clinica_id: 'clinica-4', servicio_id: 'serv-1', consultorio_id: 'c-4-1', dia_semana: 4, hora_inicio: '08:00', hora_fin: '13:00', duracion_slot_min: 20, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-5', profesional_id: 'prof-1', clinica_id: 'clinica-1', servicio_id: 'serv-1', consultorio_id: 'c-1-2', dia_semana: 5, hora_inicio: '14:00', hora_fin: '18:00', duracion_slot_min: 20, modalidad: 'ONLINE', activo: true },
-
-    // Lic. Nahuel López: Distribuido en las 4 Sedes
-    { id: 'h-nl-1', profesional_id: 'prof-psi-3', clinica_id: 'clinica-1', servicio_id: 'serv-0a', consultorio_id: 'c-1-1', dia_semana: 1, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-2', profesional_id: 'prof-psi-3', clinica_id: 'clinica-2', servicio_id: 'serv-0a', consultorio_id: 'c-2-1', dia_semana: 2, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-3', profesional_id: 'prof-psi-3', clinica_id: 'clinica-3', servicio_id: 'serv-0a', consultorio_id: 'c-3-1', dia_semana: 3, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
-    { id: 'h-nl-4', profesional_id: 'prof-psi-3', clinica_id: 'clinica-4', servicio_id: 'serv-0a', consultorio_id: 'c-4-2', dia_semana: 4, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-nl-5', profesional_id: 'prof-psi-3', clinica_id: 'clinica-1', servicio_id: 'serv-0a', consultorio_id: 'c-1-1', dia_semana: 5, hora_inicio: '08:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'AMBAS', activo: true },
-
-    // Lic. Sofía Albarracín: Lunes Sede Central, Miércoles Sede Norte, Jueves Sede Nva Cba
-    { id: 'h-psi-1', profesional_id: 'prof-psi-1', clinica_id: 'clinica-1', servicio_id: 'serv-0a', consultorio_id: 'c-1-1', dia_semana: 1, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
-    { id: 'h-psi-2', profesional_id: 'prof-psi-1', clinica_id: 'clinica-2', servicio_id: 'serv-0a', consultorio_id: 'c-2-1', dia_semana: 3, hora_inicio: '09:00', hora_fin: '15:00', duracion_slot_min: 45, modalidad: 'ONLINE', activo: true },
-    { id: 'h-psi-3', profesional_id: 'prof-psi-1', clinica_id: 'clinica-3', servicio_id: 'serv-0b', consultorio_id: 'c-3-1', dia_semana: 4, hora_inicio: '15:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'AMBAS', activo: true }
+    // Lic. Nahuel López: Horarios Reales desde las 09:00 hs
+    { id: 'h-lopez-aipaa-lun', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-1', servicio_id: 'serv-1786315370753', consultorio_id: 'c-1-1', dia_semana: 1, hora_inicio: '09:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-lopez-colon-mar', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-2', servicio_id: 'serv-1786315370753', consultorio_id: 'c-2-1', dia_semana: 2, hora_inicio: '09:00', hora_fin: '14:00', duracion_slot_min: 45, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-lopez-inti-mar', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-3', servicio_id: 'serv-1786315370753', consultorio_id: 'c-3-1', dia_semana: 2, hora_inicio: '14:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-lopez-aipaa-mie', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-1', servicio_id: 'serv-1786315370753', consultorio_id: 'c-1-1', dia_semana: 3, hora_inicio: '11:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-lopez-online-jue', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-4', servicio_id: 'serv-1786315370753', consultorio_id: 'c-4-1', dia_semana: 4, hora_inicio: '09:00', hora_fin: '12:00', duracion_slot_min: 60, modalidad: 'ONLINE', activo: true },
+    { id: 'h-lopez-aipaa-jue', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-1', servicio_id: 'serv-1786315370753', consultorio_id: 'c-1-1', dia_semana: 4, hora_inicio: '13:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-lopez-colon-vie', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-2', servicio_id: 'serv-1786315370753', consultorio_id: 'c-2-1', dia_semana: 5, hora_inicio: '09:00', hora_fin: '12:00', duracion_slot_min: 60, modalidad: 'PRESENCIAL', activo: true },
+    { id: 'h-lopez-inti-vie', profesional_id: 'prof-1786315328730', clinica_id: 'clinica-3', servicio_id: 'serv-1786315370753', consultorio_id: 'c-3-1', dia_semana: 5, hora_inicio: '13:00', hora_fin: '20:00', duracion_slot_min: 60, modalidad: 'PRESENCIAL', activo: true }
   ],
   bloqueos: [
     { id: 'b-1', clinica_id: 'clinica-1', profesional_id: null, consultorio_id: null, tipo: 'FERIADO_NACIONAL', fecha_inicio: '2026-01-01', fecha_fin: '2026-01-01', motivo: 'Año Nuevo' },
@@ -526,109 +496,72 @@ export const INITIAL_DATA = {
       alergias: 'Penicilina',
       antecedentes: 'Psicoterapia por duelo reciente y estrés laboral',
       medicacion_habitual: 'Ninguna'
+    },
+    {
+      id: 'pac-1787870676906',
+      clinica_id: 'clinica-1',
+      dni: '35894120',
+      nombre: 'Agustina',
+      apellido: 'Benítez',
+      edad: 29,
+      telefono_whatsapp: '+54 9 351 552-3344',
+      email: 'agustina.benitez@gmail.com',
+      domicilio: 'Av. Colón 1400, Córdoba',
+      obra_social_id: 'os-sancor',
+      obra_social_nombre: 'Sancor Salud',
+      plan_id: 'pl-sancor-500',
+      numero_afiliado: '1350025',
+      activo: true
     }
   ],
-  turnos: []
+  turnos: [
+    {
+      id: 'trn-1787870676907',
+      fecha: '2026-08-31',
+      hora_inicio: '09:00',
+      hora_fin: '10:00',
+      fecha_hora_inicio: '2026-08-31T09:00:00',
+      fecha_hora_fin: '2026-08-31T10:00:00',
+      clinica_id: 'clinica-1',
+      profesional_id: 'prof-1786315328730',
+      paciente_id: 'pac-1787870676906',
+      consultorio_id: 'c-1-1',
+      servicio_id: 'serv-1786315370753',
+      practica_id: 'nom-psi-1',
+      obra_social_id: 'os-sancor',
+      obra_social_nombre: 'Sancor Salud',
+      plan_id: 'pl-sancor-500',
+      numero_afiliado: '1350025',
+      estado: 'PROGRAMADO',
+      es_sobreturno: false,
+      monto_coseguro: 0,
+      estado_coseguro: 'EXENTO',
+      codigo_reserva: 'TRN-22698',
+      observaciones: 'Turno programado de Psicología',
+      confirmado_whatsapp: false
+    }
+  ]
 };
 
 // Agendas Iniciales Profesionales (Con Vigencia y Días Deterministas por Sede)
 export const INITIAL_AGENDAS = [
-  // Dr. Martín Pérez Rossi: 4 agendas (una por sede)
-  {
-    id: 'ag-med-1',
-    clinica_id: 'clinica-1',
-    profesional_id: 'prof-1',
-    servicio_id: 'serv-1',
-    consultorio_id: 'c-1-2',
-    nombre: 'Sede Central - Lunes y Viernes',
-    fecha_desde: '2026-01-01',
-    fecha_hasta: null,
-    duracion_slot_min: 20,
-    modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 4,
-    dias_horarios: [
-      { dia_semana: 1, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 5, franjas: [{ hora_inicio: '14:00', hora_fin: '18:00', modalidad: 'ONLINE' }] }
-    ],
-    estado: 'ACTIVA',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  },
-  {
-    id: 'ag-med-2',
-    clinica_id: 'clinica-2',
-    profesional_id: 'prof-1',
-    servicio_id: 'serv-1',
-    consultorio_id: 'c-2-2',
-    nombre: 'Sede Norte - Martes',
-    fecha_desde: '2026-01-01',
-    fecha_hasta: null,
-    duracion_slot_min: 20,
-    modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 3,
-    dias_horarios: [
-      { dia_semana: 2, franjas: [{ hora_inicio: '09:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] }
-    ],
-    estado: 'ACTIVA',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  },
-  {
-    id: 'ag-med-3',
-    clinica_id: 'clinica-3',
-    profesional_id: 'prof-1',
-    servicio_id: 'serv-1',
-    consultorio_id: 'c-3-2',
-    nombre: 'Sede Nueva Córdoba - Miércoles',
-    fecha_desde: '2026-01-01',
-    fecha_hasta: null,
-    duracion_slot_min: 20,
-    modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 3,
-    dias_horarios: [
-      { dia_semana: 3, franjas: [{ hora_inicio: '14:00', hora_fin: '19:00', modalidad: 'PRESENCIAL' }] }
-    ],
-    estado: 'ACTIVA',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  },
-  {
-    id: 'ag-med-4',
-    clinica_id: 'clinica-4',
-    profesional_id: 'prof-1',
-    servicio_id: 'serv-1',
-    consultorio_id: 'c-4-1',
-    nombre: 'Sede Villa Belgrano - Jueves',
-    fecha_desde: '2026-01-01',
-    fecha_hasta: null,
-    duracion_slot_min: 20,
-    modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 3,
-    dias_horarios: [
-      { dia_semana: 4, franjas: [{ hora_inicio: '08:00', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] }
-    ],
-    estado: 'ACTIVA',
-    created_at: '2026-01-01T08:00:00Z',
-    updated_at: '2026-01-01T08:00:00Z'
-  },
-
-  // Lic. Nahuel López: 4 agendas exactas según cronograma multi-sede
+  // Lic. Nahuel López: 4 Agendas Reales en las 4 Sedes (Inicios desde las 09:00 hs)
   {
     id: 'ag-lopez-aipaa',
     clinica_id: 'clinica-1',
-    profesional_id: 'prof-psi-3',
-    servicio_id: 'serv-0a',
+    profesional_id: 'prof-1786315328730',
+    servicio_id: 'serv-1786315370753',
     consultorio_id: 'c-1-1',
-    nombre: 'Atención en Aipaa 355',
+    nombre: 'Aipaa 355 - Lunes, Miércoles y Jueves',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
-    duracion_slot_min: 45,
+    duracion_slot_min: 60,
     modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 3,
+    max_sobreturnos_dia: 2,
     dias_horarios: [
-      { dia_semana: 1, franjas: [{ hora_inicio: '09:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 3, franjas: [{ hora_inicio: '11:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 4, franjas: [{ hora_inicio: '13:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] }
+      { dia_semana: 1, franjas: [{ hora_inicio: '09:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 3, franjas: [{ hora_inicio: '11:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 4, franjas: [{ hora_inicio: '13:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
@@ -637,18 +570,18 @@ export const INITIAL_AGENDAS = [
   {
     id: 'ag-lopez-colon',
     clinica_id: 'clinica-2',
-    profesional_id: 'prof-psi-3',
-    servicio_id: 'serv-0a',
+    profesional_id: 'prof-1786315328730',
+    servicio_id: 'serv-1786315370753',
     consultorio_id: 'c-2-1',
-    nombre: 'Atención en Circulare COLON',
+    nombre: 'Circulare COLON - Martes y Viernes',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
     duracion_slot_min: 45,
     modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 3,
+    max_sobreturnos_dia: 2,
     dias_horarios: [
       { dia_semana: 2, franjas: [{ hora_inicio: '09:00', hora_fin: '14:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 5, franjas: [{ hora_inicio: '08:30', hora_fin: '13:00', modalidad: 'PRESENCIAL' }] }
+      { dia_semana: 5, franjas: [{ hora_inicio: '09:00', hora_fin: '12:00', modalidad: 'PRESENCIAL' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
@@ -657,18 +590,18 @@ export const INITIAL_AGENDAS = [
   {
     id: 'ag-lopez-inti',
     clinica_id: 'clinica-3',
-    profesional_id: 'prof-psi-3',
-    servicio_id: 'serv-0a',
+    profesional_id: 'prof-1786315328730',
+    servicio_id: 'serv-1786315370753',
     consultorio_id: 'c-3-1',
-    nombre: 'Atención en Inti Carrara',
+    nombre: 'Inti Carrara - Martes y Viernes Tarde',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
-    duracion_slot_min: 45,
+    duracion_slot_min: 60,
     modalidad: 'PRESENCIAL',
-    max_sobreturnos_dia: 3,
+    max_sobreturnos_dia: 2,
     dias_horarios: [
-      { dia_semana: 2, franjas: [{ hora_inicio: '14:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] },
-      { dia_semana: 5, franjas: [{ hora_inicio: '13:00', hora_fin: '21:00', modalidad: 'PRESENCIAL' }] }
+      { dia_semana: 2, franjas: [{ hora_inicio: '14:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] },
+      { dia_semana: 5, franjas: [{ hora_inicio: '13:00', hora_fin: '20:00', modalidad: 'PRESENCIAL' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
@@ -677,17 +610,17 @@ export const INITIAL_AGENDAS = [
   {
     id: 'ag-lopez-online',
     clinica_id: 'clinica-4',
-    profesional_id: 'prof-psi-3',
-    servicio_id: 'serv-0a',
+    profesional_id: 'prof-1786315328730',
+    servicio_id: 'serv-1786315370753',
     consultorio_id: 'c-4-1',
-    nombre: 'Atención en online CASA',
+    nombre: 'online CASA - Jueves Mañana',
     fecha_desde: '2026-01-01',
     fecha_hasta: null,
-    duracion_slot_min: 45,
+    duracion_slot_min: 60,
     modalidad: 'ONLINE',
-    max_sobreturnos_dia: 3,
+    max_sobreturnos_dia: 2,
     dias_horarios: [
-      { dia_semana: 4, franjas: [{ hora_inicio: '08:30', hora_fin: '13:00', modalidad: 'ONLINE' }] }
+      { dia_semana: 4, franjas: [{ hora_inicio: '09:00', hora_fin: '12:00', modalidad: 'ONLINE' }] }
     ],
     estado: 'ACTIVA',
     created_at: '2026-01-01T08:00:00Z',
@@ -824,7 +757,7 @@ export const initLocalStorage = () => {
   // Verificación no destructiva de las 4 sedes y profesionales multi-sede
   try {
     const clinicasList = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLINICAS_LIST) || '[]');
-    if (!Array.isArray(clinicasList) || clinicasList.length < 4) {
+    if (!Array.isArray(clinicasList) || clinicasList.length === 0) {
       localStorage.setItem(STORAGE_KEYS.CLINICAS_LIST, JSON.stringify(INITIAL_CLINICAS));
       if (!localStorage.getItem(STORAGE_KEYS.CLINICA)) {
         localStorage.setItem(STORAGE_KEYS.CLINICA, JSON.stringify(INITIAL_CLINICAS[0]));
@@ -1072,7 +1005,7 @@ export const StorageService = {
   // CONSULTORIOS FÍSICOS (Filtrados por clínica o todas)
   getConsultorios: (clinicaId = null) => {
     let all = StorageService.getCollection(STORAGE_KEYS.CONSULTORIOS);
-    if (!all || all.length === 0) {
+    if (!all || !Array.isArray(all)) {
       all = [...INITIAL_DATA.consultorios];
       StorageService.saveCollection(STORAGE_KEYS.CONSULTORIOS, all);
     }
@@ -1246,7 +1179,7 @@ export const StorageService = {
   // PROFESIONALES (Multi-Sede)
   getProfesionales: (clinicaId = null) => {
     let all = StorageService.getCollection(STORAGE_KEYS.PROFESIONALES);
-    if (!all || all.length === 0) {
+    if (!all || !Array.isArray(all)) {
       all = [...INITIAL_DATA.profesionales];
       StorageService.saveCollection(STORAGE_KEYS.PROFESIONALES, all);
     }

@@ -9,10 +9,8 @@ const AppContext = createContext();
 export const AppProvider = ({ children }) => {
   useEffect(() => {
     initLocalStorage();
-    CloudSyncService.pullFromCloud().then(res => {
-      if (res && res.success) {
-        refreshAll();
-      }
+    CloudSyncService.pullFromCloud(true).then(res => {
+      refreshAll();
     });
   }, []);
 
@@ -25,7 +23,7 @@ export const AppProvider = ({ children }) => {
   const [allClinicas, setAllClinicas] = useState(() => StorageService.getClinicasList());
   const [currentUser, setCurrentUserState] = useState(() => StorageService.getCurrentUser());
 
-  // Entidades principales (aisladas por clinica activa)
+  // Entidades principales (todas las colecciones maestras sincronizadas con Supabase)
   const [especialidades, setEspecialidades] = useState(() => StorageService.getEspecialidades());
   const [servicios, setServicios] = useState(() => StorageService.getServicios());
   const [consultorios, setConsultorios] = useState(() => StorageService.getConsultorios());
@@ -56,7 +54,7 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Refrescar todas las colecciones
+  // Refrescar todas las colecciones desde Storage / Supabase
   const refreshAll = () => {
     const clin = StorageService.getClinicaActiva();
     setActiveClinicaState(clin);
@@ -64,25 +62,25 @@ export const AppProvider = ({ children }) => {
     setCurrentUserState(StorageService.getCurrentUser());
     setUsers(StorageService.getUsers());
     setEspecialidades(StorageService.getEspecialidades());
-    setServicios(StorageService.getServicios(clin.id));
-    setConsultorios(StorageService.getConsultorios(clin.id));
-    setObrasSociales(StorageService.getObrasSociales(clin.id));
+    setServicios(StorageService.getServicios());
+    setConsultorios(StorageService.getConsultorios());
+    setObrasSociales(StorageService.getObrasSociales());
     setPlanes(StorageService.getPlanes());
-    setNomenclador(StorageService.getNomenclador(clin.id));
+    setNomenclador(StorageService.getNomenclador());
     setConveniosCoseguros(StorageService.getConveniosCoseguros());
-    setProfesionales(StorageService.getProfesionales(clin.id));
-    setAgendas(StorageService.getAgendas(clin.id));
+    setProfesionales(StorageService.getProfesionales());
+    setAgendas(StorageService.getAgendas());
     setHorarios(StorageService.getHorarios());
-    setBloqueos(StorageService.getBloqueos(clin.id));
-    setPacientes(StorageService.getPacientes(clin.id));
-    setTurnos(StorageService.getTurnos(clin.id));
+    setBloqueos(StorageService.getBloqueos());
+    setPacientes(StorageService.getPacientes());
+    setTurnos(StorageService.getTurnos());
     setMotivos(StorageService.getMotivos());
     setAtencionesHce(StorageService.getAtencionesHce());
     setTvCalls(StorageService.getTvCalls());
-    setMovimientosCaja(StorageService.getMovimientosCaja(clin.id));
-    setLotesFacturacion(StorageService.getLotesFacturacion(clin.id));
-    setComprobantesArca(ArcaService.getComprobantes(clin.id));
-    setConsentimientos(StorageService.getConsentimientos(clin.id));
+    setMovimientosCaja(StorageService.getMovimientosCaja());
+    setLotesFacturacion(StorageService.getLotesFacturacion());
+    setComprobantesArca(ArcaService.getComprobantes());
+    setConsentimientos(StorageService.getConsentimientos());
   };
 
   // ABM Motivos de Cancelación / Reprogramación

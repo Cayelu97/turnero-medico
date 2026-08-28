@@ -1,0 +1,3979 @@
+[
+  {
+    "id": "pac-41679246",
+    "clinica_id": "clinica-1",
+    "dni": "41679246",
+    "nombre": "Anastasia",
+    "apellido": "Molina",
+    "nombre_completo": "Anastasia molina",
+    "edad": "",
+    "telefono_whatsapp": "3888670604",
+    "email": "anastasiamolina06@gmail.com",
+    "domicilio": "Tristán Narvaja 2389",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755501-1743",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3888403804",
+        "es_principal": true,
+        "notas": "3888403804"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "05/04/2023"
+    },
+    "marca_temporal_registro": "05/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-35018580",
+    "clinica_id": "clinica-1",
+    "dni": "35018580",
+    "nombre": "Romina Scolari",
+    "apellido": "Ivana",
+    "nombre_completo": "Ivana Romina Scolari",
+    "edad": "",
+    "telefono_whatsapp": "3512519314",
+    "email": "scolariromi@gmail.com",
+    "domicilio": "Barrio San Martín",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755501-4025",
+        "nombre": "Cinthia",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513230725",
+        "es_principal": true,
+        "notas": "3513230725 Cinthia"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "APROSS y DASPU"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "06/04/2023"
+    },
+    "marca_temporal_registro": "06/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-35636703",
+    "clinica_id": "clinica-1",
+    "dni": "35636703",
+    "nombre": "Martín Nicolas",
+    "apellido": "Guevara",
+    "nombre_completo": "Guevara Martín Nicolas",
+    "edad": "",
+    "telefono_whatsapp": "3548500456",
+    "email": "mniguevara0702@gmail.com",
+    "domicilio": "Roque Sáenz Peña 860",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-8403",
+        "nombre": "Liliana Guevara",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 3548 43-0261",
+        "es_principal": true,
+        "notas": "+54 9 3548 43-0261 Liliana guevara"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/04/2023"
+    },
+    "marca_temporal_registro": "08/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36925195",
+    "clinica_id": "clinica-1",
+    "dni": "36925195",
+    "nombre": "Miguel Angel",
+    "apellido": "Pérez Arevalo",
+    "nombre_completo": "Miguel angel Pérez arevalo",
+    "edad": "",
+    "telefono_whatsapp": "3518751215",
+    "email": "letreroselfaro@gmail.com",
+    "domicilio": "Mza 10 lote 39 barrio cabildo anexo",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-845",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3518751215",
+        "es_principal": true,
+        "notas": "3518751215"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "EMI emergencia"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "09/04/2023"
+    },
+    "marca_temporal_registro": "09/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-29475270",
+    "clinica_id": "clinica-1",
+    "dni": "29475270",
+    "nombre": "Benjamín Rumualdo",
+    "apellido": "Facundo",
+    "nombre_completo": "Facundo Benjamín Rumualdo",
+    "edad": "",
+    "telefono_whatsapp": "3517592480",
+    "email": "rumualdofacundo@gmail.com",
+    "domicilio": "Molinari Romero 1253 piso 2",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-950",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516843876",
+        "es_principal": true,
+        "notas": "3516843876"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "11/04/2023"
+    },
+    "marca_temporal_registro": "11/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41265488",
+    "clinica_id": "clinica-1",
+    "dni": "41265488",
+    "nombre": "Emanuel Heredia",
+    "apellido": "Leandro",
+    "nombre_completo": "Leandro emanuel Heredia",
+    "edad": "",
+    "telefono_whatsapp": "3516564800",
+    "email": "leandroheredia1998@gmail.com",
+    "domicilio": "Pincen 750",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-9431",
+        "nombre": "Veronica Heredia",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "0351 6658267",
+        "es_principal": true,
+        "notas": "Veronica Heredia - 0351 6658267"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "11/04/2023"
+    },
+    "marca_temporal_registro": "11/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-44673515",
+    "clinica_id": "clinica-1",
+    "dni": "44673515",
+    "nombre": "Emanuel Giovanini",
+    "apellido": "Matias",
+    "nombre_completo": "Matias Emanuel Giovanini",
+    "edad": "",
+    "telefono_whatsapp": "3536561289",
+    "email": "matiasgiova03@gmail.com",
+    "domicilio": "Malagueño. Valle del Golf, Manzana 27 Lote 5",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-5042",
+        "nombre": "Carina Priotti",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3532403259",
+        "es_principal": true,
+        "notas": "3532403259 Carina Priotti"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "15/04/2023"
+    },
+    "marca_temporal_registro": "15/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-43714129",
+    "clinica_id": "clinica-1",
+    "dni": "43714129",
+    "nombre": "Mateo",
+    "apellido": "Pompei",
+    "nombre_completo": "Mateo Pompei",
+    "edad": "",
+    "telefono_whatsapp": "3462414856",
+    "email": "mateopompei@gmail.com",
+    "domicilio": "Obispo Oro 440, 11F",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-6423",
+        "nombre": "Maria Ines Arloro",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3462 41 9845",
+        "es_principal": true,
+        "notas": "Maria Ines Arloro 3462 41 9845"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Gea Mill"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "15/04/2023"
+    },
+    "marca_temporal_registro": "15/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41951364",
+    "clinica_id": "clinica-1",
+    "dni": "41951364",
+    "nombre": "Adrián Paredes",
+    "apellido": "Ramiro",
+    "nombre_completo": "Ramiro Adrián Paredes",
+    "edad": "",
+    "telefono_whatsapp": "2901486840",
+    "email": "rami2013.ar@gmail.com",
+    "domicilio": "Montevideo 835",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755502-4506",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "2901486840",
+        "es_principal": true,
+        "notas": "2901486840"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Apross"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "15/04/2023"
+    },
+    "marca_temporal_registro": "15/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-39935266",
+    "clinica_id": "clinica-1",
+    "dni": "39935266",
+    "nombre": "Javier Nahuel",
+    "apellido": "Li Palomino",
+    "nombre_completo": "Javier Nahuel Li Palomino",
+    "edad": "",
+    "telefono_whatsapp": "3517461222",
+    "email": "nahuel.lipalomino96@gmail.com",
+    "domicilio": "Belgrano 1178",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-6297",
+        "nombre": "Yesi",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512663870",
+        "es_principal": true,
+        "notas": "Yesi 3512663870"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "18/04/2023"
+    },
+    "marca_temporal_registro": "18/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42219395",
+    "clinica_id": "clinica-1",
+    "dni": "42219395",
+    "nombre": "Gianfranco",
+    "apellido": "Gioda",
+    "nombre_completo": "Gianfranco Gioda",
+    "edad": "",
+    "telefono_whatsapp": "3571617563",
+    "email": "giangioda6@gmail.com",
+    "domicilio": "Parana 657",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-5770",
+        "nombre": "Marcela",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3571327802",
+        "es_principal": true,
+        "notas": "Marcela 3571327802"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "19/04/2023"
+    },
+    "marca_temporal_registro": "19/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41482286",
+    "clinica_id": "clinica-1",
+    "dni": "41482286",
+    "nombre": "Franco Bruno",
+    "apellido": "Emanuel Orsi",
+    "nombre_completo": "Franco Bruno Emanuel Orsi",
+    "edad": "",
+    "telefono_whatsapp": "3517335464",
+    "email": "francoorsi23@gmail.com",
+    "domicilio": "Pizarro 5031 -B° Inaudi",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-8919",
+        "nombre": "Norma",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512534486",
+        "es_principal": true,
+        "notas": "3512534486 norma"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "24/04/2023"
+    },
+    "marca_temporal_registro": "24/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42388425",
+    "clinica_id": "clinica-1",
+    "dni": "42388425",
+    "nombre": "Nicolas",
+    "apellido": "Quiñones",
+    "nombre_completo": "Nicolas Quiñones",
+    "edad": "",
+    "telefono_whatsapp": "3564578688",
+    "email": "quinonesnhhmm@gmail.com",
+    "domicilio": "Buenos aires 810 2 D",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-9974",
+        "nombre": "Cecilia",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3564584752",
+        "es_principal": true,
+        "notas": "3564584752 cecilia"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Apross"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "26/04/2023"
+    },
+    "marca_temporal_registro": "26/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45328364",
+    "clinica_id": "clinica-1",
+    "dni": "45328364",
+    "nombre": "Guadalupe",
+    "apellido": "Monzón",
+    "nombre_completo": "Guadalupe Monzón",
+    "edad": "",
+    "telefono_whatsapp": "3884802080",
+    "email": "guadamm19@gmail.com",
+    "domicilio": "Illia 336 esquina chacabuco",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-9804",
+        "nombre": "Patricia (madre)",
+        "relacion": "Madre",
+        "telefono": "3884102723",
+        "es_principal": true,
+        "notas": "3884102723 Patricia (Madre)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/04/2023"
+    },
+    "marca_temporal_registro": "29/04/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-39805557",
+    "clinica_id": "clinica-1",
+    "dni": "39805557",
+    "nombre": "Ezequiel Santillan",
+    "apellido": "Matias",
+    "nombre_completo": "Matias Ezequiel Santillan",
+    "edad": "",
+    "telefono_whatsapp": "3513044224",
+    "email": "matias.santillan.2121@gmail.com",
+    "domicilio": "Duartes quiros 251",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-1683",
+        "nombre": "Andres Santillan",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3834 648044",
+        "es_principal": true,
+        "notas": "3834 648044 Andres Santillan"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/05/2023"
+    },
+    "marca_temporal_registro": "08/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40836103",
+    "clinica_id": "clinica-1",
+    "dni": "40836103",
+    "nombre": "Gonzalo Agustin",
+    "apellido": "Gauna Cuevas",
+    "nombre_completo": "Gonzalo Agustin Gauna Cuevas",
+    "edad": "",
+    "telefono_whatsapp": "3517612049",
+    "email": "gonzalocuevas97@gmail.com",
+    "domicilio": "Obispo Salguero 156",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-17",
+        "nombre": "Florencia",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 2995 00-9348",
+        "es_principal": true,
+        "notas": "+54 9 2995 00-9348 Florencia"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/05/2023"
+    },
+    "marca_temporal_registro": "08/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-43281863",
+    "clinica_id": "clinica-1",
+    "dni": "43281863",
+    "nombre": "Lautaro",
+    "apellido": "Jesus",
+    "nombre_completo": "Lautaro Jesus",
+    "edad": "",
+    "telefono_whatsapp": "3564376319",
+    "email": "mejiasboscarol304@gmail.com",
+    "domicilio": "Mariano Regueiro 340",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-5098",
+        "nombre": "Candela",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3564650465",
+        "es_principal": true,
+        "notas": "3564650465 Candela"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "10/05/2023"
+    },
+    "marca_temporal_registro": "10/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-35524514",
+    "clinica_id": "clinica-1",
+    "dni": "35524514",
+    "nombre": "Emanuel Lascano",
+    "apellido": "Luca",
+    "nombre_completo": "Luca Emanuel Lascano",
+    "edad": "",
+    "telefono_whatsapp": "3512385925",
+    "email": "lascano.emanuel@gmail.com",
+    "domicilio": "Jujuy 1924 depto 5 alta Córdoba",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-3667",
+        "nombre": "Agustina",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "351 530-2784",
+        "es_principal": true,
+        "notas": "Agustina  351 530-2784"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "12/05/2023"
+    },
+    "marca_temporal_registro": "12/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-96230212",
+    "clinica_id": "clinica-1",
+    "dni": "96230212",
+    "nombre": "Angelo Gabriel",
+    "apellido": "Pineda Patiño",
+    "nombre_completo": "Angelo gabriel Pineda Patiño",
+    "edad": "",
+    "telefono_whatsapp": "3518629812",
+    "email": "pinedaangelo852@gmail.com",
+    "domicilio": "Domuyo 1957 zona ruta 20",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-965",
+        "nombre": "Francis",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513506086",
+        "es_principal": true,
+        "notas": "Francis 3513506086"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "13/05/2023"
+    },
+    "marca_temporal_registro": "13/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42048879",
+    "clinica_id": "clinica-1",
+    "dni": "42048879",
+    "nombre": "Bruno",
+    "apellido": "Salinas",
+    "nombre_completo": "Bruno salinas",
+    "edad": "",
+    "telefono_whatsapp": "3544430255",
+    "email": "chipisalinas1@mail.com",
+    "domicilio": "Villa dolores",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-823",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3544465471",
+        "es_principal": true,
+        "notas": "3544465471"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/05/2023"
+    },
+    "marca_temporal_registro": "14/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45474303",
+    "clinica_id": "clinica-1",
+    "dni": "45474303",
+    "nombre": "Federico Helmut",
+    "apellido": "Kiessling Corradi",
+    "nombre_completo": "Federico Helmut Kiessling Corradi",
+    "edad": "",
+    "telefono_whatsapp": "5492665038179",
+    "email": "federico.hkiessling@gmail.com",
+    "domicilio": "Independencia 1017, Departamento 7A",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-1566",
+        "nombre": ", Roberto Kiessling",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "2665033350",
+        "es_principal": true,
+        "notas": "2665033350, Roberto Kiessling"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/05/2023"
+    },
+    "marca_temporal_registro": "14/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40679200",
+    "clinica_id": "clinica-1",
+    "dni": "40679200",
+    "nombre": "Dri Furlan",
+    "apellido": "Sofía",
+    "nombre_completo": "Sofía Dri Furlan",
+    "edad": "",
+    "telefono_whatsapp": "3525489380",
+    "email": "sofiabelendri@gmail.com",
+    "domicilio": "Tucumán 1216 Jesús Maria",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-5182",
+        "nombre": "Monica Furlan (madre)",
+        "relacion": "Madre",
+        "telefono": "3525476976",
+        "es_principal": true,
+        "notas": "Monica Furlan (madre) 3525476976"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "19/05/2023"
+    },
+    "marca_temporal_registro": "19/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-39621665",
+    "clinica_id": "clinica-1",
+    "dni": "39621665",
+    "nombre": "Hernan Avila",
+    "apellido": "David",
+    "nombre_completo": "David Hernan Avila",
+    "edad": "",
+    "telefono_whatsapp": "3516315950",
+    "email": "aviladavid1921@gmail.com",
+    "domicilio": "Peteroa 1921",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755503-3414",
+        "nombre": "Judith",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3576 46-8090",
+        "es_principal": true,
+        "notas": "3576 46-8090 Judith"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/05/2023"
+    },
+    "marca_temporal_registro": "29/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41695029",
+    "clinica_id": "clinica-1",
+    "dni": "41695029",
+    "nombre": "Mateo",
+    "apellido": "Julian",
+    "nombre_completo": "Mateo Julian",
+    "edad": "",
+    "telefono_whatsapp": "3572527173",
+    "email": "mateolombardo99@hotmail.com",
+    "domicilio": "Pilar (Zenaida Cabrera 1735)",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-2729",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3572615731",
+        "es_principal": true,
+        "notas": "3572615731"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/05/2023"
+    },
+    "marca_temporal_registro": "29/05/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40686241",
+    "clinica_id": "clinica-1",
+    "dni": "40686241",
+    "nombre": "Aldana",
+    "apellido": "Guanca",
+    "nombre_completo": "Aldana Guanca",
+    "edad": "",
+    "telefono_whatsapp": "3512824056",
+    "email": "aldanaguanca97@gmail.com",
+    "domicilio": "Padre L Monti 2257",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-2338",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513626748",
+        "es_principal": true,
+        "notas": "3513626748"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "01/06/2023"
+    },
+    "marca_temporal_registro": "01/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41267323",
+    "clinica_id": "clinica-1",
+    "dni": "41267323",
+    "nombre": "Jorge Brian",
+    "apellido": "Matis Gonzalez",
+    "nombre_completo": "Jorge Brian Matis Gonzalez",
+    "edad": "",
+    "telefono_whatsapp": "3513192390",
+    "email": "jorgematisgonzalez@gmail.com",
+    "domicilio": "Ituzaingó 572 PB 5",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-1741",
+        "nombre": "Maira",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "2974934737",
+        "es_principal": true,
+        "notas": "Maira 2974934737"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "02/06/2023"
+    },
+    "marca_temporal_registro": "02/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-37619499",
+    "clinica_id": "clinica-1",
+    "dni": "37619499",
+    "nombre": "Yohana",
+    "apellido": "Bazan",
+    "nombre_completo": "Yohana Bazan",
+    "edad": "",
+    "telefono_whatsapp": "3513979765",
+    "email": "powiibazan@icloud.com",
+    "domicilio": "Luis de Góngora 1534, córdoba capital.",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-537",
+        "nombre": "Liliana",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513420262",
+        "es_principal": true,
+        "notas": "Liliana 3513420262"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Emi"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "02/06/2023"
+    },
+    "marca_temporal_registro": "02/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-43696709",
+    "clinica_id": "clinica-1",
+    "dni": "43696709",
+    "nombre": "Héctor Leandro",
+    "apellido": "Acosta Janchik",
+    "nombre_completo": "Héctor Leandro Acosta Janchik",
+    "edad": "",
+    "telefono_whatsapp": "3644347096",
+    "email": "leandrojanchik16@gmail.com",
+    "domicilio": "Pje Rafael Escuti 847",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-7172",
+        "nombre": "\" (madre)",
+        "relacion": "Madre",
+        "telefono": "3644545729",
+        "es_principal": true,
+        "notas": "\"3644545729 (madre)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "351 812-8528 (pareja)\""
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "03/06/2023"
+    },
+    "marca_temporal_registro": "03/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45956787",
+    "clinica_id": "clinica-1",
+    "dni": "45956787",
+    "nombre": "Valentina",
+    "apellido": "Sin Apellido",
+    "nombre_completo": "Valentina",
+    "edad": "",
+    "telefono_whatsapp": "3854176485",
+    "email": "valenchutorres10@gmail.com",
+    "domicilio": "Independencia 1446",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-9512",
+        "nombre": "Paola Pons",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3854176485",
+        "es_principal": true,
+        "notas": "3854176485 Paola Pons"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "05/06/2023"
+    },
+    "marca_temporal_registro": "05/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40419848",
+    "clinica_id": "clinica-1",
+    "dni": "40419848",
+    "nombre": "Gaston Carlos",
+    "apellido": "Eduardo Frances",
+    "nombre_completo": "Gaston Carlos Eduardo Frances",
+    "edad": "",
+    "telefono_whatsapp": "3541686952",
+    "email": "gastifrances1@gmail.com",
+    "domicilio": "Villa Carlos Paz, calle Almafuerte 252",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-1475",
+        "nombre": ", Lucia",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 3541 62-7203",
+        "es_principal": true,
+        "notas": "+54 9 3541 62-7203, Lucia"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/06/2023"
+    },
+    "marca_temporal_registro": "08/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42124545",
+    "clinica_id": "clinica-1",
+    "dni": "42124545",
+    "nombre": "Stefania Cravero",
+    "apellido": "Daiana",
+    "nombre_completo": "Daiana Stefania Cravero",
+    "edad": "",
+    "telefono_whatsapp": "3513457818",
+    "email": "daicravero99@gmail.com",
+    "domicilio": "Avenida Pueyrredón 1449",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-8789",
+        "nombre": "Franco",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512635305",
+        "es_principal": true,
+        "notas": "Franco 3512635305"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "13/06/2023"
+    },
+    "marca_temporal_registro": "13/06/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-95818302",
+    "clinica_id": "clinica-1",
+    "dni": "95818302",
+    "nombre": "Paolo",
+    "apellido": "Morales",
+    "nombre_completo": "Paolo Morales",
+    "edad": "",
+    "telefono_whatsapp": "3518641303",
+    "email": "paolo.ifs@gmail.com",
+    "domicilio": "Arturo M Bas 555",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-427",
+        "nombre": "Pablo Corbalán",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 387 574-0787",
+        "es_principal": true,
+        "notas": "+54 9 387 574-0787 Pablo Corbalán"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/09/2023"
+    },
+    "marca_temporal_registro": "08/09/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45956868",
+    "clinica_id": "clinica-1",
+    "dni": "45956868",
+    "nombre": "Lucila",
+    "apellido": "Esper",
+    "nombre_completo": "Lucila esper",
+    "edad": "",
+    "telefono_whatsapp": "385155838219",
+    "email": "lucilaesper6@gmail.com",
+    "domicilio": "Obispo oro 440",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-1766",
+        "nombre": "Mariela Gerez Gonzalez",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "0385155355367",
+        "es_principal": true,
+        "notas": "0385155355367 Mariela Gerez Gonzalez"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "09/09/2023"
+    },
+    "marca_temporal_registro": "09/09/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42854921",
+    "clinica_id": "clinica-1",
+    "dni": "42854921",
+    "nombre": "Abigail Molina",
+    "apellido": "Virginia",
+    "nombre_completo": "Virginia Abigail Molina",
+    "edad": "",
+    "telefono_whatsapp": "3517064068",
+    "email": "virgimolina.musica@gmail.com",
+    "domicilio": "William bragg 5768",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-4981",
+        "nombre": "Luis Molina",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516603980",
+        "es_principal": true,
+        "notas": "3516603980 Luis Molina"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "OSPEDYC"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "06/10/2023"
+    },
+    "marca_temporal_registro": "06/10/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-46493979",
+    "clinica_id": "clinica-1",
+    "dni": "46493979",
+    "nombre": "Martin Bide",
+    "apellido": "Juan",
+    "nombre_completo": "Juan Martin Bide",
+    "edad": "",
+    "telefono_whatsapp": "3462593235",
+    "email": "juanmartinbide@gmail.com",
+    "domicilio": "Santa Rosa 878",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-7435",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "03462665992",
+        "es_principal": true,
+        "notas": "03462665992"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "10/10/2023"
+    },
+    "marca_temporal_registro": "10/10/2023",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-43128354",
+    "clinica_id": "clinica-1",
+    "dni": "43128354",
+    "nombre": "Valentin",
+    "apellido": "Giacovero",
+    "nombre_completo": "Valentin Giacovero",
+    "edad": "",
+    "telefono_whatsapp": "3416906360",
+    "email": "valenn2197@gmail.com",
+    "domicilio": "Obispo Trejo 1370",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-4124",
+        "nombre": "Claudia",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3415807742",
+        "es_principal": true,
+        "notas": "3415807742 Claudia"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Avalian"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "21/01/2024"
+    },
+    "marca_temporal_registro": "21/01/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41762764",
+    "clinica_id": "clinica-1",
+    "dni": "41762764",
+    "nombre": "Jorge Pedro",
+    "apellido": "Pablo Rodriguez Belvedere",
+    "nombre_completo": "Jorge Pedro Pablo Rodriguez Belvedere",
+    "edad": "",
+    "telefono_whatsapp": "3516657837",
+    "email": "pedrorobel3@gmail.com",
+    "domicilio": "Punta del Sauce 2318",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-8583",
+        "nombre": "Mercedes Belvedere",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516450385",
+        "es_principal": true,
+        "notas": "3516450385 - Mercedes Belvedere"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "23/02/2024"
+    },
+    "marca_temporal_registro": "23/02/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36433261",
+    "clinica_id": "clinica-1",
+    "dni": "36433261",
+    "nombre": "Evelyn Correa",
+    "apellido": "Soledad",
+    "nombre_completo": "Soledad Evelyn Correa",
+    "edad": "",
+    "telefono_whatsapp": "3514591831",
+    "email": "soledadevelyncorrea17@gmail.com",
+    "domicilio": "Felix de zuñiga 3938",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-3703",
+        "nombre": "Alexis",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3517666902",
+        "es_principal": true,
+        "notas": "3517666902 alexis"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/03/2024"
+    },
+    "marca_temporal_registro": "14/03/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-37733714",
+    "clinica_id": "clinica-1",
+    "dni": "37733714",
+    "nombre": "Martin Nuñez",
+    "apellido": "Favio",
+    "nombre_completo": "Favio Martin Nuñez",
+    "edad": "",
+    "telefono_whatsapp": "3516375614",
+    "email": "faviomartin127@gmail.com",
+    "domicilio": "Santa Rosa 1016",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-8739",
+        "nombre": "Luciana Nuñez (hermana)",
+        "relacion": "Hermano/a",
+        "telefono": "3512783185",
+        "es_principal": true,
+        "notas": "3512783185 - Luciana Nuñez (hermana)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Omint"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "15/03/2024"
+    },
+    "marca_temporal_registro": "15/03/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45484141",
+    "clinica_id": "clinica-1",
+    "dni": "45484141",
+    "nombre": "Maira Jofre",
+    "apellido": "Sofía",
+    "nombre_completo": "Sofía Maira Jofre",
+    "edad": "",
+    "telefono_whatsapp": "3541335331",
+    "email": "sofia.jofre225@gmail.com",
+    "domicilio": "Antonio Asili, 720 (Comuna San Roque, Córdoba)",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-1777",
+        "nombre": "Yolanda (madre)",
+        "relacion": "Madre",
+        "telefono": "351-6651428",
+        "es_principal": true,
+        "notas": "Yolanda (madre) 351-6651428"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "04/04/2024"
+    },
+    "marca_temporal_registro": "04/04/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40521760",
+    "clinica_id": "clinica-1",
+    "dni": "40521760",
+    "nombre": "Florencia Cabrera",
+    "apellido": "Cintia",
+    "nombre_completo": "Cintia florencia cabrera",
+    "edad": "",
+    "telefono_whatsapp": "3518781018",
+    "email": "Flor43601@gmail.com",
+    "domicilio": "Henderson 5477 b° carrara",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-2458",
+        "nombre": "Victoria (abuela Materna De Maite)",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3517588053",
+        "es_principal": true,
+        "notas": "3517588053 victoria (Abuela Materna de Maite)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "12/04/2024"
+    },
+    "marca_temporal_registro": "12/04/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42783483",
+    "clinica_id": "clinica-1",
+    "dni": "42783483",
+    "nombre": "Borja Manuel",
+    "apellido": "Pedraza Canaves",
+    "nombre_completo": "Borja Manuel Pedraza Canaves",
+    "edad": "",
+    "telefono_whatsapp": "3571323954",
+    "email": "borjamanuelpedraza@gmail.com",
+    "domicilio": "La plata 870",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-2850",
+        "nombre": "Rocío",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 358 431-8293",
+        "es_principal": true,
+        "notas": "+54 9 358 431-8293 rocío"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "17/04/2024"
+    },
+    "marca_temporal_registro": "17/04/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-38409106",
+    "clinica_id": "clinica-1",
+    "dni": "38409106",
+    "nombre": "Javier Rojo",
+    "apellido": "Ignacio",
+    "nombre_completo": "Ignacio Javier Rojo",
+    "edad": "",
+    "telefono_whatsapp": "3516151648",
+    "email": "ignaciorojo94@hotmail.com",
+    "domicilio": "Gualilan 4643 barrio empalme",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-9899",
+        "nombre": "Paola",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516327590",
+        "es_principal": true,
+        "notas": "3516327590 Paola"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "24/04/2024"
+    },
+    "marca_temporal_registro": "24/04/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-46031535",
+    "clinica_id": "clinica-1",
+    "dni": "46031535",
+    "nombre": "Miranda Ambrosi",
+    "apellido": "Ornella",
+    "nombre_completo": "Ornella Miranda Ambrosi",
+    "edad": "",
+    "telefono_whatsapp": "3513091450",
+    "email": "ornella.ambrosi@mi.unc.edu.ar",
+    "domicilio": "Luis braile 2030",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-5996",
+        "nombre": "Hugo (padre)",
+        "relacion": "Padre",
+        "telefono": "3513020543",
+        "es_principal": true,
+        "notas": "Hugo (padre): 3513020543"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "26/04/2024"
+    },
+    "marca_temporal_registro": "26/04/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-96256698",
+    "clinica_id": "clinica-1",
+    "dni": "96256698",
+    "nombre": "Elia Soledad",
+    "apellido": "Mendoza Ocampo",
+    "nombre_completo": "Elia Soledad Mendoza Ocampo",
+    "edad": "",
+    "telefono_whatsapp": "3512109872",
+    "email": "soledadocampo72@gmail.com",
+    "domicilio": "Ampliación Rosedal. Octaviano Navarro#2689",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-4169",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3518087122",
+        "es_principal": true,
+        "notas": "3518087122"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/05/2024"
+    },
+    "marca_temporal_registro": "14/05/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36143001",
+    "clinica_id": "clinica-1",
+    "dni": "36143001",
+    "nombre": "Ines Torres",
+    "apellido": "Marina",
+    "nombre_completo": "Marina Ines Torres",
+    "edad": "",
+    "telefono_whatsapp": "3516293863",
+    "email": "torres.marinaines@gmail.com",
+    "domicilio": "Pública 14 n°4289, Carrara de Horizonte Norte",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-3178",
+        "nombre": "Silvana Si Ascenzi ( Prima)",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516970633",
+        "es_principal": true,
+        "notas": "Silvana Si Ascenzi 3516970633( Prima)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Solesac Salud"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "20/05/2024"
+    },
+    "marca_temporal_registro": "20/05/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-24692769",
+    "clinica_id": "clinica-1",
+    "dni": "24692769",
+    "nombre": "Paola Donini",
+    "apellido": "Grisel",
+    "nombre_completo": "Grisel Paola donini",
+    "edad": "",
+    "telefono_whatsapp": "3517516197",
+    "email": "grselh346@gmail.com",
+    "domicilio": "Olivares 3519. Barrio:matienzo",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-9386",
+        "nombre": "Mirta Madre",
+        "relacion": "Madre",
+        "telefono": "3513333000",
+        "es_principal": true,
+        "notas": "3513333000/ Mirta madre"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Ecco"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "19/06/2024"
+    },
+    "marca_temporal_registro": "19/06/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-32456916",
+    "clinica_id": "clinica-1",
+    "dni": "32456916",
+    "nombre": "Leonardo Gala",
+    "apellido": "Luna Valverde",
+    "nombre_completo": "Leonardo Gala Luna Valverde",
+    "edad": "",
+    "telefono_whatsapp": "3518133000",
+    "email": "pedritolunaporsiempre@gmail.com",
+    "domicilio": "la rioja 1185",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-6864",
+        "nombre": "Fernanda",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512022202",
+        "es_principal": true,
+        "notas": "3512022202 Fernanda"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "10/07/2024"
+    },
+    "marca_temporal_registro": "10/07/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36986482",
+    "clinica_id": "clinica-1",
+    "dni": "36986482",
+    "nombre": "Giuliano",
+    "apellido": "Buchieri",
+    "nombre_completo": "Giuliano Buchieri",
+    "edad": "",
+    "telefono_whatsapp": "3515227354",
+    "email": "giuliano.buchieri89@gmail.com",
+    "domicilio": "Pastor Taboada 1237",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-6210",
+        "nombre": "Jesica Buchieri",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 3543 60-8963",
+        "es_principal": true,
+        "notas": "+54 9 3543 60-8963 Jesica Buchieri"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Swiss Medical"
+    },
+    "obra_social_id": "os-3",
+    "obra_social_nombre": "Swiss Medical",
+    "plan_id": "",
+    "plan_nombre": "SMG20",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "23/07/2024"
+    },
+    "marca_temporal_registro": "23/07/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41648675",
+    "clinica_id": "clinica-1",
+    "dni": "41648675",
+    "nombre": "Rubén Villalba",
+    "apellido": "Maximiliano",
+    "nombre_completo": "Maximiliano Rubén Villalba",
+    "edad": "",
+    "telefono_whatsapp": "3518168853",
+    "email": "maxirvillalba@gmail.com",
+    "domicilio": "Los algarrobos 583",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-3815",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3518198658",
+        "es_principal": true,
+        "notas": "3518198658"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "30/09/2024"
+    },
+    "marca_temporal_registro": "30/09/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36522792",
+    "clinica_id": "clinica-1",
+    "dni": "36522792",
+    "nombre": "Vera Cortez",
+    "apellido": "Héctor Alberto",
+    "nombre_completo": "Vera Cortez Héctor Alberto",
+    "edad": "",
+    "telefono_whatsapp": "2302500480",
+    "email": "albvera9@gmail.com",
+    "domicilio": "General Pico - La Pampa",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-1124",
+        "nombre": "Mariana Vera (hermana)",
+        "relacion": "Hermano/a",
+        "telefono": "3804-523398",
+        "es_principal": true,
+        "notas": "3804-523398 Mariana Vera (Hermana)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "04/10/2024"
+    },
+    "marca_temporal_registro": "04/10/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-47363869",
+    "clinica_id": "clinica-1",
+    "dni": "47363869",
+    "nombre": "Florencia",
+    "apellido": "Marchisone",
+    "nombre_completo": "Florencia marchisone",
+    "edad": "",
+    "telefono_whatsapp": "3573513972",
+    "email": "flormarchisone147@gmail.com",
+    "domicilio": "Bv. Illia 654",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-776",
+        "nombre": "Elio Rodríguez (pareja)",
+        "relacion": "Pareja",
+        "telefono": "3573 508085",
+        "es_principal": true,
+        "notas": "Elio Rodríguez (pareja) 3573 508085"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "11/11/2024"
+    },
+    "marca_temporal_registro": "11/11/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40502924",
+    "clinica_id": "clinica-1",
+    "dni": "40502924",
+    "nombre": "Alejandro Guzmán",
+    "apellido": "Ricardo",
+    "nombre_completo": "Ricardo Alejandro Guzmán",
+    "edad": "",
+    "telefono_whatsapp": "3517885925",
+    "email": "ricardo096guz@gmail.com",
+    "domicilio": "Avenida lo cóndores s/n, san Roque",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-2502",
+        "nombre": "Juan",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3541283512",
+        "es_principal": true,
+        "notas": "3541283512 Juan"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "12/11/2024"
+    },
+    "marca_temporal_registro": "12/11/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41158938",
+    "clinica_id": "clinica-1",
+    "dni": "41158938",
+    "nombre": "Rocio",
+    "apellido": "Sordo",
+    "nombre_completo": "Rocio Sordo",
+    "edad": "",
+    "telefono_whatsapp": "3492228800",
+    "email": "rociosordo9@gmail.com",
+    "domicilio": "Buenos Aires 412",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-9155",
+        "nombre": "Beatriz Machado (mamá)",
+        "relacion": "Madre",
+        "telefono": "3564578832",
+        "es_principal": true,
+        "notas": "Beatriz Machado (mamá) 3564578832"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "12/11/2024"
+    },
+    "marca_temporal_registro": "12/11/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-35055095",
+    "clinica_id": "clinica-1",
+    "dni": "35055095",
+    "nombre": "Fabricio Saenz",
+    "apellido": "Mauro",
+    "nombre_completo": "Mauro fabricio saenz",
+    "edad": "",
+    "telefono_whatsapp": "3516362940",
+    "email": "mauro_cba13@hotmail.com",
+    "domicilio": "Jose gabino blanco 2962",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-1301",
+        "nombre": "Vanessa",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513160413",
+        "es_principal": true,
+        "notas": "3513160413 Vanessa"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "20/11/2024"
+    },
+    "marca_temporal_registro": "20/11/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45081035",
+    "clinica_id": "clinica-1",
+    "dni": "45081035",
+    "nombre": "Brenda",
+    "apellido": "Gutierrez",
+    "nombre_completo": "Brenda Gutierrez",
+    "edad": "",
+    "telefono_whatsapp": "3517475511",
+    "email": "brenpayne536@gmail.com",
+    "domicilio": "Villa boedo Manzana 17 lote 17",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-9425",
+        "nombre": "Marcela(mamá)",
+        "relacion": "Madre",
+        "telefono": "3517662078",
+        "es_principal": true,
+        "notas": "Marcela(mamá) 3517662078"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "20/11/2024"
+    },
+    "marca_temporal_registro": "20/11/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41152986",
+    "clinica_id": "clinica-1",
+    "dni": "41152986",
+    "nombre": "Candelaria Suárez",
+    "apellido": "María",
+    "nombre_completo": "María Candelaria Suárez",
+    "edad": "",
+    "telefono_whatsapp": "3517912070",
+    "email": "mmcandesuarez@gmail.com",
+    "domicilio": "Arauco 669, Barrio 20 de junio",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-4375",
+        "nombre": "Ivana Arbach",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513538007",
+        "es_principal": true,
+        "notas": "3513538007 - Ivana Arbach"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Apross"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "03/12/2024"
+    },
+    "marca_temporal_registro": "03/12/2024",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41520631",
+    "clinica_id": "clinica-1",
+    "dni": "41520631",
+    "nombre": "Matias Juncos",
+    "apellido": "Lorenzo",
+    "nombre_completo": "Lorenzo Matias Juncos",
+    "edad": "",
+    "telefono_whatsapp": "3512811416",
+    "email": "matiasjuncos23@gmail.com",
+    "domicilio": "Darragueira 5055 B Dean Funes",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-9445",
+        "nombre": "Marisa",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512219494",
+        "es_principal": true,
+        "notas": "3512219494 Marisa"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "10/01/2025"
+    },
+    "marca_temporal_registro": "10/01/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40804155",
+    "clinica_id": "clinica-1",
+    "dni": "40804155",
+    "nombre": "Diarte",
+    "apellido": "Gaspar",
+    "nombre_completo": "Diarte Gaspar",
+    "edad": "",
+    "telefono_whatsapp": "3704830800",
+    "email": "gaspar10romano@gmail.com",
+    "domicilio": "Bv Illia 446",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755504-2821",
+        "nombre": "Rita",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3854356766",
+        "es_principal": true,
+        "notas": "3854356766 Rita"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "19/04/2025"
+    },
+    "marca_temporal_registro": "19/04/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-51196526",
+    "clinica_id": "clinica-1",
+    "dni": "51196526",
+    "nombre": "Santiago Benjamín",
+    "apellido": "Peralta Quiroga",
+    "nombre_completo": "Santiago Benjamín Peralta Quiroga",
+    "edad": "",
+    "telefono_whatsapp": "3512056189",
+    "email": "qemilce29@gmail.com",
+    "domicilio": "Yaco Misque 1.444 Barrio Crisol Norte",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-5996",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "351-6652002",
+        "es_principal": true,
+        "notas": "351-6652002"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "EMI"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "13/05/2025"
+    },
+    "marca_temporal_registro": "13/05/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-30659139",
+    "clinica_id": "clinica-1",
+    "dni": "30659139",
+    "nombre": "Leticia Araujo",
+    "apellido": "Veronica",
+    "nombre_completo": "Veronica Leticia Araujo",
+    "edad": "",
+    "telefono_whatsapp": "3516472299",
+    "email": "veritoaraujo.va@gmail.com",
+    "domicilio": "Santa cruz 366",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-9964",
+        "nombre": "Alejandro",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516625193",
+        "es_principal": true,
+        "notas": "3516625193 Alejandro"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Urgencias"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "11/06/2025"
+    },
+    "marca_temporal_registro": "11/06/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-24919358",
+    "clinica_id": "clinica-1",
+    "dni": "24919358",
+    "nombre": "María Belen",
+    "apellido": "Acosta",
+    "nombre_completo": "Acosta María Belen",
+    "edad": "",
+    "telefono_whatsapp": "3512642525",
+    "email": "mabeacosta@hotmail.com",
+    "domicilio": "Manuel Olascoaga 966",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-8821",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516517638",
+        "es_principal": true,
+        "notas": "3516517638"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Urgencias"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "24/07/2025"
+    },
+    "marca_temporal_registro": "24/07/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-45573574",
+    "clinica_id": "clinica-1",
+    "dni": "45573574",
+    "nombre": "Aymará Leotta",
+    "apellido": "Tiara",
+    "nombre_completo": "Tiara Aymará Leotta",
+    "edad": "",
+    "telefono_whatsapp": "3525410094",
+    "email": "gulaleotta@gmail.com",
+    "domicilio": "27 de abril 252",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-5072",
+        "nombre": "Evangelina Vettese",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "2966694969",
+        "es_principal": true,
+        "notas": "evangelina vettese 2966694969"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "04/08/2025"
+    },
+    "marca_temporal_registro": "04/08/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-46845276",
+    "clinica_id": "clinica-1",
+    "dni": "46845276",
+    "nombre": "Alvarez Ferrero",
+    "apellido": "Tiago",
+    "nombre_completo": "Tiago Alvarez Ferrero",
+    "edad": "",
+    "telefono_whatsapp": "3515064042",
+    "email": "tiagoalvarezferrero@gmail.com",
+    "domicilio": "Pablo Pizzurno 2513. Rosedal Anexo",
+    "con_quien_vive": "",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-6802",
+        "nombre": "Moira",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3515904519",
+        "es_principal": true,
+        "notas": "Moira 3515904519"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Apross"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/08/2025"
+    },
+    "marca_temporal_registro": "14/08/2025",
+    "alergias": "",
+    "antecedentes": "",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-28851493",
+    "clinica_id": "clinica-1",
+    "dni": "28851493",
+    "nombre": "Flavia Andrea",
+    "apellido": "Auad Perez",
+    "nombre_completo": "Flavia Andrea Auad Perez",
+    "edad": 44,
+    "telefono_whatsapp": "3513932864",
+    "email": "flavia.auad@gmail.com",
+    "domicilio": "Saul Taborda 80 - Unquillo",
+    "con_quien_vive": "Hija",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-9715",
+        "nombre": "Natalia Auad",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "351 3436326",
+        "es_principal": true,
+        "notas": "351 3436326 Natalia Auad"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "CEC"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "02/10/2025"
+    },
+    "marca_temporal_registro": "02/10/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: Hija",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-46333818",
+    "clinica_id": "clinica-1",
+    "dni": "46333818",
+    "nombre": "Ignacio Santillán",
+    "apellido": "Germán",
+    "nombre_completo": "Germán Ignacio Santillán",
+    "edad": 20,
+    "telefono_whatsapp": "2966674712",
+    "email": "santillangerman450@gmail.com",
+    "domicilio": "Miguel Calixto del Corro 515, Córdoba Capital, Córdoba, Argentina",
+    "con_quien_vive": "Compañeros de piso",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-828",
+        "nombre": "Gabriela Gerard (madre)",
+        "relacion": "Madre",
+        "telefono": "2966354849",
+        "es_principal": true,
+        "notas": "2966354849 - Gabriela Gerard (madre)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-3",
+    "obra_social_nombre": "Swiss Medical",
+    "plan_id": "",
+    "plan_nombre": "SMG20",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "17/11/2025"
+    },
+    "marca_temporal_registro": "17/11/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: Compañeros de piso",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-94131929",
+    "clinica_id": "clinica-1",
+    "dni": "94131929",
+    "nombre": "Joaquin Andres",
+    "apellido": "Lenzi Andraos",
+    "nombre_completo": "Joaquin Andres Lenzi Andraos",
+    "edad": 23,
+    "telefono_whatsapp": "3541694960",
+    "email": "Joakolenzi@gmail.com",
+    "domicilio": "Leandro N Alem 682",
+    "con_quien_vive": "Madre y abuelos",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-9029",
+        "nombre": "Cristina",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3541602101",
+        "es_principal": true,
+        "notas": "Cristina 3541602101"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "19/11/2025"
+    },
+    "marca_temporal_registro": "19/11/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: Madre y abuelos",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-28658008",
+    "clinica_id": "clinica-1",
+    "dni": "28658008",
+    "nombre": "Elizabeth Saires",
+    "apellido": "Cecilia",
+    "nombre_completo": "Cecilia Elizabeth Saires",
+    "edad": 44,
+    "telefono_whatsapp": "3513578945",
+    "email": "ceciliasaires58@gmail.com",
+    "domicilio": "El dorado 6252",
+    "con_quien_vive": "Con mi 3 hijo y mi marido",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-841",
+        "nombre": "Gustavo Antonio Espinosa",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "35137305468",
+        "es_principal": true,
+        "notas": "35137305468 Gustavo Antonio Espinosa"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "01/12/2025"
+    },
+    "marca_temporal_registro": "01/12/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: Con mi 3 hijo y mi marido",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-46222314",
+    "clinica_id": "clinica-1",
+    "dni": "46222314",
+    "nombre": "Valentina Giuliani",
+    "apellido": "Lucia",
+    "nombre_completo": "Lucia Valentina Giuliani",
+    "edad": 20,
+    "telefono_whatsapp": "3543657956",
+    "email": "luciagiuliani001@gmail.com",
+    "domicilio": "Frqncisco n de laprida 234",
+    "con_quien_vive": "En una residencia",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-7691",
+        "nombre": "Ivana (mi Mama)",
+        "relacion": "Madre",
+        "telefono": "3543537609",
+        "es_principal": true,
+        "notas": "3543537609 Ivana (mi mama)"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Gea",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "04/12/2025"
+    },
+    "marca_temporal_registro": "04/12/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: En una residencia",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-40106652",
+    "clinica_id": "clinica-1",
+    "dni": "40106652",
+    "nombre": "Manuel",
+    "apellido": "Servent",
+    "nombre_completo": "Manuel servent",
+    "edad": 28,
+    "telefono_whatsapp": "3513718987",
+    "email": "manuelservent96@gmail.com",
+    "domicilio": "Maipú 343",
+    "con_quien_vive": "Con mi mamá",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-5956",
+        "nombre": "Paola Pagliaro (mamá)",
+        "relacion": "Madre",
+        "telefono": "3516817698",
+        "es_principal": true,
+        "notas": "Paola Pagliaro (mamá) 3516817698"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-daspu",
+    "obra_social_nombre": "DASPU",
+    "plan_id": "",
+    "plan_nombre": "DASPU Universitario",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "18/12/2025"
+    },
+    "marca_temporal_registro": "18/12/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: Con mi mamá",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-59467519",
+    "clinica_id": "clinica-1",
+    "dni": "59467519",
+    "nombre": "Augusto Garcias",
+    "apellido": "Octavio",
+    "nombre_completo": "Octavio Augusto Garcias",
+    "edad": 3,
+    "telefono_whatsapp": "3512028780",
+    "email": "brisagarcias_99@hotmail.com",
+    "domicilio": "Henderson 5835",
+    "con_quien_vive": "Con mamá, abuelo y tío",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-2473",
+        "nombre": "Brisa",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512028780",
+        "es_principal": true,
+        "notas": "Brisa 3512028780"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Urgencias"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "26/12/2025"
+    },
+    "marca_temporal_registro": "26/12/2025",
+    "alergias": "",
+    "antecedentes": "Convivencia: Con mamá, abuelo y tío",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41322362",
+    "clinica_id": "clinica-1",
+    "dni": "41322362",
+    "nombre": "Mauro Javier",
+    "apellido": "Quinteros Diaz",
+    "nombre_completo": "Mauro Javier Quinteros Diaz",
+    "edad": 27,
+    "telefono_whatsapp": "3512046747",
+    "email": "mauro.quinteros@mi.unc.edu.ar",
+    "domicilio": "Mercedes 1753",
+    "con_quien_vive": "Pareja (Trinidad)",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-9684",
+        "nombre": "Alejandro (hermano)",
+        "relacion": "Hermano/a",
+        "telefono": "3517639537",
+        "es_principal": true,
+        "notas": "Alejandro (hermano) 3517639537"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "09/01/2026"
+    },
+    "marca_temporal_registro": "09/01/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Pareja (Trinidad)",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41322362",
+    "clinica_id": "clinica-1",
+    "dni": "41322362",
+    "nombre": "Mauro Javier",
+    "apellido": "Quinteros Diaz",
+    "nombre_completo": "Mauro Javier Quinteros Diaz",
+    "edad": 27,
+    "telefono_whatsapp": "3512046747",
+    "email": "mauro.quinteros@mi.unc.edu.ar",
+    "domicilio": "Mercedes 1753",
+    "con_quien_vive": "Pareja",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755505-245",
+        "nombre": "Trinidad",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3515148288",
+        "es_principal": true,
+        "notas": "Trinidad 3515148288"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "09/01/2026"
+    },
+    "marca_temporal_registro": "09/01/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Pareja",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-29475270",
+    "clinica_id": "clinica-1",
+    "dni": "29475270",
+    "nombre": "Benjamín Rumualdo",
+    "apellido": "Facundo",
+    "nombre_completo": "Facundo Benjamín Rumualdo",
+    "edad": 43,
+    "telefono_whatsapp": "3517592480",
+    "email": "rumualdofacundo@gmail.com",
+    "domicilio": "Marcelo t de Alvear 180",
+    "con_quien_vive": "Mis cuatro hijos.",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-5733",
+        "nombre": "Pedro Rumualdo.",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3515449908",
+        "es_principal": true,
+        "notas": "3515449908 Pedro Rumualdo."
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "12/01/2026"
+    },
+    "marca_temporal_registro": "12/01/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Mis cuatro hijos.",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-32785596",
+    "clinica_id": "clinica-1",
+    "dni": "32785596",
+    "nombre": "Marcelo",
+    "apellido": "Millan",
+    "nombre_completo": "Marcelo Millan",
+    "edad": 39,
+    "telefono_whatsapp": "3515998586",
+    "email": "mmillan87@gmail.com",
+    "domicilio": "Mariano Benitez 1462",
+    "con_quien_vive": "Novia",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-3918",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "35153061007",
+        "es_principal": true,
+        "notas": "35153061007"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "23/01/2026"
+    },
+    "marca_temporal_registro": "23/01/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Novia",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-35137021",
+    "clinica_id": "clinica-1",
+    "dni": "35137021",
+    "nombre": "Stefania",
+    "apellido": "Mari",
+    "nombre_completo": "Stefania Mari",
+    "edad": 35,
+    "telefono_whatsapp": "3548583621",
+    "email": "licstefaniamari@gmail.com",
+    "domicilio": "Catamarca 1295. Córdoba",
+    "con_quien_vive": "Sola",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-3795",
+        "nombre": "Virginia Zuvic (amiga)",
+        "relacion": "Amigo/a",
+        "telefono": "351-3953132",
+        "es_principal": true,
+        "notas": "Virginia Zuvic (amiga) 351-3953132"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-sancor",
+    "obra_social_nombre": "Sancor Salud",
+    "plan_id": "",
+    "plan_nombre": "Plan 500",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/01/2026"
+    },
+    "marca_temporal_registro": "29/01/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Sola",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-39421625",
+    "clinica_id": "clinica-1",
+    "dni": "39421625",
+    "nombre": "Alberto Suárez",
+    "apellido": "Cristian",
+    "nombre_completo": "Cristian Alberto Suárez",
+    "edad": 30,
+    "telefono_whatsapp": "3518179023",
+    "email": "cristiansuarez9583@gmail.com",
+    "domicilio": "José Antonio Ceballos 1421",
+    "con_quien_vive": "Madre",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-4200",
+        "nombre": "Santiago",
+        "relacion": "Tío/a",
+        "telefono": "3513964324",
+        "es_principal": true,
+        "notas": "3513964324 Santiago"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "18/02/2026"
+    },
+    "marca_temporal_registro": "18/02/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Madre",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-28656078",
+    "clinica_id": "clinica-1",
+    "dni": "28656078",
+    "nombre": "Marta Contreras",
+    "apellido": "Adriana",
+    "nombre_completo": "Adriana Marta Contreras",
+    "edad": 44,
+    "telefono_whatsapp": "3516707340",
+    "email": "adrianacontreras07@hotmail.com",
+    "domicilio": "Félix paz 684",
+    "con_quien_vive": "Mis dos hijos",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-6260",
+        "nombre": "Francisco",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516118249",
+        "es_principal": true,
+        "notas": "Francisco 3516118249"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Swiss Medical"
+    },
+    "obra_social_id": "os-3",
+    "obra_social_nombre": "Swiss Medical",
+    "plan_id": "",
+    "plan_nombre": "SMG20",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "25/03/2026"
+    },
+    "marca_temporal_registro": "25/03/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Mis dos hijos",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-53729683",
+    "clinica_id": "clinica-1",
+    "dni": "53729683",
+    "nombre": "Ramos Rodriguez",
+    "apellido": "Sebastian",
+    "nombre_completo": "SEBASTIAN RAMOS RODRIGUEZ",
+    "edad": 12,
+    "telefono_whatsapp": "3512950121",
+    "email": "natiroo@hotmail.com",
+    "domicilio": "PÚBLICA H 5814. CARRARA DE HORIZONTE",
+    "con_quien_vive": "Papá, Mamá y una Hermana.",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-506",
+        "nombre": "Jesica",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516294012",
+        "es_principal": true,
+        "notas": "3516294012 JESICA"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "ECCO"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "OSPSA",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "22/04/2026"
+    },
+    "marca_temporal_registro": "22/04/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Papá, Mamá y una Hermana.",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-55286301",
+    "clinica_id": "clinica-1",
+    "dni": "55286301",
+    "nombre": "Ussei Perez",
+    "apellido": "Guillermina",
+    "nombre_completo": "Guillermina Ussei Perez",
+    "edad": 10,
+    "telefono_whatsapp": "3516125357",
+    "email": "lucasru@gmail.com",
+    "domicilio": "Calle Publica G 5807",
+    "con_quien_vive": "Papa mama y hermano",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755507-213",
+        "nombre": "Lucas Ussei",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "Lucas Ussei",
+        "es_principal": true,
+        "notas": "Lucas Ussei"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Urgencias"
+    },
+    "obra_social_id": "os-2",
+    "obra_social_nombre": "OSDE",
+    "plan_id": "",
+    "plan_nombre": "Plan 210",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/04/2026"
+    },
+    "marca_temporal_registro": "29/04/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Papa mama y hermano",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-56761915",
+    "clinica_id": "clinica-1",
+    "dni": "56761915",
+    "nombre": "Ussei Perez",
+    "apellido": "Benjamin",
+    "nombre_completo": "Benjamin Ussei Perez",
+    "edad": 8,
+    "telefono_whatsapp": "3516125357",
+    "email": "lucasru@gmail.com",
+    "domicilio": "Calle Publica G 5807",
+    "con_quien_vive": "Papá Mamá y hermana",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-5467",
+        "nombre": "Lucas Ussei",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516125357",
+        "es_principal": true,
+        "notas": "Lucas Ussei 3516125357"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Urgencias"
+    },
+    "obra_social_id": "os-2",
+    "obra_social_nombre": "OSDE",
+    "plan_id": "",
+    "plan_nombre": "Plan 210",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/04/2026"
+    },
+    "marca_temporal_registro": "29/04/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Papá Mamá y hermana",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-2337557116938743",
+    "clinica_id": "clinica-1",
+    "dni": "2337557116938743",
+    "nombre": "Manuel Alejandro",
+    "apellido": "Basualdo Y Claudia Mabel Longhitano",
+    "nombre_completo": "Manuel Alejandro basualdo y claudia Mabel longhitano",
+    "edad": 52,
+    "telefono_whatsapp": "1172356961",
+    "email": "claulongui@hotmail.com",
+    "domicilio": "Publica J 6140 carrera de horizonte norte",
+    "con_quien_vive": "Esposa,  hija  y cuñada",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-7674",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "1151082041",
+        "es_principal": true,
+        "notas": "1151082041"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "PAMI",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "29/04/2026"
+    },
+    "marca_temporal_registro": "29/04/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Esposa,  hija  y cuñada",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-26925630",
+    "clinica_id": "clinica-1",
+    "dni": "26925630",
+    "nombre": "Eliana Resnik",
+    "apellido": "Lorena",
+    "nombre_completo": "Lorena Eliana Resnik",
+    "edad": 47,
+    "telefono_whatsapp": "3585080138",
+    "email": "l_resnik@hotmail.com",
+    "domicilio": "Av.Hipolito Irigoyen 165 6b",
+    "con_quien_vive": "Sola",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-2756",
+        "nombre": "Maria Luz Recalde (hija)",
+        "relacion": "Hijo/a",
+        "telefono": "358 507-5677",
+        "es_principal": true,
+        "notas": "Maria Luz Recalde (hija) 358 507-5677"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Apross"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "01/05/2026"
+    },
+    "marca_temporal_registro": "01/05/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Sola",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-22928471",
+    "clinica_id": "clinica-1",
+    "dni": "22928471",
+    "nombre": "Carlos Lodeiro",
+    "apellido": "Juan",
+    "nombre_completo": "Juan Carlos Lodeiro",
+    "edad": 53,
+    "telefono_whatsapp": "3516369940",
+    "email": "jclodeiro@yahoo.com.ar",
+    "domicilio": "Angelo de Peredo 431 Piso DPTO F",
+    "con_quien_vive": "Solo",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-9802",
+        "nombre": "Sonia Zannini",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "351 2040712",
+        "es_principal": true,
+        "notas": "351 2040712 Sonia Zannini"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Prevención",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "13/05/2026"
+    },
+    "marca_temporal_registro": "13/05/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Solo",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36141569",
+    "clinica_id": "clinica-1",
+    "dni": "36141569",
+    "nombre": "Jorgelina Gonzalez",
+    "apellido": "Daniela",
+    "nombre_completo": "Daniela jorgelina gonzalez",
+    "edad": 34,
+    "telefono_whatsapp": "",
+    "email": "danielajgonzalez@hotmail.es",
+    "domicilio": "Rio gallegos 1505",
+    "con_quien_vive": "2 hijos y pareja",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-5933",
+        "nombre": "Leonardo Petri",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513470329",
+        "es_principal": true,
+        "notas": "3513470329 leonardo petri"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-8",
+    "obra_social_nombre": "Medifé",
+    "plan_id": "",
+    "plan_nombre": "Plata",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/05/2026"
+    },
+    "marca_temporal_registro": "14/05/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: 2 hijos y pareja",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41963480",
+    "clinica_id": "clinica-1",
+    "dni": "41963480",
+    "nombre": "Matías Muñoz",
+    "apellido": "Rodrigo",
+    "nombre_completo": "Rodrigo Matías Muñoz",
+    "edad": 26,
+    "telefono_whatsapp": "3541627064",
+    "email": "rodrimatimunoz@gmail.com",
+    "domicilio": "Maipú 556, Villa Carlos Paz",
+    "con_quien_vive": "Mi madre y mi padre",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-9131",
+        "nombre": ", Marcela",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3515433510",
+        "es_principal": true,
+        "notas": "3515433510, Marcela"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "19/05/2026"
+    },
+    "marca_temporal_registro": "19/05/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Mi madre y mi padre",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-24991219",
+    "clinica_id": "clinica-1",
+    "dni": "24991219",
+    "nombre": "Alberto Cesaro",
+    "apellido": "Daniel",
+    "nombre_completo": "Daniel Alberto Cesaro",
+    "edad": 50,
+    "telefono_whatsapp": "3513184651",
+    "email": "danielcesaro59@gmail.com",
+    "domicilio": "Calle 19 4290 Carrara de horizonte",
+    "con_quien_vive": "esposa y mis dos hijas",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-6942",
+        "nombre": "Soledad",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3517657069",
+        "es_principal": true,
+        "notas": "Soledad 3517657069"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Emergencia"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Omint",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "02/06/2026"
+    },
+    "marca_temporal_registro": "02/06/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: esposa y mis dos hijas",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-52862920",
+    "clinica_id": "clinica-1",
+    "dni": "52862920",
+    "nombre": "Escalante",
+    "apellido": "Delfina",
+    "nombre_completo": "Escalante Delfina",
+    "edad": 13,
+    "telefono_whatsapp": "3512154805",
+    "email": "escalanteulises080@gmail.com",
+    "domicilio": "Cleto aguirre 6577",
+    "con_quien_vive": "Padre",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-9853",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512469696",
+        "es_principal": true,
+        "notas": "3512469696"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Emi"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Nobis",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/06/2026"
+    },
+    "marca_temporal_registro": "08/06/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Padre",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-48532094",
+    "clinica_id": "clinica-1",
+    "dni": "48532094",
+    "nombre": "Tait Abramor",
+    "apellido": "Julián",
+    "nombre_completo": "Julián Tait Abramor",
+    "edad": 17,
+    "telefono_whatsapp": "3512042635",
+    "email": "emiliotait3@gmail.com",
+    "domicilio": "Caseros 686",
+    "con_quien_vive": "Madre y padre",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-6948",
+        "nombre": "Emilio Tait Tel",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3512326878",
+        "es_principal": true,
+        "notas": "Emilio Tait  tel: 3512326878"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-apross",
+    "obra_social_nombre": "APROSS",
+    "plan_id": "",
+    "plan_nombre": "Directo / Adherentes",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "08/06/2026"
+    },
+    "marca_temporal_registro": "08/06/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Madre y padre",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-42336054",
+    "clinica_id": "clinica-1",
+    "dni": "42336054",
+    "nombre": "Greta",
+    "apellido": "Rizzi",
+    "nombre_completo": "Greta Rizzi",
+    "edad": 26,
+    "telefono_whatsapp": "3517047881",
+    "email": "grerizzi123@gmail.com",
+    "domicilio": "Laguna Honda 8983",
+    "con_quien_vive": "Con mí mamá",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-7188",
+        "nombre": "3,51154e+11",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3,51154E+11",
+        "es_principal": true,
+        "notas": "3,51154E+11"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "07/08/2026"
+    },
+    "marca_temporal_registro": "07/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Con mí mamá",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-row-91-1787937755508",
+    "clinica_id": "clinica-1",
+    "dni": "S-DNI-91",
+    "nombre": "L",
+    "apellido": "Sin Apellido",
+    "nombre_completo": "L",
+    "edad": "",
+    "telefono_whatsapp": "",
+    "email": "fernandezluna.admin@gmail.com",
+    "domicilio": "O",
+    "con_quien_vive": "M",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-7548",
+        "nombre": "O",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "O",
+        "es_principal": true,
+        "notas": "O"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/08/2026"
+    },
+    "marca_temporal_registro": "14/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: M",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-46451115",
+    "clinica_id": "clinica-1",
+    "dni": "46451115",
+    "nombre": "Alejandra Cesaro",
+    "apellido": "Agustina",
+    "nombre_completo": "Agustina Alejandra Cesaro",
+    "edad": 20,
+    "telefono_whatsapp": "3512366646",
+    "email": "agustinacesaro13@gmail.com",
+    "domicilio": "Calle pública 19 4290",
+    "con_quien_vive": "Mamá, papá, hermana",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-8566",
+        "nombre": "Daniel Alberto Cesaro",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "+54 9 3513 18-4651",
+        "es_principal": true,
+        "notas": "+54 9 3513 18-4651 Daniel Alberto Cesaro"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": true,
+      "nombre": "Omint"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/08/2026"
+    },
+    "marca_temporal_registro": "14/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Mamá, papá, hermana",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-28656444",
+    "clinica_id": "clinica-1",
+    "dni": "28656444",
+    "nombre": "Ricardo De",
+    "apellido": "La Fuente",
+    "nombre_completo": "RICARDO DE LA FUENTE",
+    "edad": 45,
+    "telefono_whatsapp": "3515115202",
+    "email": "delafuentericardoadrian@gmail.com",
+    "domicilio": "CALLE PUBLICA D 5730 CARRARA DE HORIZONTE",
+    "con_quien_vive": "Esposa e hijos",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-5354",
+        "nombre": "Sabrina",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3515158574",
+        "es_principal": true,
+        "notas": "3515158574 SABRINA"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-8",
+    "obra_social_nombre": "Medifé",
+    "plan_id": "",
+    "plan_nombre": "Plata",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "14/08/2026"
+    },
+    "marca_temporal_registro": "14/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Esposa e hijos",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-48670367",
+    "clinica_id": "clinica-1",
+    "dni": "48670367",
+    "nombre": "Dante",
+    "apellido": "Formento",
+    "nombre_completo": "Dante Formento",
+    "edad": 17,
+    "telefono_whatsapp": "3518071415",
+    "email": "danteformnto@gmail.com",
+    "domicilio": "Av santa fe 85",
+    "con_quien_vive": "Mama",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-9323",
+        "nombre": "Contacto de Urgencias",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3513908183",
+        "es_principal": true,
+        "notas": "3513908183"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Parque salud",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "15/08/2026"
+    },
+    "marca_temporal_registro": "15/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Mama",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-11072757",
+    "clinica_id": "clinica-1",
+    "dni": "11072757",
+    "nombre": "Susana Nallim",
+    "apellido": "María",
+    "nombre_completo": "María Susana Nallim",
+    "edad": 72,
+    "telefono_whatsapp": "3875384077",
+    "email": "msusananallim@gmail.com",
+    "domicilio": "Salta capital complejo arenales torreG dpto 197",
+    "con_quien_vive": "Sola",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-8617",
+        "nombre": "María Ana Ortiz Cel",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3876115456",
+        "es_principal": true,
+        "notas": "María Ana Ortiz cel 3876115456"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "IPS",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "18/08/2026"
+    },
+    "marca_temporal_registro": "18/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Sola",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-41963480",
+    "clinica_id": "clinica-1",
+    "dni": "41963480",
+    "nombre": "Matías Muñoz",
+    "apellido": "Rodrigo",
+    "nombre_completo": "Rodrigo Matías Muñoz",
+    "edad": 27,
+    "telefono_whatsapp": "3541627064",
+    "email": "rodrimatimunoz@gmail.com",
+    "domicilio": "Maipú 556, Villa Carlos Paz",
+    "con_quien_vive": "Con mi mamá y mi papá",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-3917",
+        "nombre": "Marcela Silvana Molina,",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3515433510",
+        "es_principal": true,
+        "notas": "Marcela Silvana Molina, 3515433510"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-1",
+    "obra_social_nombre": "Particular",
+    "plan_id": "",
+    "plan_nombre": "Particular",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "20/08/2026"
+    },
+    "marca_temporal_registro": "20/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Con mi mamá y mi papá",
+    "medicacion_habitual": "",
+    "activo": true
+  },
+  {
+    "id": "pac-36447625",
+    "clinica_id": "clinica-1",
+    "dni": "36447625",
+    "nombre": "Eugenio",
+    "apellido": "March",
+    "nombre_completo": "Eugenio March",
+    "edad": 34,
+    "telefono_whatsapp": "3516591409",
+    "email": "eugeniomarch@hotmail.com",
+    "domicilio": "M20 L43 docta",
+    "con_quien_vive": "Primo",
+    "contactos_familiares": [
+      {
+        "id": "fam-1787937755508-9006",
+        "nombre": "Pablo",
+        "relacion": "Contacto Familiar / Urgencias",
+        "telefono": "3516347111",
+        "es_principal": true,
+        "notas": "3516347111 pablo"
+      }
+    ],
+    "servicio_emergencia": {
+      "posee": false,
+      "nombre": "No posee"
+    },
+    "obra_social_id": "os-8",
+    "obra_social_nombre": "Medifé",
+    "plan_id": "",
+    "plan_nombre": "Plata",
+    "numero_afiliado": "",
+    "consentimiento_informado": {
+      "aceptado": true,
+      "fecha_firma": "25/08/2026"
+    },
+    "marca_temporal_registro": "25/08/2026",
+    "alergias": "",
+    "antecedentes": "Convivencia: Primo",
+    "medicacion_habitual": "",
+    "activo": true
+  }
+]

@@ -310,24 +310,75 @@ export const INITIAL_DATA = {
   ],
   obras_sociales: [
     { id: 'os-1', clinica_id: 'clinica-1', nombre: 'Particular / Privado', sigla: 'PART', cuit: '', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Abono por sesión o pack mensual en recepción/transferencia.', activo: true },
-    { id: 'os-apross', clinica_id: 'clinica-1', nombre: 'APROSS (Córdoba)', sigla: 'APROSS', cuit: '30-99923812-4', requiere_bono: true, requiere_autorizacion: true, instrucciones: 'Validar credencial digital en App oficial APROSS y código de token.', activo: true },
-    { id: 'os-cppc', clinica_id: 'clinica-1', nombre: 'Colegio de Psicólogos de Cba (CPPC)', sigla: 'CPPC', cuit: '30-61849201-3', requiere_bono: true, requiere_autorizacion: false, instrucciones: 'Presentación por planilla oficial del Colegio de Psicólogos.', activo: true },
+    { id: 'os-sancor', clinica_id: 'clinica-1', nombre: 'SanCor Salud', sigla: 'SANCOR', cuit: '30-64589201-8', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Presentar credencial digital de la App SanCor Salud.', activo: true },
     { id: 'os-2', clinica_id: 'clinica-1', nombre: 'OSDE', sigla: 'OSDE', cuit: '30-54674125-3', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Presentar credencial digital activa y DNI.', activo: true },
     { id: 'os-3', clinica_id: 'clinica-1', nombre: 'Swiss Medical', sigla: 'SMG', cuit: '30-67890123-4', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Validación por token digital en recepción.', activo: true },
     { id: 'os-4', clinica_id: 'clinica-1', nombre: 'Galeno', sigla: 'GAL', cuit: '30-70809012-5', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Presentar credencial digital o física.', activo: true },
+    { id: 'os-8', clinica_id: 'clinica-1', nombre: 'Medifé', sigla: 'MED', cuit: '30-68192301-7', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Credencial digital y autorización previa para estudios especiales.', activo: true },
+    { id: 'os-apross', clinica_id: 'clinica-1', nombre: 'APROSS (Córdoba)', sigla: 'APROSS', cuit: '30-99923812-4', requiere_bono: true, requiere_autorizacion: true, instrucciones: 'Validar credencial digital en App oficial APROSS y código de token.', activo: true },
+    { id: 'os-cppc', clinica_id: 'clinica-1', nombre: 'Colegio de Psicólogos de Cba (CPPC)', sigla: 'CPPC', cuit: '30-61849201-3', requiere_bono: true, requiere_autorizacion: false, instrucciones: 'Presentación por planilla oficial del Colegio de Psicólogos.', activo: true },
     { id: 'os-5', clinica_id: 'clinica-1', nombre: 'PAMI', sigla: 'PAMI', cuit: '30-52276392-2', requiere_bono: true, requiere_autorizacion: true, instrucciones: 'Presentar carnet PAMI y Orden Médica Electrónica (OME).', activo: true },
-    { id: 'os-8', clinica_id: 'clinica-1', nombre: 'Medifé', sigla: 'MED', cuit: '30-68192301-7', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Credencial digital y autorización previa para estudios especiales.', activo: true }
+    { id: 'os-osecac', clinica_id: 'clinica-1', nombre: 'OSECAC', sigla: 'OSECAC', cuit: '30-54728901-2', requiere_bono: true, requiere_autorizacion: false, instrucciones: 'Presentar carnet OSECAC y último recibo de sueldo.', activo: true },
+    { id: 'os-omint', clinica_id: 'clinica-1', nombre: 'OMINT', sigla: 'OMINT', cuit: '30-61298451-9', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Validar credencial OMINT digital.', activo: true },
+    { id: 'os-federada', clinica_id: 'clinica-1', nombre: 'Federada Salud', sigla: 'FEDERADA', cuit: '30-57129038-4', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Credencial digital o carnet.', activo: true },
+    { id: 'os-prevencion', clinica_id: 'clinica-1', nombre: 'Prevención Salud', sigla: 'PREVENCION', cuit: '30-71409283-1', requiere_bono: false, requiere_autorizacion: false, instrucciones: 'Validar por token en recepción.', activo: true }
   ],
   planes: [
-    { id: 'pl-1', obra_social_id: 'os-1', nombre_plan: 'Particular Sesión Individual', codigo_plan: 'PART-STD', descripcion: 'Arancel ético de referencia CPPC / Particular', activo: true },
-    { id: 'pl-1b', obra_social_id: 'os-1', nombre_plan: 'Abono Mensual (Pack 4 Sesiones)', codigo_plan: 'PART-PACK4', descripcion: 'Pack mensual con descuento para psicoterapia continua', activo: true },
-    { id: 'pl-apross-1', obra_social_id: 'os-apross', nombre_plan: 'APROSS Directo / Adherentes', codigo_plan: 'APROSS-DIR', descripcion: 'Cobertura con copago institucional', activo: true },
-    { id: 'pl-cppc-1', obra_social_id: 'os-cppc', nombre_plan: 'Convenio Colectivo CPPC Obras Sociales', codigo_plan: 'CPPC-CONV', descripcion: 'Liquidación a través del Colegio de Psicólogos', activo: true },
-    { id: 'pl-2', obra_social_id: 'os-2', nombre_plan: 'Plan 210', codigo_plan: 'OSDE-210', descripcion: 'Cobertura directa sin coseguro', activo: true },
-    { id: 'pl-3', obra_social_id: 'os-2', nombre_plan: 'Plan 310', codigo_plan: 'OSDE-310', descripcion: 'Cobertura amplia', activo: true },
-    { id: 'pl-5', obra_social_id: 'os-3', nombre_plan: 'SMG20', codigo_plan: 'SMG-20', descripcion: 'Con copago en ciertas prácticas', activo: true },
-    { id: 'pl-7', obra_social_id: 'os-4', nombre_plan: 'Plata / Oro', codigo_plan: 'GAL-PO', descripcion: 'Cobertura integral', activo: true },
-    { id: 'pl-8', obra_social_id: 'os-5', nombre_plan: 'PAMI Integral', codigo_plan: 'PAMI-INT', descripcion: 'Requiere OME', activo: true }
+    // Particular
+    { id: 'pl-1', obra_social_id: 'os-1', nombre: 'Particular Sesión Individual', nombre_plan: 'Particular Sesión Individual', codigo_plan: 'PART-STD', descripcion: 'Arancel ético de referencia CPPC / Particular', activo: true },
+    { id: 'pl-1b', obra_social_id: 'os-1', nombre: 'Abono Mensual (Pack 4 Sesiones)', nombre_plan: 'Abono Mensual (Pack 4 Sesiones)', codigo_plan: 'PART-PACK4', descripcion: 'Pack mensual con descuento para psicoterapia continua', activo: true },
+    { id: 'pl-1c', obra_social_id: 'os-1', nombre: 'Consulta Especializada Privada', nombre_plan: 'Consulta Especializada Privada', codigo_plan: 'PART-ESP', descripcion: 'Atención especializada sin cobertura', activo: true },
+    // Medifé
+    { id: 'pl-med-bronce', obra_social_id: 'os-8', nombre: 'Bronce', nombre_plan: 'Bronce', codigo_plan: 'MED-BRONCE', descripcion: 'Plan inicial Medifé', activo: true },
+    { id: 'pl-med-plata', obra_social_id: 'os-8', nombre: 'Plata', nombre_plan: 'Plata', codigo_plan: 'MED-PLATA', descripcion: 'Plan intermedio Medifé', activo: true },
+    { id: 'pl-med-oro', obra_social_id: 'os-8', nombre: 'Oro', nombre_plan: 'Oro', codigo_plan: 'MED-ORO', descripcion: 'Plan Oro Medifé sin coseguros', activo: true },
+    { id: 'pl-med-platinum', obra_social_id: 'os-8', nombre: 'Platinum', nombre_plan: 'Platinum', codigo_plan: 'MED-PLAT', descripcion: 'Máxima cobertura Medifé', activo: true },
+    // SanCor Salud
+    { id: 'pl-sancor-500', obra_social_id: 'os-sancor', nombre: 'Plan 500', nombre_plan: 'Plan 500', codigo_plan: 'SANCOR-500', descripcion: 'SanCor Salud Plan 500', activo: true },
+    { id: 'pl-sancor-1000', obra_social_id: 'os-sancor', nombre: 'Plan 1000', nombre_plan: 'Plan 1000', codigo_plan: 'SANCOR-1000', descripcion: 'SanCor Salud Plan 1000', activo: true },
+    { id: 'pl-sancor-1500', obra_social_id: 'os-sancor', nombre: 'Plan 1500', nombre_plan: 'Plan 1500', codigo_plan: 'SANCOR-1500', descripcion: 'SanCor Salud Plan 1500', activo: true },
+    { id: 'pl-sancor-3000', obra_social_id: 'os-sancor', nombre: 'Plan 3000', nombre_plan: 'Plan 3000', codigo_plan: 'SANCOR-3000', descripcion: 'SanCor Salud Plan 3000', activo: true },
+    { id: 'pl-sancor-4000', obra_social_id: 'os-sancor', nombre: 'Plan 4000', nombre_plan: 'Plan 4000', codigo_plan: 'SANCOR-4000', descripcion: 'SanCor Salud Plan 4000', activo: true },
+    { id: 'pl-sancor-5000', obra_social_id: 'os-sancor', nombre: 'Plan 5000', nombre_plan: 'Plan 5000', codigo_plan: 'SANCOR-5000', descripcion: 'SanCor Salud Plan 5000 Exclusive', activo: true },
+    // OSDE
+    { id: 'pl-2', obra_social_id: 'os-2', nombre: 'Plan 210', nombre_plan: 'Plan 210', codigo_plan: 'OSDE-210', descripcion: 'Cobertura directa OSDE 210', activo: true },
+    { id: 'pl-3', obra_social_id: 'os-2', nombre: 'Plan 310', nombre_plan: 'Plan 310', codigo_plan: 'OSDE-310', descripcion: 'Cobertura amplia OSDE 310', activo: true },
+    { id: 'pl-4', obra_social_id: 'os-2', nombre: 'Plan 410', nombre_plan: 'Plan 410', codigo_plan: 'OSDE-410', descripcion: 'Cobertura premium OSDE 410', activo: true },
+    { id: 'pl-450', obra_social_id: 'os-2', nombre: 'Plan 450', nombre_plan: 'Plan 450', codigo_plan: 'OSDE-450', descripcion: 'Cobertura ejecutiva OSDE 450', activo: true },
+    { id: 'pl-510', obra_social_id: 'os-2', nombre: 'Plan 510', nombre_plan: 'Plan 510', codigo_plan: 'OSDE-510', descripcion: 'Máxima cobertura OSDE 510', activo: true },
+    // Swiss Medical
+    { id: 'pl-5', obra_social_id: 'os-3', nombre: 'SMG20', nombre_plan: 'SMG20', codigo_plan: 'SMG-20', descripcion: 'Swiss Medical SMG20', activo: true },
+    { id: 'pl-smg30', obra_social_id: 'os-3', nombre: 'SMG30', nombre_plan: 'SMG30', codigo_plan: 'SMG-30', descripcion: 'Swiss Medical SMG30', activo: true },
+    { id: 'pl-smg50', obra_social_id: 'os-3', nombre: 'SMG50', nombre_plan: 'SMG50', codigo_plan: 'SMG-50', descripcion: 'Swiss Medical SMG50', activo: true },
+    { id: 'pl-smg70', obra_social_id: 'os-3', nombre: 'SMG70', nombre_plan: 'SMG70', codigo_plan: 'SMG-70', descripcion: 'Swiss Medical SMG70', activo: true },
+    // Galeno
+    { id: 'pl-gal-azul', obra_social_id: 'os-4', nombre: 'Azul 220', nombre_plan: 'Azul 220', codigo_plan: 'GAL-220', descripcion: 'Galeno Azul 220', activo: true },
+    { id: 'pl-7', obra_social_id: 'os-4', nombre: 'Plata 330', nombre_plan: 'Plata 330', codigo_plan: 'GAL-330', descripcion: 'Galeno Plata 330', activo: true },
+    { id: 'pl-gal-oro', obra_social_id: 'os-4', nombre: 'Oro 440', nombre_plan: 'Oro 440', codigo_plan: 'GAL-440', descripcion: 'Galeno Oro 440', activo: true },
+    { id: 'pl-gal-550', obra_social_id: 'os-4', nombre: '550', nombre_plan: '550', codigo_plan: 'GAL-550', descripcion: 'Galeno 550', activo: true },
+    // APROSS
+    { id: 'pl-apross-1', obra_social_id: 'os-apross', nombre: 'APROSS Directo', nombre_plan: 'APROSS Directo', codigo_plan: 'APROSS-DIR', descripcion: 'Afiliados titulares y familiares directos', activo: true },
+    { id: 'pl-apross-2', obra_social_id: 'os-apross', nombre: 'APROSS Adherente', nombre_plan: 'APROSS Adherente', codigo_plan: 'APROSS-ADH', descripcion: 'Afiliados voluntarios / adherentes', activo: true },
+    // CPPC
+    { id: 'pl-cppc-1', obra_social_id: 'os-cppc', nombre: 'Convenio Colectivo CPPC', nombre_plan: 'Convenio Colectivo CPPC', codigo_plan: 'CPPC-CONV', descripcion: 'Liquidación por Colegio de Psicólogos', activo: true },
+    { id: 'pl-cppc-2', obra_social_id: 'os-cppc', nombre: 'Particular Ético CPPC', nombre_plan: 'Particular Ético CPPC', codigo_plan: 'CPPC-ETICO', descripcion: 'Arancel ético fijado por CPPC', activo: true },
+    // PAMI
+    { id: 'pl-8', obra_social_id: 'os-5', nombre: 'PAMI Integral', nombre_plan: 'PAMI Integral', codigo_plan: 'PAMI-INT', descripcion: 'Requiere OME digital', activo: true },
+    { id: 'pl-pami-vet', obra_social_id: 'os-5', nombre: 'PAMI Veteranos', nombre_plan: 'PAMI Veteranos', codigo_plan: 'PAMI-VET', descripcion: 'Cobertura 100%', activo: true },
+    // OSECAC
+    { id: 'pl-osecac-gen', obra_social_id: 'os-osecac', nombre: 'Plan General', nombre_plan: 'Plan General', codigo_plan: 'OSECAC-GEN', descripcion: 'Afiliados comercio', activo: true },
+    { id: 'pl-osecac-mono', obra_social_id: 'os-osecac', nombre: 'Monotributo', nombre_plan: 'Monotributo', codigo_plan: 'OSECAC-MONO', descripcion: 'Adherentes monotributo', activo: true },
+    // OMINT
+    { id: 'pl-omint-o', obra_social_id: 'os-omint', nombre: 'Plan O', nombre_plan: 'Plan O', codigo_plan: 'OMINT-O', descripcion: 'OMINT Línea O', activo: true },
+    { id: 'pl-omint-f', obra_social_id: 'os-omint', nombre: 'Plan F', nombre_plan: 'Plan F', codigo_plan: 'OMINT-F', descripcion: 'OMINT Línea F', activo: true },
+    { id: 'pl-omint-prem', obra_social_id: 'os-omint', nombre: 'Plan Premium', nombre_plan: 'Plan Premium', codigo_plan: 'OMINT-PREM', descripcion: 'OMINT Premium', activo: true },
+    // Federada Salud
+    { id: 'pl-fed-2000', obra_social_id: 'os-federada', nombre: 'Plan 2000', nombre_plan: 'Plan 2000', codigo_plan: 'FED-2000', descripcion: 'Federada Salud 2000', activo: true },
+    { id: 'pl-fed-3000', obra_social_id: 'os-federada', nombre: 'Plan 3000', nombre_plan: 'Plan 3000', codigo_plan: 'FED-3000', descripcion: 'Federada Salud 3000', activo: true },
+    // Prevención Salud
+    { id: 'pl-prev-a1', obra_social_id: 'os-prevencion', nombre: 'Plan A1', nombre_plan: 'Plan A1', codigo_plan: 'PREV-A1', descripcion: 'Prevención Salud A1', activo: true },
+    { id: 'pl-prev-a2', obra_social_id: 'os-prevencion', nombre: 'Plan A2', nombre_plan: 'Plan A2', codigo_plan: 'PREV-A2', descripcion: 'Prevención Salud A2', activo: true },
+    { id: 'pl-prev-a4', obra_social_id: 'os-prevencion', nombre: 'Plan A4', nombre_plan: 'Plan A4', codigo_plan: 'PREV-A4', descripcion: 'Prevención Salud A4', activo: true }
   ],
   nomenclador: [
     // 1. PSICOLOGÍA & SALUD MENTAL (CPPC / PMO)
@@ -5006,9 +5057,39 @@ export const StorageService = {
   },
 
   // PLANES
-  getPlanes: () => StorageService.getCollection(STORAGE_KEYS.PLANES),
+  getPlanes: () => {
+    let items = StorageService.getCollection(STORAGE_KEYS.PLANES);
+    const initialPlanes = INITIAL_DATA.planes || [];
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      items = initialPlanes;
+      StorageService.saveCollection(STORAGE_KEYS.PLANES, items);
+      return items;
+    }
+    
+    // Auto-fusionar planes iniciales faltantes (para no perder planes nuevos en bases ya creadas)
+    let modified = false;
+    for (const initPlan of initialPlanes) {
+      const exists = items.some(p => p.id === initPlan.id || (p.obra_social_id === initPlan.obra_social_id && (p.nombre_plan === initPlan.nombre_plan || p.nombre === initPlan.nombre)));
+      if (!exists) {
+        items.push(initPlan);
+        modified = true;
+      }
+    }
+    // Normalizar 'nombre' y 'nombre_plan'
+    items.forEach(p => {
+      p.nombre = p.nombre || p.nombre_plan || 'Plan Estándar';
+      p.nombre_plan = p.nombre_plan || p.nombre || 'Plan Estándar';
+    });
+
+    if (modified) {
+      StorageService.saveCollection(STORAGE_KEYS.PLANES, items);
+    }
+    return items;
+  },
   savePlan: (plan) => {
     const items = StorageService.getPlanes();
+    plan.nombre = plan.nombre || plan.nombre_plan || '';
+    plan.nombre_plan = plan.nombre_plan || plan.nombre || '';
     if (plan.id) {
       const idx = items.findIndex(p => p.id === plan.id);
       if (idx >= 0) items[idx] = { ...items[idx], ...plan };
@@ -5101,12 +5182,14 @@ export const StorageService = {
     const practica = StorageService.getNomenclador().find(p => p.id === practicaId);
     if (!practica) return 0;
 
-    const os = StorageService.getObrasSociales().find(o => o.id === obraSocialId);
-    if (os && os.sigla === 'PART') return Number(practica.valor_particular || 0);
+    const os = StorageService.getObrasSociales().find(o => o.id === obraSocialId || o.nombre?.toLowerCase() === obraSocialId?.toLowerCase());
+    if (os && (os.sigla === 'PART' || os.nombre?.toLowerCase().includes('particular'))) {
+      return Number(practica.valor_particular || 0);
+    }
     if (!planId) return Number(practica.coseguro_defecto || 0);
 
     const convenios = StorageService.getConveniosCoseguros();
-    const convenio = convenios.find(c => c.plan_id === planId && c.practica_id === practicaId);
+    const convenio = convenios.find(c => (c.plan_id === planId || c.plan_id === os?.id) && c.practica_id === practicaId);
     if (convenio) {
       if (convenio.cubierto_100) return 0;
       return Number(convenio.monto_coseguro || 0);

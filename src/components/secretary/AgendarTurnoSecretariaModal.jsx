@@ -204,8 +204,80 @@ export const AgendarTurnoSecretariaModal = ({
   // Planes disponibles para la obra social seleccionada
   const availablePlanes = useMemo(() => {
     if (!pacienteForm.obra_social_id) return [];
-    return planes.filter(p => p.obra_social_id === pacienteForm.obra_social_id);
-  }, [planes, pacienteForm.obra_social_id]);
+    const osObj = obrasSociales.find(os => 
+      os.id === pacienteForm.obra_social_id || 
+      os.nombre?.toLowerCase() === pacienteForm.obra_social_id.toLowerCase() || 
+      os.sigla?.toLowerCase() === pacienteForm.obra_social_id.toLowerCase()
+    );
+    const osId = osObj?.id || pacienteForm.obra_social_id;
+    const osNombre = (osObj?.nombre || pacienteForm.obra_social_id || '').toLowerCase();
+    const osSigla = (osObj?.sigla || '').toLowerCase();
+
+    const directMatches = planes.filter(p => {
+      if (p.obra_social_id === osId || p.obra_social_id === pacienteForm.obra_social_id) return true;
+      if (p.codigo_plan && osSigla && p.codigo_plan.toLowerCase().startsWith(osSigla)) return true;
+      if (p.obra_social_nombre && p.obra_social_nombre.toLowerCase().includes(osNombre)) return true;
+      return false;
+    });
+
+    if (directMatches.length > 0) return directMatches;
+
+    // Fallback inteligente
+    if (osNombre.includes('medife') || osNombre.includes('medifé')) {
+      return [
+        { id: 'pl-med-bronce', nombre: 'Bronce', nombre_plan: 'Bronce' },
+        { id: 'pl-med-plata', nombre: 'Plata', nombre_plan: 'Plata' },
+        { id: 'pl-med-oro', nombre: 'Oro', nombre_plan: 'Oro' },
+        { id: 'pl-med-platinum', nombre: 'Platinum', nombre_plan: 'Platinum' }
+      ];
+    }
+    if (osNombre.includes('sancor') || osNombre.includes('san cor')) {
+      return [
+        { id: 'pl-sancor-500', nombre: 'Plan 500', nombre_plan: 'Plan 500' },
+        { id: 'pl-sancor-1000', nombre: 'Plan 1000', nombre_plan: 'Plan 1000' },
+        { id: 'pl-sancor-1500', nombre: 'Plan 1500', nombre_plan: 'Plan 1500' },
+        { id: 'pl-sancor-3000', nombre: 'Plan 3000', nombre_plan: 'Plan 3000' },
+        { id: 'pl-sancor-4000', nombre: 'Plan 4000', nombre_plan: 'Plan 4000' },
+        { id: 'pl-sancor-5000', nombre: 'Plan 5000', nombre_plan: 'Plan 5000' }
+      ];
+    }
+    if (osNombre.includes('osde')) {
+      return [
+        { id: 'pl-2', nombre: 'Plan 210', nombre_plan: 'Plan 210' },
+        { id: 'pl-3', nombre: 'Plan 310', nombre_plan: 'Plan 310' },
+        { id: 'pl-4', nombre: 'Plan 410', nombre_plan: 'Plan 410' },
+        { id: 'pl-450', nombre: 'Plan 450', nombre_plan: 'Plan 450' },
+        { id: 'pl-510', nombre: 'Plan 510', nombre_plan: 'Plan 510' }
+      ];
+    }
+    if (osNombre.includes('swiss') || osNombre.includes('smg')) {
+      return [
+        { id: 'pl-5', nombre: 'SMG20', nombre_plan: 'SMG20' },
+        { id: 'pl-smg30', nombre: 'SMG30', nombre_plan: 'SMG30' },
+        { id: 'pl-smg50', nombre: 'SMG50', nombre_plan: 'SMG50' },
+        { id: 'pl-smg70', nombre: 'SMG70', nombre_plan: 'SMG70' }
+      ];
+    }
+    if (osNombre.includes('galeno')) {
+      return [
+        { id: 'pl-gal-azul', nombre: 'Azul 220', nombre_plan: 'Azul 220' },
+        { id: 'pl-7', nombre: 'Plata 330', nombre_plan: 'Plata 330' },
+        { id: 'pl-gal-oro', nombre: 'Oro 440', nombre_plan: 'Oro 440' },
+        { id: 'pl-gal-550', nombre: '550', nombre_plan: '550' }
+      ];
+    }
+    if (osNombre.includes('apross')) {
+      return [
+        { id: 'pl-apross-1', nombre: 'APROSS Directo', nombre_plan: 'APROSS Directo' },
+        { id: 'pl-apross-2', nombre: 'APROSS Adherente', nombre_plan: 'APROSS Adherente' }
+      ];
+    }
+
+    return [
+      { id: 'pl-gen-1', nombre: 'Plan Estándar', nombre_plan: 'Plan Estándar' },
+      { id: 'pl-gen-2', nombre: 'Plan Superior', nombre_plan: 'Plan Superior' }
+    ];
+  }, [planes, pacienteForm.obra_social_id, obrasSociales]);
 
   // Cálculo en tiempo real del coseguro / copago para la cobertura seleccionada
   const montoCoseguroActual = useMemo(() => {

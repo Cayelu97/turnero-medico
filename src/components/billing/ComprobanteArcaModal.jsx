@@ -53,7 +53,7 @@ export const ComprobanteArcaModal = ({ comprobante, onClose }) => {
         </div>
 
         {/* PLANTILLA OFICIAL FACTURA ELECTRÓNICA AFIP/ARCA (A4) */}
-        <div ref={printRef} className="border-2 border-slate-800 rounded-2xl p-6 bg-white text-slate-900 text-xs font-sans space-y-5 print:border-none print:p-0">
+        <div id="printable-area" ref={printRef} className="printable-content border-2 border-slate-800 rounded-2xl p-6 bg-white text-slate-900 text-xs font-sans space-y-5 print:border-none print:p-0">
           
           {/* HEADER FISCAL */}
           <div className="grid grid-cols-12 gap-2 border-b-2 border-slate-800 pb-4 relative">

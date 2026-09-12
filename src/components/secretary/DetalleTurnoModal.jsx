@@ -55,22 +55,101 @@ export const DetalleTurnoModal = ({
   const [dni, setDni] = useState('');
   const [obraSocialId, setObraSocialId] = useState('');
   const [planId, setPlanId] = useState('');
+  const [customPlanNombre, setCustomPlanNombre] = useState('');
   const [numeroAfiliado, setNumeroAfiliado] = useState('');
   const [observaciones, setObservaciones] = useState('');
 
   const paciente = turno ? pacientes.find(p => p.id === turno.paciente_id) : null;
   const profesional = turno ? profesionales.find(p => p.id === turno.profesional_id) : null;
   const consultorio = turno ? consultorios.find(c => c.id === turno.consultorio_id) : null;
-  const obraSocial = turno ? obrasSociales.find(os => os.id === (turno.obra_social_id || paciente?.obra_social_id)) : null;
-  const plan = turno ? planes.find(p => p.id === (turno.plan_id || paciente?.plan_id)) : null;
+  const obraSocial = turno ? (obrasSociales.find(os => os.id === (turno.obra_social_id || paciente?.obra_social_id) || os.nombre?.toLowerCase() === (turno.obra_social_id || paciente?.obra_social_id || '').toLowerCase())) : null;
+  const plan = turno ? (planes.find(p => p.id === (turno.plan_id || paciente?.plan_id) || p.nombre === (turno.plan_nombre || paciente?.plan_nombre))) : null;
   const servicio = turno ? servicios.find(s => s.id === turno.servicio_id) : null;
   const practica = turno ? nomenclador.find(n => n.id === turno.practica_id) : null;
+
+  // Obra Social activa en el form de edición
+  const selectedOs = useMemo(() => {
+    if (!obraSocialId) return null;
+    return obrasSociales.find(os => 
+      os.id === obraSocialId || 
+      os.nombre?.toLowerCase() === obraSocialId.toLowerCase() || 
+      os.sigla?.toLowerCase() === obraSocialId.toLowerCase()
+    );
+  }, [obrasSociales, obraSocialId]);
 
   // Planes disponibles filtrados según la obra social seleccionada en edición
   const availablePlanes = useMemo(() => {
     if (!obraSocialId) return [];
-    return planes.filter(p => p.obra_social_id === obraSocialId);
-  }, [planes, obraSocialId]);
+    const osId = selectedOs?.id || obraSocialId;
+    const osNombre = (selectedOs?.nombre || obraSocialId || '').toLowerCase();
+    const osSigla = (selectedOs?.sigla || '').toLowerCase();
+
+    const directMatches = planes.filter(p => {
+      if (p.obra_social_id === osId || p.obra_social_id === obraSocialId) return true;
+      if (p.codigo_plan && osSigla && p.codigo_plan.toLowerCase().startsWith(osSigla)) return true;
+      if (p.obra_social_nombre && p.obra_social_nombre.toLowerCase().includes(osNombre)) return true;
+      return false;
+    });
+
+    if (directMatches.length > 0) return directMatches;
+
+    // Smart fallback si la obra social no tiene planes explícitos en DB
+    if (osNombre.includes('medife') || osNombre.includes('medifé')) {
+      return [
+        { id: 'pl-med-bronce', nombre: 'Bronce', nombre_plan: 'Bronce' },
+        { id: 'pl-med-plata', nombre: 'Plata', nombre_plan: 'Plata' },
+        { id: 'pl-med-oro', nombre: 'Oro', nombre_plan: 'Oro' },
+        { id: 'pl-med-platinum', nombre: 'Platinum', nombre_plan: 'Platinum' }
+      ];
+    }
+    if (osNombre.includes('sancor') || osNombre.includes('san cor')) {
+      return [
+        { id: 'pl-sancor-500', nombre: 'Plan 500', nombre_plan: 'Plan 500' },
+        { id: 'pl-sancor-1000', nombre: 'Plan 1000', nombre_plan: 'Plan 1000' },
+        { id: 'pl-sancor-1500', nombre: 'Plan 1500', nombre_plan: 'Plan 1500' },
+        { id: 'pl-sancor-3000', nombre: 'Plan 3000', nombre_plan: 'Plan 3000' },
+        { id: 'pl-sancor-4000', nombre: 'Plan 4000', nombre_plan: 'Plan 4000' },
+        { id: 'pl-sancor-5000', nombre: 'Plan 5000', nombre_plan: 'Plan 5000' }
+      ];
+    }
+    if (osNombre.includes('osde')) {
+      return [
+        { id: 'pl-2', nombre: 'Plan 210', nombre_plan: 'Plan 210' },
+        { id: 'pl-3', nombre: 'Plan 310', nombre_plan: 'Plan 310' },
+        { id: 'pl-4', nombre: 'Plan 410', nombre_plan: 'Plan 410' },
+        { id: 'pl-450', nombre: 'Plan 450', nombre_plan: 'Plan 450' },
+        { id: 'pl-510', nombre: 'Plan 510', nombre_plan: 'Plan 510' }
+      ];
+    }
+    if (osNombre.includes('swiss') || osNombre.includes('smg')) {
+      return [
+        { id: 'pl-5', nombre: 'SMG20', nombre_plan: 'SMG20' },
+        { id: 'pl-smg30', nombre: 'SMG30', nombre_plan: 'SMG30' },
+        { id: 'pl-smg50', nombre: 'SMG50', nombre_plan: 'SMG50' },
+        { id: 'pl-smg70', nombre: 'SMG70', nombre_plan: 'SMG70' }
+      ];
+    }
+    if (osNombre.includes('galeno')) {
+      return [
+        { id: 'pl-gal-azul', nombre: 'Azul 220', nombre_plan: 'Azul 220' },
+        { id: 'pl-7', nombre: 'Plata 330', nombre_plan: 'Plata 330' },
+        { id: 'pl-gal-oro', nombre: 'Oro 440', nombre_plan: 'Oro 440' },
+        { id: 'pl-gal-550', nombre: '550', nombre_plan: '550' }
+      ];
+    }
+    if (osNombre.includes('apross')) {
+      return [
+        { id: 'pl-apross-1', nombre: 'APROSS Directo', nombre_plan: 'APROSS Directo' },
+        { id: 'pl-apross-2', nombre: 'APROSS Adherente', nombre_plan: 'APROSS Adherente' }
+      ];
+    }
+
+    return [
+      { id: 'pl-gen-1', nombre: 'Plan Estándar', nombre_plan: 'Plan Estándar' },
+      { id: 'pl-gen-2', nombre: 'Plan Superior', nombre_plan: 'Plan Superior' },
+      { id: 'pl-custom', nombre: 'Otro / Personalizado', nombre_plan: 'Otro / Personalizado' }
+    ];
+  }, [planes, obraSocialId, selectedOs]);
 
   // Coseguro efectivo calculado
   const montoCoseguro = useMemo(() => {
@@ -91,9 +170,12 @@ export const DetalleTurnoModal = ({
       setApellido(paciente.apellido || '');
       setTelefono(paciente.telefono_whatsapp || '');
       setDni(paciente.dni || '');
-      setObraSocialId(turno.obra_social_id || paciente.obra_social_id || '');
-      setPlanId(turno.plan_id || paciente.plan_id || '');
-      setNumeroAfiliado(paciente.numero_afiliado || '');
+      const currentOsId = turno.obra_social_id || paciente.obra_social_id || '';
+      setObraSocialId(currentOsId);
+      const currentPlanId = turno.plan_id || paciente.plan_id || '';
+      setPlanId(currentPlanId);
+      setCustomPlanNombre(turno.plan_nombre || paciente.plan_nombre || '');
+      setNumeroAfiliado(paciente.numero_afiliado || turno.numero_afiliado || '');
       setObservaciones(turno.observaciones || '');
       setIsEditing(false);
     }
@@ -106,6 +188,11 @@ export const DetalleTurnoModal = ({
     e.preventDefault();
     if (!paciente) return;
 
+    const osObj = obrasSociales.find(os => os.id === obraSocialId || os.nombre?.toLowerCase() === obraSocialId?.toLowerCase());
+    const planObj = availablePlanes.find(p => p.id === planId) || planes.find(p => p.id === planId);
+    const planNombreFinal = planObj ? (planObj.nombre || planObj.nombre_plan) : (customPlanNombre || '');
+    const nuevoCoseguro = StorageService.calcularCoseguro(obraSocialId, planId, turno.practica_id);
+
     // Actualizar paciente
     const updatedPac = {
       ...paciente,
@@ -114,14 +201,12 @@ export const DetalleTurnoModal = ({
       dni,
       telefono_whatsapp: telefono,
       obra_social_id: obraSocialId,
+      obra_social_nombre: osObj ? osObj.nombre : (obraSocialId || 'Particular'),
       plan_id: planId,
+      plan_nombre: planNombreFinal,
       numero_afiliado: numeroAfiliado
     };
     savePaciente(updatedPac);
-
-    const osObj = obrasSociales.find(os => os.id === obraSocialId);
-    const planObj = planes.find(p => p.id === planId);
-    const nuevoCoseguro = StorageService.calcularCoseguro(obraSocialId, planId, turno.practica_id);
 
     // Actualizar observaciones y obra social del turno
     const turnosList = StorageService.getTurnos();
@@ -132,7 +217,8 @@ export const DetalleTurnoModal = ({
         obra_social_id: obraSocialId,
         obra_social_nombre: osObj ? osObj.nombre : (obraSocialId || 'Particular'),
         plan_id: planId,
-        plan_nombre: planObj ? planObj.nombre : '',
+        plan_nombre: planNombreFinal,
+        numero_afiliado: numeroAfiliado,
         monto_coseguro: nuevoCoseguro,
         observaciones: observaciones
       });
@@ -179,18 +265,18 @@ export const DetalleTurnoModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden">
-      <div className="bg-white rounded-3xl max-w-3xl sm:max-w-4xl w-full max-h-[92vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-2xl sm:max-w-3xl w-full max-h-[88vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-scaleIn my-auto">
         
         {/* HEADER */}
-        <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-sky-50 text-sky-700 rounded-2xl border border-sky-100 shadow-2xs">
-              <Calendar className="w-5 h-5" />
+        <div className="px-5 py-3 sm:py-3.5 bg-white border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-sky-50 text-sky-700 rounded-xl border border-sky-100 shadow-2xs">
+              <Calendar className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-base sm:text-lg text-slate-900">
+                <h3 className="font-black text-sm sm:text-base text-slate-900">
                   Detalle & Gestión del Turno
                 </h3>
                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
@@ -203,48 +289,45 @@ export const DetalleTurnoModal = ({
                   {turno.confirmado_whatsapp ? '✓ CONFIRMADO' : turno.estado.replace('_', ' ')}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-mono">
+              <p className="text-[11px] text-slate-500 font-mono">
                 Código: <strong className="text-slate-800">{turno.codigo_reserva}</strong>
               </p>
             </div>
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* BODY SCROLLABLE */}
-        <div className="p-5 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 sm:p-5 overflow-y-auto max-h-[calc(88vh-125px)] flex-1 space-y-3.5 text-xs">
           
           {/* TARJETA FECHA, HORA & SEDE */}
-          <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+          <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5">
               <div className="p-2 bg-white rounded-xl border border-slate-200 text-medical-600">
-                <Clock className="w-5 h-5" />
+                <Clock className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-slate-500 uppercase block">Cita Programada</span>
-                <strong className="text-sm font-black text-slate-900">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block">Cita Programada</span>
+                <strong className="text-xs sm:text-sm font-black text-slate-900">
                   {formatDateAR(turno.fecha)} a las {turno.hora_inicio} hs
                 </strong>
-                <span className="text-[11px] text-slate-600 font-bold block">
+                <span className="text-[10px] text-slate-600 font-bold block">
                   {turno.modalidad === 'ONLINE' ? '💻 Consulta Virtual / Online' : '🏢 Atención Presencial'}
                 </span>
               </div>
             </div>
-            <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+            <div className="text-left sm:text-right border-t sm:border-t-0 pt-1.5 sm:pt-0 border-slate-200">
               <span className="text-[10px] font-black uppercase text-medical-700 block">
                 📍 {StorageService.getClinicasList().find(c => c.id === turno.clinica_id)?.nombre || 'Sede Central'}
               </span>
-              <strong className="text-xs font-black text-slate-800 block">
+              <strong className="text-[11px] font-black text-slate-800 block">
                 {consultorio?.nombre || 'Consultorio de Atención'}
               </strong>
-              <span className="text-[10px] text-slate-500 font-medium">
-                {StorageService.getClinicasList().find(c => c.id === turno.clinica_id)?.direccion || ''}
-              </span>
             </div>
           </div>
 
@@ -329,7 +412,7 @@ export const DetalleTurnoModal = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-700 mb-1">Obra Social</label>
                     <select
@@ -337,8 +420,17 @@ export const DetalleTurnoModal = ({
                       onChange={(e) => {
                         const newOsId = e.target.value;
                         setObraSocialId(newOsId);
-                        const planesForOs = planes.filter(p => p.obra_social_id === newOsId);
-                        setPlanId(planesForOs.length > 0 ? planesForOs[0].id : '');
+                        const osObj = obrasSociales.find(os => os.id === newOsId || os.nombre?.toLowerCase() === newOsId.toLowerCase());
+                        const osSigla = osObj?.sigla?.toLowerCase() || '';
+                        const osNom = (osObj?.nombre || newOsId).toLowerCase();
+                        const planesForOs = planes.filter(p => p.obra_social_id === newOsId || (p.codigo_plan && osSigla && p.codigo_plan.toLowerCase().startsWith(osSigla)) || (p.obra_social_nombre && p.obra_social_nombre.toLowerCase().includes(osNom)));
+                        if (planesForOs.length > 0) {
+                          setPlanId(planesForOs[0].id);
+                          setCustomPlanNombre(planesForOs[0].nombre || planesForOs[0].nombre_plan);
+                        } else {
+                          setPlanId('');
+                          setCustomPlanNombre('');
+                        }
                       }}
                       className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold"
                     >
@@ -352,15 +444,31 @@ export const DetalleTurnoModal = ({
                     <label className="block text-[10px] font-bold text-slate-700 mb-1">Plan de Salud</label>
                     <select
                       value={planId}
-                      onChange={(e) => setPlanId(e.target.value)}
-                      disabled={availablePlanes.length === 0}
-                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold disabled:bg-slate-100 disabled:text-slate-400"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPlanId(val);
+                        const found = availablePlanes.find(p => p.id === val);
+                        if (found && found.id !== 'pl-custom') {
+                          setCustomPlanNombre(found.nombre || found.nombre_plan);
+                        }
+                      }}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold"
                     >
-                      <option value="">{availablePlanes.length === 0 ? 'Sin planes cargados' : 'Seleccionar Plan...'}</option>
+                      <option value="">{availablePlanes.length === 0 ? 'Sin plan especificado' : 'Seleccionar Plan...'}</option>
                       {availablePlanes.map(pl => (
-                        <option key={pl.id} value={pl.id}>{pl.nombre}</option>
+                        <option key={pl.id} value={pl.id}>{pl.nombre || pl.nombre_plan}</option>
                       ))}
+                      <option value="pl-custom">➕ Ingresar otro plan...</option>
                     </select>
+                    {planId === 'pl-custom' && (
+                      <input
+                        type="text"
+                        placeholder="Escribir nombre del plan..."
+                        value={customPlanNombre}
+                        onChange={(e) => setCustomPlanNombre(e.target.value)}
+                        className="mt-1.5 w-full px-2.5 py-1 bg-amber-50 border border-amber-300 rounded-lg text-xs font-bold"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-700 mb-1">N° Afiliado</label>

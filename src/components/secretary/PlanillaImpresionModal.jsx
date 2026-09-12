@@ -157,7 +157,7 @@ export const PlanillaImpresionModal = ({
         </div>
 
         {/* ÁREA IMPRIMIBLE DE LA PLANILLA (ESTILOS ESPECIALES PARA HOJA A4 / PDF) */}
-        <div ref={printAreaRef} className="p-6 sm:p-8 overflow-y-auto flex-1 bg-white print:p-0 print:overflow-visible space-y-6">
+        <div id="printable-area" ref={printAreaRef} className="printable-content p-6 sm:p-8 overflow-y-auto flex-1 bg-white print:p-0 print:overflow-visible space-y-6">
           
           {/* ENCABEZADO MÉDICO DE LA PLANILLA */}
           <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-start">

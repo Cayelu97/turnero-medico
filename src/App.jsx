@@ -16,6 +16,7 @@ import { DoctorPortal } from './components/doctor/DoctorPortal';
 import { FacturacionView } from './components/billing/FacturacionView';
 import { CajaView } from './components/cash/CajaView';
 import { AbmPacientes } from './components/admin/AbmPacientes';
+import { ConfirmarTurnoPacienteModal } from './components/patient/ConfirmarTurnoPacienteModal';
 import { CalendarPlus, Search, ArrowLeft, Stethoscope, Lock, Building, Sparkles } from 'lucide-react';
 
 const MainContent = () => {
@@ -23,14 +24,20 @@ const MainContent = () => {
   const [patientSubView, setPatientSubView] = useState('nuevo'); // 'nuevo' | 'mis_turnos'
   const [isPatientOnlyMode, setIsPatientOnlyMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [codigoConfirmarParam, setCodigoConfirmarParam] = useState(null);
 
-  // Detección de parámetros en la URL (?view=paciente, ?view=tv, etc.)
+  // Detección de parámetros en la URL (?view=paciente, ?confirmar=TRN-XXXX, ?view=tv, etc.)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const viewParam = params.get('view') || params.get('modo');
     const hash = window.location.hash.replace('#/', '').replace('#', '');
+    const confirmar = params.get('confirmar') || params.get('codigo') || params.get('turno') || params.get('reserva');
 
-    if (viewParam === 'paciente' || hash === 'paciente') {
+    if (confirmar) {
+      setCodigoConfirmarParam(confirmar);
+    }
+
+    if (viewParam === 'paciente' || hash === 'paciente' || confirmar) {
       setIsPatientOnlyMode(true);
       setCurrentView('paciente');
     } else if (viewParam === 'tv' || hash === 'tv') {
@@ -116,6 +123,12 @@ const MainContent = () => {
         </footer>
 
         <Toast />
+        {codigoConfirmarParam && (
+          <ConfirmarTurnoPacienteModal 
+            codigoReserva={codigoConfirmarParam} 
+            onClose={() => setCodigoConfirmarParam(null)} 
+          />
+        )}
       </div>
     );
   }
@@ -129,6 +142,12 @@ const MainContent = () => {
           setCurrentView('paciente');
         }} />
         <Toast />
+        {codigoConfirmarParam && (
+          <ConfirmarTurnoPacienteModal 
+            codigoReserva={codigoConfirmarParam} 
+            onClose={() => setCodigoConfirmarParam(null)} 
+          />
+        )}
       </>
     );
   }
@@ -222,6 +241,12 @@ const MainContent = () => {
       </footer>
 
       <Toast />
+      {codigoConfirmarParam && (
+        <ConfirmarTurnoPacienteModal 
+          codigoReserva={codigoConfirmarParam} 
+          onClose={() => setCodigoConfirmarParam(null)} 
+        />
+      )}
     </div>
   );
 };

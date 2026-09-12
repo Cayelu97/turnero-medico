@@ -42,6 +42,9 @@ export const WhatsAppService = {
       ? `• Coseguro a abonar en recepción: *$${Number(turno.monto_coseguro).toLocaleString('es-AR')}* (Efectivo / Transferencia / Débito)\n`
       : `• Coseguro: *Sin cargo / Cobertura 100%*\n`;
 
+    const baseUrl = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'https://saludnetar.vercel.app';
+    const linkConfirmacion = turno?.codigo_reserva ? `${baseUrl}/?confirmar=${turno.codigo_reserva}` : `${baseUrl}/?view=mis_turnos`;
+
     if (tipo === 'CANCELADO') {
       return (
         `Hola ${pacNombre}, te informamos que tu turno para *${clinicaNombre}* ha sido *CANCELADO*.\n\n` +
@@ -51,7 +54,8 @@ export const WhatsAppService = {
         `• Sede: ${clinicaNombre}\n` +
         `• Fecha y Hora: ${turno?.fecha} a las ${turno?.hora_inicio} hs\n` +
         `• Cobertura: ${coberturaDetalle}\n\n` +
-        `Si deseas reprogramarlo, puedes ingresar a nuestro turnero online o comunicarte con recepción.`
+        `Si deseas solicitar un nuevo turno, podés ingresar a:\n` +
+        `👉 ${baseUrl}`
       );
     }
 
@@ -72,6 +76,8 @@ export const WhatsAppService = {
         (esOnline 
           ? `🔗 Te enviaremos el enlace de la videollamada previo al inicio del turno.\n\n`
           : `⚠️ Por favor presentarse 10 minutos antes en recepción con DNI y carnet de cobertura.\n\n`) +
+        `📲 *CONFIRMAR O CANCELAR TU ASISTENCIA (1 Clic):*\n` +
+        `👉 ${linkConfirmacion}\n\n` +
         `¡Te esperamos!`
       );
     }
@@ -93,6 +99,9 @@ export const WhatsAppService = {
         (esOnline 
           ? `🔗 Ten lista la conexión para la videollamada a la hora pactada.\n\n`
           : `⚠️ Presentarse 10 minutos antes con DNI y credencial médica.\n\n`) +
+        `📲 *CONFIRMAR O CANCELAR TU ASISTENCIA (1 Clic):*\n` +
+        `Por favor confirmá si vas a asistir o cancelá tu turno con un clic en:\n` +
+        `👉 ${linkConfirmacion}\n\n` +
         `¡Muchas gracias!`
       );
     }
@@ -114,9 +123,8 @@ export const WhatsAppService = {
       (esOnline 
         ? `🔗 *Instrucciones:* El enlace de videollamada se habilitará en tu portal antes de la consulta.\n\n`
         : `⚠️ *Requisitos:* Presentarse 10 minutos antes en recepción con DNI y credencial médica.\n\n`) +
-      `📱 *GESTIÓN ONLINE DE TU TURNO:*\n` +
-      `Para confirmar asistencia, reprogramar o cancelar ingresá a:\n` +
-      `👉 ${typeof window !== 'undefined' ? `${window.location.origin}/?view=mis_turnos` : 'https://saludnetar.vercel.app/?view=mis_turnos'}\n\n` +
+      `📲 *CONFIRMAR O GESTIONAR TU TURNO (1 Clic):*\n` +
+      `👉 ${linkConfirmacion}\n\n` +
       `¡Te esperamos!`
     );
   },

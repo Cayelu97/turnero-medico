@@ -38,6 +38,9 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
       profesional,
       consultorio,
       clinica: sedeTurno,
+      obraSocial,
+      plan,
+      practica,
       tipo: 'NUEVO'
     });
   };
@@ -144,18 +147,18 @@ export const VoucherModal = ({ turno, paciente, profesional, consultorio, obraSo
               </div>
               <div className="flex justify-between items-start">
                 <span className="text-slate-500 font-semibold">Cobertura Médica:</span>
-                <span className="font-extrabold text-slate-900">
-                  {obraSocial?.nombre} {plan ? `(${plan.nombre_plan})` : ''} {turno.numero_afiliado ? `• Af: ${turno.numero_afiliado}` : ''}
+                <span className="font-extrabold text-slate-900 text-right">
+                  {obraSocial?.nombre || turno.obra_social_nombre || 'Particular'} {(plan?.nombre || plan?.nombre_plan || turno.plan_nombre) ? `(${plan?.nombre || plan?.nombre_plan || turno.plan_nombre})` : ''} {(turno.numero_afiliado || paciente?.numero_afiliado) ? `• Af: ${turno.numero_afiliado || paciente?.numero_afiliado}` : ''}
                 </span>
               </div>
               <div className="flex justify-between items-start border-t border-slate-200 pt-1.5">
                 <span className="text-slate-500 font-semibold">Práctica / Motivo:</span>
-                <span className="font-bold text-slate-900 text-right">{practica?.codigo_pmo} - {practica?.descripcion}</span>
+                <span className="font-bold text-slate-900 text-right">{practica?.nombre || practica?.descripcion || 'Consulta Médica General'}</span>
               </div>
               <div className="flex justify-between items-center border-t border-slate-200 pt-1.5">
-                <span className="text-slate-700 font-bold">Coseguro Estimado a Abonar:</span>
+                <span className="text-slate-700 font-bold">Coseguro en Recepción:</span>
                 <span className="font-black text-sm text-emerald-700">
-                  {Number(turno.monto_coseguro || 0) === 0 ? 'Sin Coseguro ($0)' : `$${Number(turno.monto_coseguro).toLocaleString('es-AR')}`}
+                  {Number(turno.monto_coseguro || 0) === 0 ? 'Sin Coseguro (100% Cubierto)' : `$${Number(turno.monto_coseguro).toLocaleString('es-AR')}`}
                 </span>
               </div>
             </div>

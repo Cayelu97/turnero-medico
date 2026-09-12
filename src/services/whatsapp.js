@@ -35,6 +35,13 @@ export const WhatsAppService = {
     const pacNombre = paciente ? `${paciente.nombre} ${paciente.apellido}` : 'Estimado/a paciente';
     const consultorioNombre = consultorio?.nombre || (esOnline ? 'Consultorio Virtual' : 'Consultorio de Atención');
 
+    const osNombre = turno?.obra_social_nombre || paciente?.obra_social_nombre || 'Particular / Privado';
+    const planNombre = turno?.plan_nombre || paciente?.plan_nombre || '';
+    const coberturaDetalle = `${osNombre}${planNombre ? ` (${planNombre})` : ''}`;
+    const coseguroTexto = turno?.monto_coseguro > 0 
+      ? `• Coseguro a abonar en recepción: *$${Number(turno.monto_coseguro).toLocaleString('es-AR')}* (Efectivo / Transferencia / Débito)\n`
+      : `• Coseguro: *Sin cargo / Cobertura 100%*\n`;
+
     if (tipo === 'CANCELADO') {
       return (
         `Hola ${pacNombre}, te informamos que tu turno para *${clinicaNombre}* ha sido *CANCELADO*.\n\n` +
@@ -42,7 +49,8 @@ export const WhatsAppService = {
         `• Código de Reserva: ${turno?.codigo_reserva || 'S/D'}\n` +
         `• Profesional: ${docNombre}\n` +
         `• Sede: ${clinicaNombre}\n` +
-        `• Fecha y Hora: ${turno?.fecha} a las ${turno?.hora_inicio} hs\n\n` +
+        `• Fecha y Hora: ${turno?.fecha} a las ${turno?.hora_inicio} hs\n` +
+        `• Cobertura: ${coberturaDetalle}\n\n` +
         `Si deseas reprogramarlo, puedes ingresar a nuestro turnero online o comunicarte con recepción.`
       );
     }
@@ -58,7 +66,9 @@ export const WhatsAppService = {
         `• Modalidad: ${esOnline ? '💻 Consulta Online / Videollamada' : '🏢 Presencial'}\n` +
         `• Sede de Atención: *📍 ${clinicaNombre}*\n` +
         `• Dirección: *${clinicaDir}*\n` +
-        `• Consultorio: ${consultorioNombre}\n\n` +
+        `• Consultorio: ${consultorioNombre}\n` +
+        `• Cobertura Médica: ${coberturaDetalle}\n` +
+        coseguroTexto + `\n` +
         (esOnline 
           ? `🔗 Te enviaremos el enlace de la videollamada previo al inicio del turno.\n\n`
           : `⚠️ Por favor presentarse 10 minutos antes en recepción con DNI y carnet de cobertura.\n\n`) +
@@ -77,7 +87,9 @@ export const WhatsAppService = {
         `• Modalidad: ${esOnline ? '💻 Consulta Online / Videollamada' : '🏢 Presencial'}\n` +
         `• Sede de Atención: *📍 ${clinicaNombre}*\n` +
         `• Dirección: *${clinicaDir}*\n` +
-        `• Consultorio: ${consultorioNombre}\n\n` +
+        `• Consultorio: ${consultorioNombre}\n` +
+        `• Cobertura Médica: ${coberturaDetalle}\n` +
+        coseguroTexto + `\n` +
         (esOnline 
           ? `🔗 Ten lista la conexión para la videollamada a la hora pactada.\n\n`
           : `⚠️ Presentarse 10 minutos antes con DNI y credencial médica.\n\n`) +
@@ -97,7 +109,8 @@ export const WhatsAppService = {
       `• Sede de Atención: *📍 ${clinicaNombre}*\n` +
       `• Dirección: *${clinicaDir}*\n` +
       `• Consultorio: ${consultorioNombre}\n` +
-      `${turno?.monto_coseguro > 0 ? `• Coseguro estimado en recepción: $${Number(turno.monto_coseguro).toLocaleString('es-AR')}\n` : ''}\n` +
+      `• Cobertura Médica: ${coberturaDetalle}\n` +
+      coseguroTexto + `\n` +
       (esOnline 
         ? `🔗 *Instrucciones:* El enlace de videollamada se habilitará en tu portal antes de la consulta.\n\n`
         : `⚠️ *Requisitos:* Presentarse 10 minutos antes en recepción con DNI y credencial médica.\n\n`) +

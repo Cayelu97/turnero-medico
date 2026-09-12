@@ -19,7 +19,8 @@ import {
   AlertCircle,
   Lock,
   Check,
-  Building
+  Building,
+  DollarSign
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
@@ -148,15 +149,17 @@ export const AgendarTurnoSecretariaModal = ({
   }, [patientSearchQuery, pacienteForm.dni, pacienteForm.nombre, pacienteForm.apellido, pacientes]);
 
   const handleSelectSuggestedPatient = (p) => {
+    const targetOsId = p.obra_social_id || obrasSociales[0]?.id || '';
+    const matchPlanes = planes.filter(pl => pl.obra_social_id === targetOsId);
     setPacienteForm({
       dni: p.dni || '',
       nombre: p.nombre || '',
       apellido: p.apellido || '',
       telefono_whatsapp: p.telefono_whatsapp || p.telefono || '',
-      obra_social_id: p.obra_social_id || obrasSociales[0]?.id || '',
-      plan_id: p.plan_id || '',
+      obra_social_id: targetOsId,
+      plan_id: p.plan_id || matchPlanes[0]?.id || '',
       numero_afiliado: p.numero_afiliado || '',
-      observaciones: p.obra_social ? `Cobertura: ${p.obra_social}` : 'Paciente habitual'
+      observaciones: p.obra_social_nombre ? `Cobertura: ${p.obra_social_nombre}` : (p.obra_social ? `Cobertura: ${p.obra_social}` : 'Paciente habitual')
     });
     setPatientSearchQuery('');
     setShowPatientDropdown(false);
@@ -197,6 +200,21 @@ export const AgendarTurnoSecretariaModal = ({
       setSelectedPracticaId(nomenclador[0].id);
     }
   }, [selectedServicioId, selectedServicio, nomenclador]);
+
+  // Planes disponibles para la obra social seleccionada
+  const availablePlanes = useMemo(() => {
+    if (!pacienteForm.obra_social_id) return [];
+    return planes.filter(p => p.obra_social_id === pacienteForm.obra_social_id);
+  }, [planes, pacienteForm.obra_social_id]);
+
+  // Cálculo en tiempo real del coseguro / copago para la cobertura seleccionada
+  const montoCoseguroActual = useMemo(() => {
+    return StorageService.calcularCoseguro(
+      pacienteForm.obra_social_id,
+      pacienteForm.plan_id || null,
+      selectedPracticaId || selectedServicio?.practica_default_id || (nomenclador[0]?.id)
+    );
+  }, [pacienteForm.obra_social_id, pacienteForm.plan_id, selectedPracticaId, selectedServicio, nomenclador]);
 
   // Horarios configurados del médico
   const horariosDelMedico = useMemo(() => {
@@ -287,6 +305,9 @@ export const AgendarTurnoSecretariaModal = ({
     const consultorioId = selectedSlot?.consultorio_id || horario?.consultorio_id || consultorios[0]?.id;
     const targetClinicaId = selectedSlot?.clinica_id || selectedSedeId || horario?.clinica_id || clinica?.id || 'clinica-1';
 
+    const osObj = obrasSociales.find(o => o.id === pacienteForm.obra_social_id);
+    const planObj = planes.find(p => p.id === pacienteForm.plan_id);
+
     const result = createTurno({
       pacienteData: {
         dni: pacienteForm.dni,
@@ -294,7 +315,9 @@ export const AgendarTurnoSecretariaModal = ({
         apellido: pacienteForm.apellido,
         telefono_whatsapp: pacienteForm.telefono_whatsapp,
         obra_social_id: pacienteForm.obra_social_id,
+        obra_social_nombre: osObj?.nombre || 'Particular',
         plan_id: pacienteForm.plan_id || null,
+        plan_nombre: planObj?.nombre || planObj?.nombre_plan || '',
         numero_afiliado: pacienteForm.numero_afiliado
       },
       turnoData: {
@@ -304,7 +327,11 @@ export const AgendarTurnoSecretariaModal = ({
         consultorio_id: consultorioId,
         practica_id: selectedPracticaId,
         obra_social_id: pacienteForm.obra_social_id,
+        obra_social_nombre: osObj?.nombre || 'Particular',
         plan_id: pacienteForm.plan_id || null,
+        plan_nombre: planObj?.nombre || planObj?.nombre_plan || '',
+        monto_coseguro: montoCoseguroActual,
+        estado_coseguro: montoCoseguroActual > 0 ? 'PENDIENTE' : 'EXENTO',
         numero_afiliado: pacienteForm.numero_afiliado,
         fecha: fecha,
         hora_inicio: hora_inicio,
@@ -322,8 +349,6 @@ export const AgendarTurnoSecretariaModal = ({
 
     const profObj = profesionales.find(p => p.id === selectedProfId);
     const consObj = consultorios.find(c => c.id === consultorioId);
-    const osObj = obrasSociales.find(o => o.id === pacienteForm.obra_social_id);
-    const planObj = planes.find(p => p.id === pacienteForm.plan_id);
     const pracObj = nomenclador.find(p => p.id === selectedPracticaId);
 
     setCreatedTurnoData({
@@ -563,18 +588,82 @@ export const AgendarTurnoSecretariaModal = ({
                     2. Cobertura Médica
                   </span>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
+                    {/* Selector de Obra Social */}
                     <div>
                       <label className="block text-[11px] font-extrabold text-slate-700 mb-1">Obra Social / Cobertura</label>
                       <select
                         value={pacienteForm.obra_social_id}
-                        onChange={(e) => setPacienteForm({ ...pacienteForm, obra_social_id: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"
+                        onChange={(e) => {
+                          const newOsId = e.target.value;
+                          const matchPlanes = planes.filter(p => p.obra_social_id === newOsId);
+                          setPacienteForm(prev => ({ 
+                            ...prev, 
+                            obra_social_id: newOsId,
+                            plan_id: matchPlanes[0]?.id || ''
+                          }));
+                        }}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
                       >
                         {obrasSociales.map(os => (
                           <option key={os.id} value={os.id}>{os.nombre}</option>
                         ))}
                       </select>
+                    </div>
+
+                    {/* Selector de Plan */}
+                    <div>
+                      <label className="block text-[11px] font-extrabold text-slate-700 mb-1">
+                        Plan de la Obra Social
+                      </label>
+                      {availablePlanes.length > 0 ? (
+                        <select
+                          value={pacienteForm.plan_id}
+                          onChange={(e) => setPacienteForm(prev => ({ ...prev, plan_id: e.target.value }))}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-medical-500"
+                        >
+                          <option value="">-- Seleccionar Plan / Cobertura --</option>
+                          {availablePlanes.map(pl => (
+                            <option key={pl.id} value={pl.id}>
+                              {pl.nombre_plan} {pl.codigo_plan ? `(${pl.codigo_plan})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="p-2 bg-slate-100/80 rounded-xl text-[11px] text-slate-500 font-medium">
+                          Sin planes específicos (Cobertura estándar)
+                        </div>
+                      )}
+                    </div>
+
+                    {/* TARJETA DINÁMICA DE COSEGURO / ARANCEL */}
+                    <div className={`p-3 rounded-2xl border transition-all ${
+                      montoCoseguroActual > 0 
+                        ? 'bg-amber-50/90 border-amber-300 text-amber-950 shadow-2xs' 
+                        : 'bg-emerald-50/90 border-emerald-300 text-emerald-950 shadow-2xs'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <DollarSign className={`w-4 h-4 ${montoCoseguroActual > 0 ? 'text-amber-700' : 'text-emerald-700'}`} />
+                          <span className="font-extrabold text-xs">
+                            {montoCoseguroActual > 0 ? 'Coseguro en Recepción:' : 'Estado de Coseguro:'}
+                          </span>
+                        </div>
+                        <span className={`text-xs font-black font-mono px-2 py-0.5 rounded-lg border ${
+                          montoCoseguroActual > 0 
+                            ? 'bg-amber-100 text-amber-900 border-amber-300' 
+                            : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                        }`}>
+                          {montoCoseguroActual > 0 
+                            ? `$${Number(montoCoseguroActual).toLocaleString('es-AR')}` 
+                            : 'Cubierto 100% (Sin Cargo)'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] mt-1 text-slate-600 leading-tight">
+                        {montoCoseguroActual > 0 
+                          ? 'ℹ️ Se cobrará al dar el presente y se detallará en el aviso de WhatsApp.' 
+                          : 'ℹ️ No requiere copago adicional en consultorio.'}
+                      </p>
                     </div>
 
                     <div>

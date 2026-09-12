@@ -36,6 +36,7 @@ import { CancelarTurnoModal } from './CancelarTurnoModal';
 import { DetalleTurnoModal } from './DetalleTurnoModal';
 import { PlanillaImpresionModal } from './PlanillaImpresionModal';
 import { VoucherModal } from '../patient/VoucherModal';
+import { CobroCoseguroModal } from '../reception/CobroCoseguroModal';
 import { StorageService } from '../../services/storage';
 import { exportarTurnosExcel } from '../../utils/exportUtils';
 import { getLocalDateString, addDaysToDateString, getDayOfWeekFromDateString, getDayDetailsFromDateString, getFeriadoNacional } from '../../utils/dateUtils';
@@ -79,6 +80,7 @@ export const AgendaView = () => {
   const [turnoToCancel, setTurnoToCancel] = useState(null);
   const [selectedTurnoForVoucher, setSelectedTurnoForVoucher] = useState(null);
   const [selectedDetalleTurno, setSelectedDetalleTurno] = useState(null);
+  const [selectedTurnoForCobro, setSelectedTurnoForCobro] = useState(null);
   const [showPlanillaModal, setShowPlanillaModal] = useState(false);
 
   const handlePrevDay = () => setCurrentDate(prev => addDaysToDateString(prev, -1));
@@ -1485,6 +1487,14 @@ export const AgendaView = () => {
         onClose={() => setSelectedDetalleTurno(null)} 
         onReprogramar={t => { setTurnoToReprogram(t); setShowReprogramarModal(true); }} 
         onCancelar={t => { setTurnoToCancel(t); setShowCancelarModal(true); }} 
+        onDarPresente={t => {
+          setSelectedDetalleTurno(null);
+          setSelectedTurnoForCobro(t);
+        }}
+        onCobrar={t => {
+          setSelectedDetalleTurno(null);
+          setSelectedTurnoForCobro(t);
+        }}
         onVerVoucher={t => {
           const pac = pacientes.find(p => p.id === t.paciente_id);
           const os = obrasSociales.find(o => o.id === (t.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
@@ -1499,6 +1509,29 @@ export const AgendaView = () => {
           });
         }} 
       />
+      {selectedTurnoForCobro && (() => {
+        const pac = pacientes.find(p => p.id === selectedTurnoForCobro.paciente_id);
+        const os = obrasSociales.find(o => o.id === (selectedTurnoForCobro.obra_social_id || pac?.obra_social_id)) || (pac?.obra_social_id ? { nombre: pac.obra_social_id } : null);
+        const pl = planes.find(p => p.id === (selectedTurnoForCobro.plan_id || pac?.plan_id));
+        const pr = nomenclador.find(n => n.id === selectedTurnoForCobro.practica_id);
+        const prof = profesionales.find(p => p.id === selectedTurnoForCobro.profesional_id);
+
+        return (
+          <CobroCoseguroModal 
+            isOpen={true}
+            turno={selectedTurnoForCobro}
+            paciente={pac}
+            obraSocial={os}
+            plan={pl}
+            practica={pr}
+            profesional={prof}
+            onClose={() => setSelectedTurnoForCobro(null)}
+            onCobrado={() => {
+              setSelectedTurnoForCobro(null);
+            }}
+          />
+        );
+      })()}
       {selectedTurnoForVoucher && (
         <VoucherModal 
           turno={selectedTurnoForVoucher.turno} 

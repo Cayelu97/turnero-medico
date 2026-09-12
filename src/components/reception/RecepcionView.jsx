@@ -312,7 +312,7 @@ export const RecepcionView = () => {
                       <span>•</span>
                       <span><strong>Consultorio:</strong> {cons?.nombre || 'General'}</span>
                       <span>•</span>
-                      <span><strong>Cobertura:</strong> {os?.sigla || os?.nombre || 'Particular'} {plan ? `(${plan.nombre_plan})` : ''}</span>
+                      <span><strong>Cobertura:</strong> {os?.sigla || os?.nombre || t.obra_social_nombre || 'Particular'} {(plan?.nombre || plan?.nombre_plan || t.plan_nombre) ? `(${plan?.nombre || plan?.nombre_plan || t.plan_nombre})` : ''}</span>
                     </div>
 
                     {/* Semáforo de Tiempo en Sala de Espera */}
@@ -352,9 +352,14 @@ export const RecepcionView = () => {
 
                   {/* Acciones de Flujo de Atención */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {t.estado === 'PROGRAMADO' && (
+                    {(t.estado === 'PROGRAMADO' || t.estado === 'CONFIRMADO') && (
                       <button
-                        onClick={() => updateTurnoEstado(t.id, 'EN_ESPERA')}
+                        onClick={() => {
+                          updateTurnoEstado(t.id, 'EN_ESPERA');
+                          if (Number(t.monto_coseguro || 0) > 0 && t.estado_coseguro !== 'COBRADO') {
+                            setSelectedTurnoForCobro({ turno: t, paciente: pac, obraSocial: os, plan, practica });
+                          }
+                        }}
                         className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
                       >
                         <UserCheck className="w-4 h-4" />
@@ -415,12 +420,14 @@ export const RecepcionView = () => {
       {/* Modal de Cobro de Coseguro */}
       {selectedTurnoForCobro && (
         <CobroCoseguroModal
+          isOpen={true}
           turno={selectedTurnoForCobro.turno}
           paciente={selectedTurnoForCobro.paciente}
           obraSocial={selectedTurnoForCobro.obraSocial}
           plan={selectedTurnoForCobro.plan}
           practica={selectedTurnoForCobro.practica}
           onClose={() => setSelectedTurnoForCobro(null)}
+          onCobrado={() => setSelectedTurnoForCobro(null)}
         />
       )}
     </div>

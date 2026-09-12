@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, 
   User, 
@@ -16,7 +16,10 @@ import {
   CheckCircle2, 
   Edit3, 
   Save, 
-  AlertCircle 
+  AlertCircle,
+  Receipt,
+  CreditCard,
+  Banknote
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StorageService } from '../../services/storage';
@@ -28,7 +31,9 @@ export const DetalleTurnoModal = ({
   onClose, 
   onReprogramar, 
   onCancelar, 
-  onVerVoucher 
+  onVerVoucher,
+  onDarPresente,
+  onCobrar
 }) => {
   const { 
     pacientes, 
@@ -49,15 +54,36 @@ export const DetalleTurnoModal = ({
   const [telefono, setTelefono] = useState('');
   const [dni, setDni] = useState('');
   const [obraSocialId, setObraSocialId] = useState('');
+  const [planId, setPlanId] = useState('');
   const [numeroAfiliado, setNumeroAfiliado] = useState('');
   const [observaciones, setObservaciones] = useState('');
 
   const paciente = turno ? pacientes.find(p => p.id === turno.paciente_id) : null;
   const profesional = turno ? profesionales.find(p => p.id === turno.profesional_id) : null;
   const consultorio = turno ? consultorios.find(c => c.id === turno.consultorio_id) : null;
-  const obraSocial = turno ? obrasSociales.find(os => os.id === turno.obra_social_id) : null;
+  const obraSocial = turno ? obrasSociales.find(os => os.id === (turno.obra_social_id || paciente?.obra_social_id)) : null;
+  const plan = turno ? planes.find(p => p.id === (turno.plan_id || paciente?.plan_id)) : null;
   const servicio = turno ? servicios.find(s => s.id === turno.servicio_id) : null;
   const practica = turno ? nomenclador.find(n => n.id === turno.practica_id) : null;
+
+  // Planes disponibles filtrados según la obra social seleccionada en edición
+  const availablePlanes = useMemo(() => {
+    if (!obraSocialId) return [];
+    return planes.filter(p => p.obra_social_id === obraSocialId);
+  }, [planes, obraSocialId]);
+
+  // Coseguro efectivo calculado
+  const montoCoseguro = useMemo(() => {
+    if (!turno) return 0;
+    if (turno.monto_coseguro !== undefined && turno.monto_coseguro !== null) {
+      return Number(turno.monto_coseguro);
+    }
+    return StorageService.calcularCoseguro(
+      turno.obra_social_id || paciente?.obra_social_id,
+      turno.plan_id || paciente?.plan_id,
+      turno.practica_id
+    );
+  }, [turno, paciente]);
 
   useEffect(() => {
     if (turno && paciente) {
@@ -66,6 +92,7 @@ export const DetalleTurnoModal = ({
       setTelefono(paciente.telefono_whatsapp || '');
       setDni(paciente.dni || '');
       setObraSocialId(turno.obra_social_id || paciente.obra_social_id || '');
+      setPlanId(turno.plan_id || paciente.plan_id || '');
       setNumeroAfiliado(paciente.numero_afiliado || '');
       setObservaciones(turno.observaciones || '');
       setIsEditing(false);
@@ -87,9 +114,14 @@ export const DetalleTurnoModal = ({
       dni,
       telefono_whatsapp: telefono,
       obra_social_id: obraSocialId,
+      plan_id: planId,
       numero_afiliado: numeroAfiliado
     };
     savePaciente(updatedPac);
+
+    const osObj = obrasSociales.find(os => os.id === obraSocialId);
+    const planObj = planes.find(p => p.id === planId);
+    const nuevoCoseguro = StorageService.calcularCoseguro(obraSocialId, planId, turno.practica_id);
 
     // Actualizar observaciones y obra social del turno
     const turnosList = StorageService.getTurnos();
@@ -98,12 +130,16 @@ export const DetalleTurnoModal = ({
       StorageService.saveTurno({
         ...currentTurno,
         obra_social_id: obraSocialId,
+        obra_social_nombre: osObj ? osObj.nombre : (obraSocialId || 'Particular'),
+        plan_id: planId,
+        plan_nombre: planObj ? planObj.nombre : '',
+        monto_coseguro: nuevoCoseguro,
         observaciones: observaciones
       });
     }
 
     setIsEditing(false);
-    showToast('¡Datos del turno y paciente actualizados con éxito!');
+    showToast('¡Datos del turno, plan y paciente actualizados con éxito!');
   };
 
   const handleToggleConfirmar = () => {
@@ -122,6 +158,18 @@ export const DetalleTurnoModal = ({
     updateTurnoEstado(turno.id, 'EN_ESPERA');
     showToast('Paciente marcado en Sala de Espera.');
     onClose();
+    if (onDarPresente) {
+      onDarPresente(turno);
+    } else if (onCobrar) {
+      onCobrar(turno);
+    }
+  };
+
+  const handleCobroClick = () => {
+    onClose();
+    if (onCobrar) {
+      onCobrar(turno);
+    }
   };
 
   const handleLlamarConsulta = () => {
@@ -210,17 +258,18 @@ export const DetalleTurnoModal = ({
               <span className="text-[11px] text-slate-600">{profesional?.especialidad}</span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 block">Servicio</span>
-              <span className="text-xs font-bold text-slate-800">{servicio?.nombre || 'Consulta'}</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 block">Servicio / Práctica</span>
+              <span className="text-xs font-bold text-slate-800 block">{servicio?.nombre || 'Consulta'}</span>
+              <span className="text-[10px] text-slate-500 font-medium">{practica?.nombre || 'Consulta General'}</span>
             </div>
           </div>
 
-          {/* DATOS DEL PACIENTE (EDICIÓN O LECTURA) */}
+          {/* DATOS DEL PACIENTE, COBERTURA Y COSEGURO */}
           <div className="p-4 bg-slate-50/90 border border-slate-200 rounded-2xl space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <User className="w-4 h-4 text-sky-600" />
-                Datos del Paciente
+                Datos del Paciente & Cobertura
               </span>
               <button
                 type="button"
@@ -280,16 +329,36 @@ export const DetalleTurnoModal = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-3 gap-2.5">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-700 mb-1">Obra Social</label>
                     <select
                       value={obraSocialId}
-                      onChange={(e) => setObraSocialId(e.target.value)}
+                      onChange={(e) => {
+                        const newOsId = e.target.value;
+                        setObraSocialId(newOsId);
+                        const planesForOs = planes.filter(p => p.obra_social_id === newOsId);
+                        setPlanId(planesForOs.length > 0 ? planesForOs[0].id : '');
+                      }}
                       className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold"
                     >
+                      <option value="">Particular / Sin Obra Social</option>
                       {obrasSociales.map(os => (
                         <option key={os.id} value={os.id}>{os.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-700 mb-1">Plan de Salud</label>
+                    <select
+                      value={planId}
+                      onChange={(e) => setPlanId(e.target.value)}
+                      disabled={availablePlanes.length === 0}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold disabled:bg-slate-100 disabled:text-slate-400"
+                    >
+                      <option value="">{availablePlanes.length === 0 ? 'Sin planes cargados' : 'Seleccionar Plan...'}</option>
+                      {availablePlanes.map(pl => (
+                        <option key={pl.id} value={pl.id}>{pl.nombre}</option>
                       ))}
                     </select>
                   </div>
@@ -299,6 +368,7 @@ export const DetalleTurnoModal = ({
                       type="text"
                       value={numeroAfiliado}
                       onChange={(e) => setNumeroAfiliado(e.target.value)}
+                      placeholder="Ej: 01234567-00"
                       className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs"
                     />
                   </div>
@@ -325,27 +395,67 @@ export const DetalleTurnoModal = ({
                 </div>
               </form>
             ) : (
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold block uppercase">Paciente</span>
-                  <strong className="text-slate-900 font-extrabold">{paciente?.nombre} {paciente?.apellido}</strong>
-                  <span className="text-slate-500 font-mono block text-[11px]">DNI: {paciente?.dni}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold block uppercase">Paciente</span>
+                    <strong className="text-slate-900 font-extrabold text-sm">{paciente?.nombre} {paciente?.apellido}</strong>
+                    <span className="text-slate-500 font-mono block text-[11px]">DNI: {paciente?.dni || 'Sin DNI'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold block uppercase">WhatsApp / Contacto</span>
+                    <strong className="text-slate-900">{paciente?.telefono_whatsapp || 'Sin registrar'}</strong>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold block uppercase">WhatsApp / Contacto</span>
-                  <strong className="text-slate-900">{paciente?.telefono_whatsapp || 'Sin registrar'}</strong>
+
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold block uppercase">Cobertura & Plan</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-black text-slate-800">{obraSocial?.nombre || turno.obra_social_nombre || 'Particular / Privado'}</span>
+                      {(plan?.nombre || turno.plan_nombre) && (
+                        <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-md font-bold text-[10px]">
+                          {plan?.nombre || turno.plan_nombre}
+                        </span>
+                      )}
+                    </div>
+                    {(paciente?.numero_afiliado || turno.numero_afiliado) && (
+                      <span className="text-[10px] text-slate-500 block">Afiliado: {paciente?.numero_afiliado || turno.numero_afiliado}</span>
+                    )}
+                  </div>
+
+                  {/* INFO COSEGURO / ARANCEL */}
+                  <div className="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Coseguro / Arancel</span>
+                      {montoCoseguro > 0 ? (
+                        <strong className="text-sm font-black text-amber-700">
+                          ${montoCoseguro.toLocaleString('es-AR')}
+                        </strong>
+                      ) : (
+                        <strong className="text-xs font-bold text-emerald-700">
+                          Cubierto 100% / Sin Cargo
+                        </strong>
+                      )}
+                    </div>
+                    {montoCoseguro > 0 && (
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${
+                        turno.estado_coseguro === 'COBRADO' 
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                          : 'bg-amber-100 text-amber-800 border border-amber-300'
+                      }`}>
+                        {turno.estado_coseguro === 'COBRADO' ? '✓ COBRADO' : 'PENDIENTE'}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold block uppercase">Obra Social</span>
-                  <span className="font-bold text-slate-800">{obraSocial?.nombre || 'Particular / Privado'}</span>
-                  {paciente?.numero_afiliado && (
-                    <span className="text-[10px] text-slate-500 block">Afiliado: {paciente.numero_afiliado}</span>
-                  )}
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold block uppercase">Observaciones</span>
-                  <span className="text-slate-700 italic text-[11px]">{turno.observaciones || 'Ninguna'}</span>
-                </div>
+
+                {turno.observaciones && (
+                  <div className="col-span-full pt-1 border-t border-slate-200">
+                    <span className="text-[10px] text-slate-500 font-bold block uppercase">Observaciones</span>
+                    <span className="text-slate-700 italic text-[11px]">{turno.observaciones}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -357,7 +467,7 @@ export const DetalleTurnoModal = ({
             {/* Botón Acción Confirmar Asistencia */}
             <button
               onClick={handleToggleConfirmar}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-2xs cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-2xs cursor-pointer ${
                 turno.confirmado_whatsapp 
                   ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
                   : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
@@ -365,7 +475,17 @@ export const DetalleTurnoModal = ({
               title={turno.confirmado_whatsapp ? 'Turno confirmado. Clic para desmarcar.' : 'Confirmar asistencia del paciente (WhatsApp o Telefónico)'}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{turno.confirmado_whatsapp ? 'Asistencia Confirmada ✓' : 'Confirmar Asistencia'}</span>
+              <span>{turno.confirmado_whatsapp ? 'Confirmado ✓' : 'Confirmar'}</span>
+            </button>
+
+            {/* Botón Cobrar Coseguro / Factura ARCA / Recibo X */}
+            <button
+              onClick={handleCobroClick}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
+              title="Emitir Comprobante (Recibo No Fiscal o Factura Electrónica ARCA)"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              <span>Cobrar / Recibo</span>
             </button>
 
             <button
@@ -376,7 +496,7 @@ export const DetalleTurnoModal = ({
               className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
             >
               <ArrowRightLeft className="w-3.5 h-3.5 text-medical-600" />
-              <span>Reprogramar Fecha</span>
+              <span>Reprogramar</span>
             </button>
 
             <button
@@ -387,7 +507,7 @@ export const DetalleTurnoModal = ({
               className="px-3.5 py-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
             >
               <XCircle className="w-3.5 h-3.5" />
-              <span>Cancelar Turno</span>
+              <span>Cancelar</span>
             </button>
 
             <button
@@ -398,7 +518,7 @@ export const DetalleTurnoModal = ({
               className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
             >
               <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Voucher / WhatsApp</span>
+              <span>WhatsApp</span>
             </button>
           </div>
 

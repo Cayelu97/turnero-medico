@@ -25,16 +25,21 @@ const MainContent = () => {
   const [isPatientOnlyMode, setIsPatientOnlyMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [codigoConfirmarParam, setCodigoConfirmarParam] = useState(null);
+  const [tokenConfirmarParam, setTokenConfirmarParam] = useState(null);
 
-  // Detección de parámetros en la URL (?view=paciente, ?confirmar=TRN-XXXX, ?view=tv, etc.)
+  // Detección de parámetros en la URL (?view=paciente, ?confirmar=TRN-XXXX, ?t=TOKEN, ?view=tv, etc.)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const viewParam = params.get('view') || params.get('modo');
     const hash = window.location.hash.replace('#/', '').replace('#', '');
     const confirmar = params.get('confirmar') || params.get('codigo') || params.get('turno') || params.get('reserva');
+    const token = params.get('t') || params.get('token') || params.get('data');
 
     if (confirmar) {
       setCodigoConfirmarParam(confirmar);
+    }
+    if (token) {
+      setTokenConfirmarParam(token);
     }
 
     if (viewParam === 'paciente' || hash === 'paciente' || confirmar) {
@@ -244,7 +249,11 @@ const MainContent = () => {
       {codigoConfirmarParam && (
         <ConfirmarTurnoPacienteModal 
           codigoReserva={codigoConfirmarParam} 
-          onClose={() => setCodigoConfirmarParam(null)} 
+          token={tokenConfirmarParam}
+          onClose={() => {
+            setCodigoConfirmarParam(null);
+            setTokenConfirmarParam(null);
+          }} 
         />
       )}
     </div>

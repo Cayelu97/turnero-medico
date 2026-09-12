@@ -23,6 +23,44 @@ export const WhatsAppService = {
     return clean;
   },
 
+  // Generar token compacto codificado en Base64 para hidratación y confirmación instantánea cross-device
+  generarTokenTurno: ({ turno, paciente, profesional, consultorio, clinica }) => {
+    try {
+      const allClinicas = StorageService.getClinicasList();
+      const targetClinica = clinica || allClinicas.find(c => c.id === turno?.clinica_id) || allClinicas[0];
+      const payload = {
+        c: turno?.codigo_reserva || '',
+        id: turno?.id || '',
+        f: turno?.fecha || '',
+        hi: turno?.hora_inicio || '',
+        hf: turno?.hora_fin || '',
+        m: turno?.modalidad || 'PRESENCIAL',
+        pid: paciente?.id || turno?.paciente_id || '',
+        pn: paciente?.nombre || turno?.paciente_nombre || '',
+        pa: paciente?.apellido || turno?.paciente_apellido || '',
+        pd: paciente?.dni || turno?.paciente_dni || '',
+        pt: paciente?.telefono_whatsapp || turno?.paciente_telefono || '',
+        paf: paciente?.numero_afiliado || turno?.numero_afiliado || '',
+        doc: profesional ? `${profesional.apellido || ''}, ${profesional.nombre || ''}`.trim() : (turno?.profesional_nombre || ''),
+        esp: profesional?.especialidad || turno?.especialidad_nombre || '',
+        docId: profesional?.id || turno?.profesional_id || '',
+        cliId: targetClinica?.id || turno?.clinica_id || '',
+        cliNom: targetClinica?.nombre || 'Sede Central',
+        cliDir: targetClinica?.direccion || 'Av. Colón 1250, Córdoba',
+        conNom: consultorio?.nombre || turno?.consultorio_nombre || 'Consultorio',
+        osId: turno?.obra_social_id || paciente?.obra_social_id || '',
+        osNom: turno?.obra_social_nombre || paciente?.obra_social_nombre || 'Particular / Privado',
+        plId: turno?.plan_id || paciente?.plan_id || '',
+        plNom: turno?.plan_nombre || paciente?.plan_nombre || '',
+        cos: Number(turno?.monto_coseguro || 0),
+        est: turno?.estado || 'PROGRAMADO'
+      };
+      return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    } catch {
+      return '';
+    }
+  },
+
   // Generar mensaje de confirmación / recordatorio de turno con Sede y Dirección exactas
   generarMensajeTurno: ({ turno, paciente, profesional, consultorio, clinica, tipo = 'NUEVO' }) => {
     const allClinicas = StorageService.getClinicasList();
@@ -31,8 +69,8 @@ export const WhatsAppService = {
     const clinicaDir = targetClinica?.direccion || 'Av. Colón 1250, Córdoba';
     const esOnline = turno?.modalidad === 'ONLINE' || targetClinica?.id === 'clinica-4';
 
-    const docNombre = profesional ? `Dr(a). ${profesional.nombre} ${profesional.apellido} (${profesional.especialidad})` : 'Profesional';
-    const pacNombre = paciente ? `${paciente.nombre} ${paciente.apellido}` : 'Estimado/a paciente';
+    const docNombre = profesional ? `Dr(a). ${profesional.nombre} ${profesional.apellido} (${profesional.especialidad})` : (turno?.profesional_nombre || 'Profesional');
+    const pacNombre = paciente ? `${paciente.nombre} ${paciente.apellido}` : (turno?.paciente_nombre || 'Estimado/a paciente');
     const consultorioNombre = consultorio?.nombre || (esOnline ? 'Consultorio Virtual' : 'Consultorio de Atención');
 
     const osNombre = turno?.obra_social_nombre || paciente?.obra_social_nombre || 'Particular / Privado';
@@ -42,8 +80,11 @@ export const WhatsAppService = {
       ? `• Coseguro a abonar en recepción: *$${Number(turno.monto_coseguro).toLocaleString('es-AR')}* (Efectivo / Transferencia / Débito)\n`
       : `• Coseguro: *Sin cargo / Cobertura 100%*\n`;
 
+    const token = WhatsAppService.generarTokenTurno({ turno, paciente, profesional, consultorio, clinica: targetClinica });
     const baseUrl = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'https://saludnetar.vercel.app';
-    const linkConfirmacion = turno?.codigo_reserva ? `${baseUrl}/?confirmar=${turno.codigo_reserva}` : `${baseUrl}/?view=mis_turnos`;
+    const linkConfirmacion = turno?.codigo_reserva 
+      ? `${baseUrl}/?confirmar=${turno.codigo_reserva}${token ? `&t=${token}` : ''}` 
+      : `${baseUrl}/?view=mis_turnos`;
 
     if (tipo === 'CANCELADO') {
       return (
